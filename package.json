@@ -1,0 +1,22 @@
+{
+  "name": "techthrift",
+  "version": "1.0.0",
+  "description": "techthrift project",
+  "main": "techthrift.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rayanssan/techthrift.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rayanssan/techthrift/issues"
+  },
+  "homepage": "https://github.com/rayanssan/techthrift#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
