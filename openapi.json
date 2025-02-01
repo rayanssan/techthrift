@@ -1,0 +1,1332 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TechThrift API",
+    "version": "1.0.0",
+    "description": "Esta API permite a gestão do sistema TechThrift.\n\n#### Funcionalidades de Gestão:\n* Usuários\n* Compras\n* Vendas\n* Doações\n* Reparações\n* Manifestações de interesse de usuários acerca de produtos\n* Relatórios de atividade do sistema\n"
+  },
+  "servers": [
+    {
+      "url": "https://api.techthrift.com/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "tt",
+      "description": "Gestão de produtos no sistema TechThrift"
+    },
+    {
+      "name": "ttuser",
+      "description": "Gestão de usuários no sistema TechThrift"
+    }
+  ],
+  "paths": {
+    "/tt": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Listar todos os equipamentos disponíveis no sistema para venda.",
+        "description": "Retorna uma lista de equipamentos disponíveis para venda no sistema, com opção de busca e filtros.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Nome dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Categoria dos equipamentos (ex. laptops, smartphones).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "price_range",
+            "in": "query",
+            "required": false,
+            "description": "Faixa de preço dos equipamentos (ex. 100-500).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition",
+            "in": "query",
+            "required": false,
+            "description": "Condição dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store_nipc",
+            "in": "query",
+            "required": false,
+            "description": "NIPC da loja que detêm os equipamentos.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "availability",
+            "in": "query",
+            "required": false,
+            "description": "Disponibilidade dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/all": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Listar todos os equipamentos disponíveis no sistema.",
+        "description": "Retorna uma lista de equipamentos disponíveis no sistema, com opção de busca e filtros.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Nome dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Categoria dos equipamentos (ex. laptops, smartphones).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "price_range",
+            "in": "query",
+            "required": false,
+            "description": "Faixa de preço dos equipamentos (ex. 100-500).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition",
+            "in": "query",
+            "required": false,
+            "description": "Condição dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store_nipc",
+            "in": "query",
+            "required": false,
+            "description": "NIPC da loja que detêm os equipamentos.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "availability",
+            "in": "query",
+            "required": false,
+            "description": "Disponibilidade dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/{id}": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Consultar detalhes de um equipamento específico.",
+        "description": "Obtém as informações detalhadas de um equipamento específico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/add": {
+      "post": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Registar um equipamento no sistema.",
+        "description": "Permite registar equipamentos no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/remove/{id}": {
+      "delete": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Remover um equipamento do sistema.",
+        "description": "Permite remover um equipamento do sistema.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product successfully removed"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/sale/add/{id}": {
+      "post": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Adicionar um equipamento para venda no sistema.",
+        "description": "Permite adicionar um euipamento para venda no sistema.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product set for sale",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/sale/remove/{id}": {
+      "put": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Remover um equipamento para venda no sistema.",
+        "description": "Permite remover um equipamento para venda no sistema.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from sale",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/repair": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Listar todos os equipamentos disponíveis no sistema para reparação.",
+        "description": "Retorna uma lista de equipamentos disponíveis para reparação no sistema, com opção de busca e filtros.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Nome dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Categoria dos equipamentos (ex. laptops, smartphones).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store_nipc",
+            "in": "query",
+            "required": false,
+            "description": "NIPC da loja que detêm os equipamentos.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductForRepair"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/repair/{id}": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Consultar detalhes de um equipamento para reparação específico.",
+        "description": "Obtém as informações detalhadas de um equipamento para reparação específico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductForRepair"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/repair/add": {
+      "post": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Registar um equipamento para reparação no sistema.",
+        "description": "Permite registar os detalhes de um equipamento avariado no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductForRepair"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductForRepair"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/repair/remove/{id}": {
+      "put": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Remover um equipamento que estava em reparação do sistema.",
+        "description": "Permite remover um equipamento que estava em reparação do sistema.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from repairs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductForRepair"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/donation": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Listar todos os equipamentos disponíveis no sistema para doação.",
+        "description": "Retorna uma lista de equipamentos disponíveis para doação no sistema, com opção de busca e filtros.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Nome dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Categoria dos equipamentos (ex. laptops, smartphones).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition",
+            "in": "query",
+            "required": false,
+            "description": "Condição dos equipamentos.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store_nipc",
+            "in": "query",
+            "required": false,
+            "description": "NIPC da loja que detêm os equipamentos.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductForDonation"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/donation/{id}": {
+      "get": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Consultar detalhes de um equipamento para doação específico.",
+        "description": "Obtém as informações detalhadas de um equipamento para doação específico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductForDonation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/tt/donation/add": {
+      "post": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Registar equipamentos para doação no sistema.",
+        "description": "Permite registar equipamentos para doação no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductForDonation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductForDonation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tt/donation/remove/{id}": {
+      "put": {
+        "tags": [
+          "tt"
+        ],
+        "summary": "Remover um equipamento que estava para doação do sistema.",
+        "description": "Permite remover um equipamento que estava para doação do sistema.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do equipamento.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from donation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductForRepair"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/ttuser/client/add": {
+      "post": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Adicionar um novo cliente.",
+        "description": "Permite adicionar um cliente ao sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserClient"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Client successfully added"
+          }
+        }
+      }
+    },
+    "/ttuser/client/edit": {
+      "put": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Editar informações de um cliente existente.",
+        "description": "Atualiza os dados de um cliente no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserClient"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Client successfully updated"
+          }
+        }
+      }
+    },
+    "/ttuser/client/remove": {
+      "delete": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Remover um cliente.",
+        "description": "Exclui um cliente do sistema.",
+        "parameters": [
+          {
+            "name": "client_nif",
+            "in": "query",
+            "required": true,
+            "description": "NIF do cliente a ser removido.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Client successfully removed"
+          }
+        }
+      }
+    },
+    "/ttuser/employee/add": {
+      "post": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Adicionar um novo empregado.",
+        "description": "Permite adicionar um empregado ao sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEmployee"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Employee successfully added"
+          }
+        }
+      }
+    },
+    "/ttuser/employee/edit": {
+      "put": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Editar informações de um empregado existente.",
+        "description": "Atualiza os dados de um empregado no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEmployee"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Employee successfully updated"
+          },
+          "404": {
+            "description": "Employee not found"
+          }
+        }
+      }
+    },
+    "/ttuser/employee/remove": {
+      "delete": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Remover um empregado.",
+        "description": "Exclui um empregado do sistema.",
+        "parameters": [
+          {
+            "name": "employee_nif",
+            "in": "query",
+            "required": true,
+            "description": "NIF do empregado a ser removido.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee successfully removed"
+          }
+        }
+      }
+    },
+    "/ttuser/store/add": {
+      "post": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Adicionar uma nova loja.",
+        "description": "Permite adicionar uma loja ao sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Store successfully added"
+          }
+        }
+      }
+    },
+    "/ttuser/store/edit": {
+      "put": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Editar informações de uma loja existente.",
+        "description": "Atualiza os dados de uma loja no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Store successfully updated"
+          },
+          "404": {
+            "description": "Store not found"
+          }
+        }
+      }
+    },
+    "/ttuser/store/remove": {
+      "delete": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Remover uma loja.",
+        "description": "Exclui uma loja do sistema.",
+        "parameters": [
+          {
+            "name": "store_nipc",
+            "in": "query",
+            "required": true,
+            "description": "NIPC da loja a ser removida.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Store successfully removed"
+          }
+        }
+      }
+    },
+    "/ttuser/charity/add": {
+      "post": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Adicionar uma nova entidade de beneficiência.",
+        "description": "Permite adicionar uma entidade de beneficiência ao sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Charity successfully added"
+          }
+        }
+      }
+    },
+    "/ttuser/charity/edit": {
+      "put": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Editar informações de uma entidade de beneficiência existente.",
+        "description": "Atualiza os dados de uma entidade de beneficiência no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Charity successfully updated"
+          },
+          "404": {
+            "description": "Charity not found"
+          }
+        }
+      }
+    },
+    "/ttuser/charity/remove": {
+      "delete": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Remover uma entidade de beneficiência.",
+        "description": "Exclui uma entidade de beneficiência do sistema.",
+        "parameters": [
+          {
+            "name": "charity_nipc",
+            "in": "query",
+            "required": true,
+            "description": "NIPC da entidade de beneficiência a ser removida.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Charity successfully removed"
+          }
+        }
+      }
+    },
+    "/ttuser/interest": {
+      "post": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Manifestar interesse por um equipamento.",
+        "description": "Registra o interesse de um usuário em um equipamento específico.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Interest successfully added"
+          }
+        }
+      }
+    },
+    "/ttuser/notifications": {
+      "get": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Consultar notificações de disponibilidade.",
+        "description": "Obtém notificações de disponibilidade para os equipamentos de interesse do usuário.",
+        "parameters": [
+          {
+            "name": "user_nif",
+            "in": "query",
+            "required": true,
+            "description": "NIF do usuário.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notification"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No product interests set"
+          }
+        }
+      }
+    },
+    "/ttuser/reports": {
+      "get": {
+        "tags": [
+          "ttuser"
+        ],
+        "summary": "Gerar relatório de atividades.",
+        "description": "Retorna relatórios de atividade, incluindo vendas, doações, reparações e interesses.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "store_nipc": {
+            "type": "integer"
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "new",
+              "used",
+              "refurbished"
+            ]
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "in_stock",
+              "out_of_stock"
+            ]
+          }
+        }
+      },
+      "ProductForRepair": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "repair_cost": {
+            "type": "number"
+          },
+          "store_nipc": {
+            "type": "integer"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required_parts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ProductForDonation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "store_nipc": {
+            "type": "integer"
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "new",
+              "used",
+              "refurbished"
+            ]
+          },
+          "donor_nif": {
+            "type": "integer"
+          },
+          "charity_nipc": {
+            "type": "string"
+          }
+        }
+      },
+      "InterestRequest": {
+        "type": "object",
+        "properties": {
+          "user_nif": {
+            "type": "integer"
+          },
+          "device_category": {
+            "type": "string"
+          },
+          "max_price": {
+            "type": "number"
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_nif": {
+            "type": "integer"
+          },
+          "device_id": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "sales": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "store_nipc": {
+                  "type": "integer"
+                },
+                "total_sales": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "donations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "store_nipc": {
+                  "type": "integer"
+                },
+                "total_donations": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "repairs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "store_nipc": {
+                  "type": "integer"
+                },
+                "total_repairs": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "UserClient": {
+        "type": "object",
+        "properties": {
+          "nif": {
+            "type": "integer"
+          },
+          "nic": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "UserEmployee": {
+        "type": "object",
+        "properties": {
+          "nif": {
+            "type": "integer"
+          },
+          "nic": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "internal_number": {
+            "type": "integer"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "UserEntity": {
+        "type": "object",
+        "properties": {
+          "nipc": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      }
+    }
+  }
+}
