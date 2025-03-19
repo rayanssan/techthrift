@@ -76,7 +76,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Product'
   
-  /tt/all:
+  /tt/product:
     get:
       tags:
         - tt
@@ -129,7 +129,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Product'
 
-  /tt/{id}:
+  /tt/product/{id}:
     get:
       tags:
         - tt
@@ -151,6 +151,8 @@ paths:
                 $ref: '#/components/schemas/Product'
         '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
   
   /tt/add:
     post:
@@ -171,6 +173,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
                 
   /tt/remove/{id}:
     delete:
@@ -190,20 +194,21 @@ paths:
           description: "Product successfully removed"
         '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
           
-  /tt/sale/add/{id}:
+  /tt/sale/add:
     post:
       tags:
         - tt
       summary: Adicionar um equipamento para venda no sistema.
       description: Permite adicionar um euipamento para venda no sistema.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
       responses:
         '200':
           description: "Product set for sale"
@@ -213,6 +218,8 @@ paths:
                 $ref: '#/components/schemas/Product'
         '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
           
   /tt/sale/remove/{id}:
     put:
@@ -236,6 +243,8 @@ paths:
                 $ref: '#/components/schemas/Product'
         '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /tt/repair:
     get:
@@ -294,6 +303,8 @@ paths:
                 $ref: '#/components/schemas/ProductForRepair' 
         '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /tt/repair/add:
     post:
@@ -314,6 +325,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductForRepair'
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
                 
   /tt/repair/remove/{id}:
     put:
@@ -337,6 +350,8 @@ paths:
                 $ref: '#/components/schemas/ProductForRepair'
         '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /tt/donation:
     get:
@@ -399,8 +414,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductForDonation' 
-        "404":
+        '404':
           description: "Product not found"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /tt/donation/add:
     post:
@@ -421,6 +438,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductForDonation'
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /tt/donation/remove/{id}:
     put:
@@ -444,7 +463,69 @@ paths:
                 $ref: '#/components/schemas/ProductForRepair'
         '404':
           description: "Product not found"
-          
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
+  
+  /ttuser/client:
+    get:
+      tags:
+        - ttuser
+      summary: Listar todos os clientes compradores.
+      description: Retorna uma lista de clientes compradores registados no sistema, com opção de busca e filtros.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Nomes dos clientes.
+          schema:
+            type: string
+        - name: gender
+          in: query
+          required: false
+          description: Genéro dos clientes.
+          schema:
+            type: string
+        - name: dob
+          in: query
+          required: false
+          description: Data de nascimento dos clientes.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserClient'
+  
+  /ttuser/client/{id}:
+    get:
+      tags:
+        - ttuser
+      summary: Consultar detalhes de um cliente específico.
+      description: Obtém as informações detalhadas de um cliente específico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: NIF, NIC, email, telefone ou ID da base de dados do cliente.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserClient'
+        '404':
+          description: "Client not found"
+
   /ttuser/client/add:
     post:
       tags:
@@ -460,6 +541,8 @@ paths:
       responses:
         '201':
           description: "Client successfully added"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /ttuser/client/edit:
     put:
@@ -477,23 +560,85 @@ paths:
         '200':
           description: "Client successfully updated"
 
-  /ttuser/client/remove:
+  /ttuser/client/remove/{id}:
     delete:
       tags:
         - ttuser
       summary: Remover um cliente.
       description: Exclui um cliente do sistema.
       parameters:
-        - name: client_nif
-          in: query
+        - name: id
+          in: path
           required: true
-          description: NIF do cliente a ser removido.
+          description: NIF, NIC, email, telefone ou ID da base de dados do cliente a ser removido.
           schema:
-            type: integer
+            oneOf:
+              - type: string
+              - type: integer
       responses:
         '200':
           description: "Client successfully removed"
 
+  /ttuser/employee:
+    get:
+      tags:
+        - ttuser
+      summary: Listar todos os empregados.
+      description: Retorna uma lista de empregados registados no sistema, com opção de busca e filtros.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Nomes dos empregados.
+          schema:
+            type: string
+        - name: gender
+          in: query
+          required: false
+          description: Genéro dos empregados.
+          schema:
+            type: string
+        - name: dob
+          in: query
+          required: false
+          description: Data de nascimento dos empregados.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserEmployee'
+  
+  /ttuser/employee/{id}:
+    get:
+      tags:
+        - ttuser
+      summary: Consultar detalhes de um empregado específico.
+      description: Obtém as informações detalhadas de um empregado específico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Número interno, NIF, NIC, email, telefone ou ID da base de dados do empregado.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEmployee'
+        '404':
+          description: "Employee not found"
+          
   /ttuser/employee/add:
     post:
       tags:
@@ -509,6 +654,8 @@ paths:
       responses:
         '201':
           description: "Employee successfully added"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /ttuser/employee/edit:
     put:
@@ -528,23 +675,79 @@ paths:
         '404':
           description: "Employee not found"
 
-  /ttuser/employee/remove:
+  /ttuser/employee/remove/{id}:
     delete:
       tags:
         - ttuser
       summary: Remover um empregado.
       description: Exclui um empregado do sistema.
       parameters:
-        - name: employee_nif
-          in: query
+        - name: id
+          in: path
           required: true
-          description: NIF do empregado a ser removido.
+          description: Número interno, NIF, NIC, email, telefone, ou ID da base de dados do empregado a ser removido.
           schema:
-            type: integer
+            oneOf:
+              - type: string
+              - type: integer
       responses:
         '200':
           description: "Employee successfully removed"
 
+  /ttuser/store:
+    get:
+      tags:
+        - ttuser
+      summary: Listar todos as lojas.
+      description: Retorna uma lista de lojas registadas no sistema, com opção de busca e filtros.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Nomes das lojas.
+          schema:
+            type: string
+        - name: address
+          in: query
+          required: false
+          description: Informação geográfica das lojas.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserEntity'
+  
+  /ttuser/store/{id}:
+    get:
+      tags:
+        - ttuser
+      summary: Consultar detalhes de uma loja específica.
+      description: Obtém as informações detalhadas de uma loja específica.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: NIPC, email, telefone ou ID da base de dados da loja.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEntity'
+        '404':
+          description: "Store not found"
+          
   /ttuser/store/add:
     post:
       tags:
@@ -560,6 +763,8 @@ paths:
       responses:
         '201':
           description: "Store successfully added"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /ttuser/store/edit:
     put:
@@ -579,22 +784,78 @@ paths:
         '404':
           description: "Store not found"
 
-  /ttuser/store/remove:
+  /ttuser/store/remove/{id}:
     delete:
       tags:
         - ttuser
       summary: Remover uma loja.
       description: Exclui uma loja do sistema.
       parameters:
-        - name: store_nipc
-          in: query
+        - name: id
+          in: path
           required: true
-          description: NIPC da loja a ser removida.
+          description: NIPC, email, telefone ou ID da base de dados loja a ser removida.
           schema:
-            type: integer
+            oneOf:
+              - type: string
+              - type: integer
       responses:
         '200':
           description: "Store successfully removed"
+
+  /ttuser/charity:
+    get:
+      tags:
+        - ttuser
+      summary: Listar todos as entidades de beneficiência.
+      description: Retorna uma lista de entidades de beneficiência registadas no sistema, com opção de busca e filtros.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Nomes das entidades de beneficiência.
+          schema:
+            type: string
+        - name: address
+          in: query
+          required: false
+          description: Informação geográfica das entidades de beneficiência.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserEntity'
+  
+  /ttuser/charity/{id}:
+    get:
+      tags:
+        - ttuser
+      summary: Consultar detalhes de uma entidade de beneficiência.
+      description: Obtém as informações detalhadas de uma entidade de beneficiência específica.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficiência.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEntity'
+        '404':
+          description: "Charity not found"
 
   /ttuser/charity/add:
     post:
@@ -611,6 +872,8 @@ paths:
       responses:
         '201':
           description: "Charity successfully added"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
   /ttuser/charity/edit:
     put:
@@ -630,19 +893,21 @@ paths:
         '404':
           description: "Charity not found"
 
-  /ttuser/charity/remove:
+  /ttuser/charity/remove/{id}:
     delete:
       tags:
         - ttuser
       summary: Remover uma entidade de beneficiência.
       description: Exclui uma entidade de beneficiência do sistema.
       parameters:
-        - name: charity_nipc
-          in: query
+        - name: id
+          in: path
           required: true
-          description: NIPC da entidade de beneficiência a ser removida.
+          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficiência a ser removida.
           schema:
-            type: integer
+            oneOf:
+              - type: string
+              - type: integer
       responses:
         '200':
           description: "Charity successfully removed"
@@ -662,20 +927,24 @@ paths:
       responses:
         '201':
           description: "Interest successfully added"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
-  /ttuser/notifications:
+  /ttuser/notifications/{id}:
     get:
       tags:
         - ttuser
       summary: Consultar notificações de disponibilidade.
-      description: Obtém notificações de disponibilidade para os equipamentos de interesse do usuário.
+      description: Obtém notificações de disponibilidade para os equipamentos de interesse de um cliente.
       parameters:
-        - name: user_nif
-          in: query
+        - name: id
+          in: path
           required: true
-          description: NIF do usuário.
+          description: NIF, NIC, email, telefone ou ID da base de dados do cliente.
           schema:
-            type: integer
+            oneOf:
+              - type: string
+              - type: integer
       responses:
         '200':
           description: ""
@@ -692,7 +961,7 @@ paths:
     get:
       tags:
         - ttuser
-      summary: Gerar relatório de atividades.
+      summary: Listar todos os relatórios de atividades.
       description: Retorna relatórios de atividade, incluindo vendas, doações, reparações e interesses.
       responses:
         '200':
@@ -701,6 +970,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Report'
+                
+  /ttuser/reports/{id}:
+    get:
+      tags:
+        - ttuser
+      summary: Consultar detalhes de um relatório de atividade.
+      description: Obtém as informações detalhadas de um relatório de atividade específico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Data ou ID da base de dados do relatório.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+                
+  /ttuser/reports/add:
+    post:
+      tags:
+        - ttuser
+      summary: Adicionar um novo relatório de atividade.
+      description: Permite adicionar um relatório de atividade ao sistema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+      responses:
+        '201':
+          description: "Report successfully added"
+        '400':
+          description: "Invalid request. Data is incorrect or incomplete."
 
 components:
   schemas:
@@ -774,6 +1082,8 @@ components:
     InterestRequest:
       type: object
       properties:
+        id:
+          type: integer
         user_nif:
           type: integer
         device_category:
@@ -790,12 +1100,16 @@ components:
           type: integer
         device_id:
           type: integer
-        message:
+        status:
           type: string
 
     Report:
       type: object
       properties:
+        id:
+          type: integer
+        date:
+          type: string
         sales:
           type: array
           items:
@@ -804,6 +1118,8 @@ components:
               store_nipc:
                 type: integer
               total_sales:
+                type: number
+              user_interests:
                 type: number
         donations:
           type: array
@@ -827,6 +1143,8 @@ components:
     UserClient:
       type: object
       properties:
+        id:
+          type: integer
         nif:
           type: integer
         nic:
@@ -850,6 +1168,8 @@ components:
     UserEmployee:
       type: object
       properties:
+        id:
+          type: integer
         nif:
             type: integer
         nic:
@@ -875,6 +1195,8 @@ components:
     UserEntity:
       type: object
       properties:
+        id:
+          type: integer
         nipc:
           type: integer
         name:
