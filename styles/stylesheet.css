@@ -1,0 +1,43 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+#header-brand {
+  padding-right: 10px;
+}
+#header-brand img {
+  width: 100px;
+  height: 40px;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+#footer-brand {
+  padding-right: 10px;
+}
+#footer-brand img {
+  width: 80px;
+  height: 120px;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.main-banner {
+  background-color: navy;
+}
+.main-banner #main-banner-brand {
+  position: absolute;
+  right: 0;
+  height: 300px;
+}
+
+.footer {
+  background-color: #343a40;
+  color: white;
+  text-align: center;
+  padding: 15px;
+}/*# sourceMappingURL=stylesheet.css.map */

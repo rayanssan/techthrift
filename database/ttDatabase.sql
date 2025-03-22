@@ -39,6 +39,15 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (store_nipc) REFERENCES stores(nipc)
 );
 
+CREATE TABLE IF NOT EXISTS productImages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER NOT NULL,
+    image_path TEXT NOT NULL,
+    image_order INTEGER NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    CHECK (image_order >= 1 AND image_order <= 10) -- Ensures there are no more than 10 images per product
+);
+
 CREATE TABLE IF NOT EXISTS saleProducts (
     id INTEGER PRIMARY KEY,
     price INTEGER NOT NULL,
