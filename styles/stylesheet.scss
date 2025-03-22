@@ -1,0 +1,42 @@
+
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+#header-brand {
+    padding-right: 10px;
+    img {
+        width: 100px;
+        height: 40px;
+        object-fit: cover;
+    }
+}
+
+#footer-brand {
+    padding-right: 10px;
+    img {
+        width: 80px;
+        height: 120px;
+        object-fit: cover;
+    }
+}
+
+.main-banner {
+    background-color: navy;
+    #main-banner-brand {
+        position: absolute;
+        right: 0;
+        height: 300px;
+    }
+}
+
+.footer {
+    background-color: #343a40;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
