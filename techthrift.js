@@ -32,6 +32,39 @@ app.get('/authentication', (req, res) => {
     });
 });
 
+// Admin Dashboard
+app.get('/adminDashboard', (req, res) => {
+    const adminDashboardPath = path.join(__dirname, 'html/adminDashboard.html');
+    res.sendFile(adminDashboardPath, (err) => {
+        if (err) {
+            console.error('Error serving adminDashboard.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Admin Products
+app.get('/adminProducts', (req, res) => {
+    const adminProductsPath = path.join(__dirname, 'html/adminProducts.html');
+    res.sendFile(adminProductsPath, (err) => {
+        if (err) {
+            console.error('Error serving adminProducts.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Admin Users
+app.get('/adminUsers', (req, res) => {
+    const adminUsersPath = path.join(__dirname, 'html/adminUsers.html');
+    res.sendFile(adminUsersPath, (err) => {
+        if (err) {
+            console.error('Error serving adminadminUsers.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -35,6 +35,52 @@ router.get('/tt/product/:id', (req, res) => {
     });
 });
 
+// Get filtered products
+router.get('/tt/products', (req, res) => {
+    let { search, condition, availability } = req.query;
+    console.log('Received filters:', { search, condition, availability });  // Log received filters
+
+    let query = 'SELECT * FROM products WHERE 1=1';
+    let params = [];
+
+    if (search) {
+        query += ' AND name LIKE ?';
+        params.push(`%${search}%`);
+    }
+
+    if (condition) {
+        query += ' AND condition = ?';
+        params.push(condition);  // 'New' or 'Used'
+    }
+
+    if (availability !== undefined && availability !== '') {
+        query += ' AND availability = ?';
+        params.push(availability === 'true' ? 1 : 0);  // Convert to 1 or 0
+    }
+
+    console.log('Final query:', query);  // Log the final query
+    console.log('Query parameters:', params);  // Log the parameters
+
+    db.all(query, params, (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error retrieving products');
+        }
+        res.json(rows);
+    });
+});
+
+// Get all unique conditions
+router.get('/tt/product-conditions', (req, res) => {
+    db.all('SELECT DISTINCT condition FROM products', [], (err, rows) => {
+        if (err) {
+            return res.status(500).send('Error retrieving conditions');
+        }
+        const conditions = rows.map(row => row.condition);
+        res.json(conditions);
+    });
+});
+
 // Add product
 router.post('/tt/add', (req, res) => {
     const newProduct = req.body;
