@@ -127,34 +127,39 @@
         async function fetchAdminProducts(filters = {}) {
             try {
                 const params = new URLSearchParams(filters);
-                let endpoint = '/tt/product';  // Default endpoint for no filters
+                let endpoint = '/tt/product'; // Keep your existing endpoint logic!
 
-                // If filters are applied, change the endpoint to /tt/products
                 if (Object.keys(filters).length > 0) {
                     endpoint = '/tt/products';
                 }
 
-                // Log the URL being fetched to check if the correct route is called
                 console.log(`Fetching products from: ${endpoint}?${params.toString()}`);
-
-
-                // Fetch data from the correct endpoint
                 const response = await fetch(`${endpoint}?${params.toString()}`);
                 const products = await response.json();
 
-                // Log the filtered products
                 console.log('Filtered products:', products);
+
+                // Now fetch prices from /tt route
+                const priceResponse = await fetch('/tt');
+                const priceData = await priceResponse.json();
+
+                // Map prices by product ID for quick lookup
+                const priceMap = {};
+                priceData.forEach(item => {
+                    priceMap[item.id] = item.price;
+                });
 
                 const productContainer = document.getElementById('product-list');
                 productContainer.innerHTML = '';
 
                 products.forEach(product => {
+                    const price = priceMap[product.id]; // Match price using ID
                     const productRow = `
                         <tr>
                             <td><input type="checkbox" class="product-checkbox"></td>
                             <td>${product.id}</td>
                             <td>${product.name}</td>
-                            <td>$${product.price !== null && product.price !== undefined ? product.price.toFixed(2) : 'N/A'}</td>
+                            <td>$${price !== null && price !== undefined ? price.toFixed(2) : 'N/A'}</td>
                             <td>${product.category || 'N/A'}</td>
                             <td>${product.condition || 'N/A'}</td>
                             <td>${product.availability ? 'Available' : 'Unavailable'}</td>
