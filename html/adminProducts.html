@@ -8,10 +8,10 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <!-- Font Awesome -->
+    <!-- Sidebar Script -->
+    <script src="../scripts/sidebar.js"></script>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
-    <!-- Stylesheets -->
 </head>
 <body>
     <!-- Header -->
@@ -38,7 +38,7 @@
                     <a class="nav-link text-dark active" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="fas fa-users me-2"></i>Users</a>
+                    <a class="nav-link text-dark" href="adminUsers"><i class="fas fa-users me-2"></i>Users</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="fas fa-cogs me-2"></i>Settings</a>
@@ -55,39 +55,109 @@
                     <a href="adminAddProduct" class="btn btn-success">Add Product</a>
                 </div>
             </div>
+
+            <!-- Filters -->
+            <div class="row mb-4 justify-content-between">
+                <!-- Search Bar -->
+                <div class="col-md-4 mb-2">
+                    <input type="text" id="search-bar" class="form-control" placeholder="Search products...">
+                </div>
+
+                <!-- Filter Section: Dropdowns and Button -->
+                <div class="col-md-7 d-flex justify-content-end align-items-center gap-3">
+                    <!-- Condition Dropdown -->
+                    <select id="condition-filter" class="form-select w-auto">
+                        <option value="">All Conditions</option>
+                    </select>
+
+                    <!-- Availability Dropdown -->
+                    <select id="availability-filter" class="form-select w-auto">
+                        <option value="">All Availability</option>
+                        <option value="true">Available</option>
+                        <option value="false">Unavailable</option>
+                    </select>
+
+                    <!-- Filter Button -->
+                    <button class="btn btn-light" id="filter-btn">Filter</button>
+                </div>
+            </div>
+
+            <!-- Product Table -->
             <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th><input type="checkbox" id="select-all"></th>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-list">
-                        <!-- Products will be dynamically inserted here -->
-                    </tbody>
-                </table>
+                <div class="rounded-3 border overflow-hidden">
+                    <table class="table table-borderless table-striped rounded-3 overflow-hidden">
+                        <thead class="table-light">
+                            <tr>
+                                <th><input type="checkbox" id="select-all"></th>
+                                <th>Product ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Category</th>
+                                <th>Condition</th>
+                                <th>Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list">
+                            <!-- Products will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- Scripts -->
     <script>
-        async function fetchAdminProducts() {
+        async function fetchConditions() {
             try {
-                const response = await fetch('/tt');
+                const res = await fetch('/tt/product-conditions');
+                const conditions = await res.json();
+                const conditionFilter = document.getElementById('condition-filter');
+                conditions.forEach(condition => {
+                    const option = document.createElement('option');
+                    option.value = condition;
+                    option.textContent = condition;
+                    conditionFilter.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error fetching conditions:', err);
+            }
+        }
+
+        async function fetchAdminProducts(filters = {}) {
+            try {
+                const params = new URLSearchParams(filters);
+                let endpoint = '/tt/product';  // Default endpoint for no filters
+
+                // If filters are applied, change the endpoint to /tt/products
+                if (Object.keys(filters).length > 0) {
+                    endpoint = '/tt/products';
+                }
+
+                // Log the URL being fetched to check if the correct route is called
+                console.log(`Fetching products from: ${endpoint}?${params.toString()}`);
+
+
+                // Fetch data from the correct endpoint
+                const response = await fetch(`${endpoint}?${params.toString()}`);
                 const products = await response.json();
+
+                // Log the filtered products
+                console.log('Filtered products:', products);
+
                 const productContainer = document.getElementById('product-list');
                 productContainer.innerHTML = '';
-    
+
                 products.forEach(product => {
                     const productRow = `
                         <tr>
                             <td><input type="checkbox" class="product-checkbox"></td>
-                            <td><img src="${product.image_url}" alt="${product.name}" width="50"></td>
+                            <td>${product.id}</td>
                             <td>${product.name}</td>
-                            <td>$${product.price.toFixed(2)}</td>
+                            <td>$${product.price !== null && product.price !== undefined ? product.price.toFixed(2) : 'N/A'}</td>
+                            <td>${product.category || 'N/A'}</td>
+                            <td>${product.condition || 'N/A'}</td>
+                            <td>${product.availability ? 'Available' : 'Unavailable'}</td>
                         </tr>`;
                     productContainer.innerHTML += productRow;
                 });
@@ -95,15 +165,34 @@
                 console.error('Error fetching products:', error);
             }
         }
-    
-        document.addEventListener('DOMContentLoaded', fetchAdminProducts);
-    
-        document.getElementById('delete-selected').addEventListener('click', function() {
-            const confirmed = confirm('Are you sure you want to delete the selected products?');
-            if (confirmed) {
-                // For now, just log confirmation, actual deletion logic will be implemented later
-                console.log('Deletion confirmed, but not executed.');
-            }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchConditions();
+            fetchAdminProducts();
+
+            document.getElementById('filter-btn').addEventListener('click', () => {
+                const search = document.getElementById('search-bar').value.trim();
+                const condition = document.getElementById('condition-filter').value;
+                const availability = document.getElementById('availability-filter').value;
+
+                const filters = {};
+
+                if (search) filters.search = search;
+                if (condition) filters.condition = condition;
+                if (availability !== '') filters.availability = availability;
+
+                console.log('Applying Filters:', filters);
+
+                fetchAdminProducts(filters);
+            });
+
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                const confirmed = confirm('Are you sure you want to delete the selected products?');
+                if (confirmed) {
+                    // For now, just log confirmation, actual deletion logic will be implemented later
+                    console.log('Deletion confirmed, but not executed.');
+                }
+            });
         });
     </script>
     
