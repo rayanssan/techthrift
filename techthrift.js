@@ -11,8 +11,19 @@ app.use(ttApi);
 app.use(express.static(__dirname));
 
 // Homepage, entry point
-app.get('/homepage' && '/', (req, res) => {
+app.get(['/homepage', '/'], (req, res) => {
     const homepagePath = path.join(__dirname, 'html/homepage.html');
+    res.sendFile(homepagePath, (err) => {
+        if (err) {
+            console.error('Error serving homepage.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Product for sale
+app.get('/product', (req, res) => {
+    const homepagePath = path.join(__dirname, 'html/product.html');
     res.sendFile(homepagePath, (err) => {
         if (err) {
             console.error('Error serving homepage.html:', err);

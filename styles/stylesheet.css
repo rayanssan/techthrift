@@ -35,21 +35,13 @@ body {
   height: 300px;
 }
 
+.card img:hover {
+  cursor: pointer;
+}
+
 .footer {
   background-color: #343a40;
   color: white;
   text-align: center;
   padding: 15px;
 }/*# sourceMappingURL=stylesheet.css.map */
-
-.sidebar .nav-link {
-  transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-  border-radius: 5px;
-}
-
-.sidebar .nav-link:hover,
-.sidebar .nav-link.active {
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  background-color: rgba(0, 0, 0, 0.05);
-}
-

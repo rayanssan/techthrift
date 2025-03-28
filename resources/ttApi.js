@@ -27,13 +27,28 @@ router.get('/tt/product', (req, res) => {
 
 // Get details about a product
 router.get('/tt/product/:id', (req, res) => {
-    db.all('SELECT * FROM products WHERE id = ?', [req.params.id], (err, rows) => {
+    const { id } = req.params;
+    const { saleProducts, name, condition, availability } = req.query;
+
+    let query = 'SELECT * FROM products WHERE id = ?';
+    let params = [id];
+
+    if (saleProducts === 'true') {
+        query = `
+            SELECT products.*, saleProducts.*
+            FROM products 
+            JOIN saleProducts ON products.id = saleProducts.id 
+            WHERE products.id = ?`;
+    }
+
+    db.get(query, params, (err, row) => {
         if (err) {
             return res.status(404).send('Product not found');
         }
-        res.json(rows);
+        res.json(row);
     });
 });
+
 
 // Get filtered products
 router.get('/tt/products', (req, res) => {
