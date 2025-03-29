@@ -63,7 +63,7 @@ if (document.body.id === "homepage") {
                     </a>
                     <div class="card-body d-flex flex-column">
                         <h6 class="card-title text-truncate">${product.name}</h6>
-                        <p class="card-text fw-bold">$${product.price.toFixed(2)}</p>
+                        <p class="card-text fw-bold">€${product.price}</p>
                         <div class="d-flex align-items-end pt-3 px-0 pb-0">
                             <a href="#!" class="btn btn-primary btn-sm me-2">Add to cart</a>
                             <a href="#!" class="btn btn-light border btn-sm icon-hover">
@@ -139,6 +139,7 @@ if (document.body.id === "homepage") {
 
             const response = await fetch(`/tt/product/${id}?saleProducts=true`);
             const product = await response.json();
+            console.log(product);
             product.images = ["ex1", "ex2", "ex3", "ex4", "ex5"];
 
             const productContainer = document.getElementById('product-info');
@@ -161,7 +162,7 @@ if (document.body.id === "homepage") {
                         <!-- Right side: Product Info -->
                         <div class="col-lg-8 col-md-7 col-12">
                             <h2>${product.name}</h2>
-                            <p class="fw-bold">$${product.price.toFixed(2)}</p>
+                            <p class="fw-bold">€${product.price}</p>
                             <p>${product.description}</p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
                                 <a href="#!" class="btn btn-primary me-2">Add to cart</a>
