@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS productImages (
     image_order INTEGER NOT NULL,
 
     FOREIGN KEY (product_id) REFERENCES products(id),
-    CHECK (image_order >= 1 AND image_order <= 10) -- Ensures there are no more than 10 images per product
+    CHECK (image_order >= 1 AND image_order <= 5) -- Ensures there are no more than 5 images per product
 );
 
 CREATE TABLE IF NOT EXISTS transactions (

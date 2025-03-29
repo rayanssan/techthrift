@@ -35,6 +35,10 @@ body {
   height: 300px;
 }
 
+.card img:hover {
+  cursor: pointer;
+}
+
 .footer {
   background-color: #343a40;
   color: white;
