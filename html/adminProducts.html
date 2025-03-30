@@ -162,9 +162,9 @@
                             <td><input type="checkbox" class="product-checkbox"></td>
                             <td>${product.id}</td>
                             <td>${product.name}</td>
-                            <td>$${price !== null && price !== undefined ? price.toFixed(2) : 'N/A'}</td>
+                            <td>$${price !== null && price !== undefined ? price : 'N/A'}</td>
                             <td>${product.category || 'N/A'}</td>
-                            <td>${product.condition || 'N/A'}</td>
+                            <td>${product.product_condition || 'N/A'}</td>
                             <td>${product.availability ? 'Available' : 'Unavailable'}</td>
                         </tr>`;
                     productContainer.innerHTML += productRow;

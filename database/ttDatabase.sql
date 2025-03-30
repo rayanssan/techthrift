@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS clients (
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
     address VARCHAR(255)
-);
+
+); 
 
 CREATE TABLE IF NOT EXISTS employees (
     id INT PRIMARY KEY,
@@ -136,11 +137,13 @@ CREATE TABLE IF NOT EXISTS repairProducts (
 );
 
 CREATE TABLE IF NOT EXISTS donationProducts (
-    id INT PRIMARY KEY,
+    id INT,
+    numExemp INT AUTO_INCREMENT,
     charity INT NOT NULL,
-
+  
+    PRIMARY KEY (id, numExemp),
     FOREIGN KEY (id) REFERENCES products(id),
-    FOREIGN KEY (charity) REFERENCES entities(nipc)
+    FOREIGN KEY (charity) REFERENCES entities(id)
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
@@ -164,7 +167,7 @@ CREATE TABLE IF NOT EXISTS repairs (
     repairProduct INT NOT NULL,
 
     FOREIGN KEY (id) REFERENCES transactions(id),
-    FOREIGN KEY (part) REFERENCES repairProducts(id)
+    FOREIGN KEY (repairProduct) REFERENCES repairProducts(id)
 );
 
 CREATE TABLE IF NOT EXISTS parts (
@@ -187,7 +190,8 @@ CREATE TABLE IF NOT EXISTS repairCosts (
     product INT,
     value DECIMAL(10,2) NOT NULL,
 
-    PRIMARY KEY (part, productRecord),
+    PRIMARY KEY (part, product),
+
 
     FOREIGN KEY (part) REFERENCES parts(id),
     FOREIGN KEY (product) REFERENCES products(id)
@@ -203,17 +207,19 @@ CREATE TABLE IF NOT EXISTS diagnosed (
     FOREIGN KEY (repair) REFERENCES repairs(id)
 );
 
+
 CREATE TABLE IF NOT EXISTS donations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     date DATE NOT NULL,
     product INT NOT NULL,
+    donationProduct INT NOT NULL,
     employee INT NOT NULL,
     donator INT NOT NULL,
     charityProject INT NOT NULL,
 
     FOREIGN KEY (employee) REFERENCES employees(id),
     FOREIGN KEY (donator) REFERENCES clients(id),
-    FOREIGN KEY (product) REFERENCES donationProducts(id),
+    FOREIGN KEY (product, donationProduct) REFERENCES donationProducts(id, numExemp),
     FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
 );
 
@@ -230,4 +236,3 @@ CREATE TABLE IF NOT EXISTS reports (
     id INT PRIMARY KEY AUTO_INCREMENT,
     report VARCHAR(255) NOT NULL
 );
-

@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 const dbConnection = require('./resources/dbConnection.js');
-const ttApi = require('./resources/ttApi'); // Import ttApi.js
+const ttApi = require('./resources/ttApi.js'); // Import ttApi.js
 app.use(dbConnection.router);
 app.use(ttApi);
 app.use(express.static(__dirname));
