@@ -1,82 +1,229 @@
 CREATE TABLE IF NOT EXISTS clients (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    phone_number INTEGER NOT NULL,
-    gender TEXT NOT NULL,
-    password TEXT NOT NULL,
-    nif INTEGER UNIQUE,
-    nic INTEGER UNIQUE,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    phone_number VARCHAR(20) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nif INT UNIQUE,
+    nic INT UNIQUE,
+    gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
-    address TEXT
+    address VARCHAR(255)
+
+); 
+
+CREATE TABLE IF NOT EXISTS entities (
+    id INT PRIMARY KEY,
+    nipc INT(9) UNIQUE NOT NULL,
+    numSpaces INT,
+    organizer INT UNIQUE,
+
+    FOREIGN KEY (id) REFERENCES clients(id),
+    FOREIGN KEY (organizer) REFERENCES clients(id) -- organizer
 );
 
 CREATE TABLE IF NOT EXISTS employees (
-    id INTEGER PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES client(id)
+    id INT PRIMARY KEY,
+    store INT NOT NULL,
+    internal_number INT UNIQUE,
+
+    FOREIGN KEY (id) REFERENCES clients(id),
+    FOREIGN KEY (store) REFERENCES entities(id)
 );
 
-CREATE TABLE IF NOT EXISTS stores (
-    id INTEGER PRIMARY KEY,
-    nipc INTEGER UNIQUE NOT NULL,
-    FOREIGN KEY (id) REFERENCES client(id)
+CREATE TABLE IF NOT EXISTS entityHours (
+    entity INT,
+    day VARCHAR(25),
+    hours CHAR(11), -- HH:MM-HH:MM
+
+    PRIMARY KEY (entity, day),
+    FOREIGN KEY (entity) REFERENCES entities(id)
 );
 
-CREATE TABLE IF NOT EXISTS charities (
-    id INTEGER PRIMARY KEY,
-    nipc INTEGER UNIQUE NOT NULL,
-    FOREIGN KEY (id) REFERENCES client(id)
+CREATE TABLE IF NOT EXISTS charityProjects (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    amountNeeded INT,
+    endDate DATE,
+    store INT NOT NULL,
+    organizer INT NOT NULL,
+
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (organizer) REFERENCES clients(id)
+);
+
+CREATE TABLE IF NOT EXISTS space (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    area INT,
+    store INT NOT NULL,
+    charityProject INT NOT NULL,
+    
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+    category VARCHAR(255) PRIMARY KEY NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    store_nipc INTEGER NOT NULL,
-    condition TEXT NOT NULL,
-    availability BOOLEAN NOT NULL,
-    description TEXT,
-    category TEXT,
-    FOREIGN KEY (store_nipc) REFERENCES stores(nipc)
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    store_nipc INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    product_condition VARCHAR(255) NOT NULL,
+    availability VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    dateInserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Optional product specs
+    brand VARCHAR(255),
+    modelCode VARCHAR(255),
+    color VARCHAR(255),
+    weight DECIMAL,
+    dimensions VARCHAR(255),
+    processor VARCHAR(255),
+    screen VARCHAR(255),
+    ram_memory VARCHAR(255),
+    graphics_card VARCHAR(255),
+    storage VARCHAR(255),
+    keyboard VARCHAR(255),
+    os VARCHAR(255),
+    year YEAR,
+
+    FOREIGN KEY (store_nipc) REFERENCES entities(nipc),
+    FOREIGN KEY (category) REFERENCES categories(category)
 );
 
 CREATE TABLE IF NOT EXISTS productImages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER NOT NULL,
-    image_path TEXT NOT NULL,
-    image_order INTEGER NOT NULL,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    image_order INT NOT NULL,
+
     FOREIGN KEY (product_id) REFERENCES products(id),
-    CHECK (image_order >= 1 AND image_order <= 10) -- Ensures there are no more than 10 images per product
+    CHECK (image_order >= 1 AND image_order <= 5)
 );
 
 CREATE TABLE IF NOT EXISTS saleProducts (
-    id INTEGER PRIMARY KEY,
-    price INTEGER NOT NULL,
+    id INT PRIMARY KEY,
+    price DECIMAL(10,2) NOT NULL,
+    sale INT UNIQUE,
+    bought INT UNIQUE,
+
     FOREIGN KEY (id) REFERENCES products(id)
 );
 
 CREATE TABLE IF NOT EXISTS repairProducts (
-    id INTEGER PRIMARY KEY,
-    problems TEXT,
+    id INT PRIMARY KEY,
+    problems VARCHAR(255),
+
     FOREIGN KEY (id) REFERENCES products(id)
 );
 
 CREATE TABLE IF NOT EXISTS donationProducts (
-    id INTEGER PRIMARY KEY,
-    charity INTEGER NOT NULL,
+    id INT PRIMARY KEY,
+    charity INT NOT NULL,
+  
     FOREIGN KEY (id) REFERENCES products(id),
-    FOREIGN KEY (charity) REFERENCES charities(id)
+    FOREIGN KEY (charity) REFERENCES entities(nipc)
+);
+
+CREATE TABLE IF NOT EXISTS charityProjects_products (
+    charityProject INT,
+    product INT,
+
+    PRIMARY KEY (charityProject, product),
+
+    FOREIGN KEY (charityProject) REFERENCES charityProjects(id),
+    FOREIGN KEY (product) REFERENCES products(id)
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    store INT,
+    numSeq INT UNIQUE AUTO_INCREMENT,
+    date DATE,
+    client INT NOT NULL,
+    employee INT NOT NULL,
+    value DECIMAL(10,2),
+    deliveryCost DECIMAL(10,2) NOT NULL,
+
+    PRIMARY KEY (store, numSeq),
+    FOREIGN KEY (client) REFERENCES clients(id),
+    FOREIGN KEY (employee) REFERENCES employees(id),
+    FOREIGN KEY (store) REFERENCES entities(id)
+);
+
+CREATE TABLE IF NOT EXISTS repairs (
+    id INT PRIMARY KEY,
+    description VARCHAR(255),
+    repairProduct INT NOT NULL,
+
+    FOREIGN KEY (repairProduct) REFERENCES repairProducts(id)
+);
+
+CREATE TABLE IF NOT EXISTS parts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS repairs_parts (
+    repair INT,
+    part INT,
+    value DECIMAL(10,2),
+
+    PRIMARY KEY (repair, part),
+
+    FOREIGN KEY (repair) REFERENCES repairs(id),
+    FOREIGN KEY (part) REFERENCES parts(id)
+);
+
+CREATE TABLE IF NOT EXISTS repairCosts (
+    part INT,
+    product INT,
+    value DECIMAL(10,2) NOT NULL,
+
+    PRIMARY KEY (part, product),
+
+
+    FOREIGN KEY (part) REFERENCES parts(id),
+    FOREIGN KEY (product) REFERENCES products(id)
+);
+
+CREATE TABLE IF NOT EXISTS diagnosed (
+    employee INT NOT NULL,
+    repair INT NOT NULL,
+
+    PRIMARY KEY (employee, repair),
+
+    FOREIGN KEY (employee) REFERENCES employees(id),
+    FOREIGN KEY (repair) REFERENCES repairs(id)
+);
+
+
+CREATE TABLE IF NOT EXISTS donations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    date DATE NOT NULL,
+    donationProduct INT NOT NULL,
+    employee INT NOT NULL,
+    donator INT NOT NULL,
+    charityProject INT NOT NULL,
+
+    FOREIGN KEY (employee) REFERENCES employees(id),
+    FOREIGN KEY (donator) REFERENCES clients(id),
+    FOREIGN KEY (donationProduct) REFERENCES donationProducts(id),
+    FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
 );
 
 CREATE TABLE IF NOT EXISTS interests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    interestedUser INTEGER,
-    watchedProduct INTEGER,
-    FOREIGN KEY (id) REFERENCES client(id)
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    interestedUser INT,
+    watchedProduct INT,
+
+    FOREIGN KEY (interestedUser) REFERENCES clients(id),
     FOREIGN KEY (watchedProduct) REFERENCES products(id)
 );
 
 CREATE TABLE IF NOT EXISTS reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    report TEXT NOT NULL
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    report VARCHAR(255) NOT NULL
 );
-

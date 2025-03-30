@@ -15,15 +15,15 @@
     <!-- Stylesheets -->
 </head>
 
-<body>
+<body id="homepage">
 
     <!-- Header -->
-    <div class="p-3 bg-white border-bottom">
+    <header class="p-3 bg-white border-bottom">
         <div class="container">
-            <div class="row align-items-center">
+            <div class="row align-items-center gap-3">
                 <!-- Left elements -->
                 <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
-                    <a id="header-brand" href="#">
+                    <a id="header-brand" href="/homepage">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
                     <div class="input-group flex-grow-1">
@@ -52,8 +52,7 @@
                 <!-- Right elements -->
             </div>
         </div>
-    </div>
-
+    </header>
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white">
@@ -70,9 +69,6 @@
             <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
                 <!-- Left links -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" aria-current="page" href="#">Home</a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark" href="#">Smartphones</a>
                     </li>
@@ -118,7 +114,7 @@
                                 <a class="dropdown-item" href="#">Another action</a>
                             </li>
                             <li>
-                                <hr class="dropdown-divider" />
+                                <hr class="dropdown-divider">
                             </li>
                             <li>
                                 <a class="dropdown-item" href="#">Something else here</a>
@@ -140,7 +136,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1>
-                        Save The Planet. <br />
+                        Save The Planet. <br>
                         And Your Wallet.
                     </h1>
                     <button type="button" class="btn btn-outline-light">
@@ -153,10 +149,9 @@
                 <img id="main-banner-brand" alt="TechThrift's logo" src="../media/images/logo_white.png">
             </div>
         </div>
-    </div> 
+    </div>
     <!-- Main banner -->
 
-    </header>
     <!-- Products -->
     <section>
         <div class="container my-5">
@@ -166,8 +161,16 @@
             <div class="row" id="product-list">
                 <!-- Products will be injected here dynamically -->
             </div>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="d-flex justify-content-center mt-4">
+                <button id="paginationPrevPage" class="btn btn-secondary me-2" disabled>Previous</button>
+                <span id="paginationPageIndicator" class="align-self-center">Page 1</span>
+                <button id="paginationNextPage" class="btn btn-secondary ms-2">Next</button>
+            </div>
         </div>
     </section>
+
     <!-- Products -->
 
     <!-- Footer -->
@@ -316,7 +319,7 @@
                         <p class="text-muted">Stay in touch with latest updates about our products and offers</p>
                         <div class="input-group mb-3">
                             <input type="email" class="form-control border" placeholder="Email" aria-label="Email"
-                                aria-describedby="button-addon2" />
+                                aria-describedby="button-addon2">
                             <button class="btn btn-light border shadow-0" type="button" id="button-addon2"
                                 data-mdb-ripple-color="dark">
                                 Join
