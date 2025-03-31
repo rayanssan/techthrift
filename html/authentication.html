@@ -13,16 +13,65 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <!-- Stylesheets -->
+    <script src="https://cdn.auth0.com/js/auth0/9.19/auth0.min.js"></script>
 </head>
 
 <body>
-
     <h1>Hello World!</h1>
-    
-    <!-- Scripts -->
-    
-    <!-- Scripts -->
+    <button id="login" class="btn btn-primary">Log In</button>
+    <button id="logout" class="btn btn-danger" style="display:none;">Log Out</button>
+    <div id="profile" style="display:none;"></div>
 
+    <!-- Scripts -->
+    <script>
+        var auth0Client = new auth0.WebAuth({
+            domain: "dev-ihnboelxe0fpthgv.eu.auth0.com",
+            clientID: "1kck1b9fBMDXbp0UAyV9OGYOc8lSA71B",
+            redirectUri: window.location.origin,
+            responseType: "token id_token",
+            scope: "openid profile email"
+        });
+
+        document.getElementById("login").addEventListener("click", function() {
+            auth0Client.authorize();
+        });
+
+        document.getElementById("logout").addEventListener("click", function() {
+            localStorage.removeItem("id_token");
+            console.log("ID Token:", authResult.idToken);
+
+            localStorage.removeItem("access_token");
+            document.getElementById("profile").style.display = "none";
+            document.getElementById("login").style.display = "block";
+            document.getElementById("logout").style.display = "none";
+        });
+
+        function handleAuthentication() {
+            auth0Client.parseHash(function(err, authResult) {
+                if (authResult && authResult.idToken) {
+                    localStorage.setItem("id_token", authResult.idToken);
+                    localStorage.setItem("access_token", authResult.accessToken);
+                    showProfile(authResult.idTokenPayload);
+                } else if (err) {
+                    console.log("Error during authentication:", err);
+                }
+            });
+        }
+
+        function showProfile(user) {
+            document.getElementById("profile").innerHTML = `
+                <h2>Welcome, ${user.name}</h2>
+                <img src="${user.picture}" width="50" />
+                <p>Email: ${user.email}</p>
+            `;
+            document.getElementById("profile").style.display = "block";
+            document.getElementById("login").style.display = "none";
+            document.getElementById("logout").style.display = "block";
+        }
+
+        handleAuthentication();
+    </script>
+    <!-- Scripts -->
 </body>
 
 </html>
