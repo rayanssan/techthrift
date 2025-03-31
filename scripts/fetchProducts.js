@@ -57,13 +57,14 @@ if (document.body.id === "homepage") {
         paginatedProducts.forEach(product => {
             const productCard = `
             <div id="productid-${product.id}" class="col-lg-3 col-md-6 col-sm-6 d-flex mb-auto">
-                <div class="card w-100 my-2 shadow-sm h-100">
+                <div class="card w-100 my-2 shadow h-100">
                     <a href="product?id=${product.id}" class="product-link">
-                        <img alt="Product Image" src="${product.image_url}" class="card-img-top">
+                        <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top">
                     </a>
                     <div class="card-body d-flex flex-column">
                         <h6 class="card-title text-truncate">${product.name}</h6>
-                        <p class="card-text fw-bold">€${product.price}</p>
+                        <p class="card-text fw-bold">€${product.price.
+                            replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                         <div class="d-flex align-items-end pt-3 px-0 pb-0">
                             <a href="#!" class="btn btn-primary btn-sm me-2">Add to cart</a>
                             <a href="#!" class="btn btn-light border btn-sm icon-hover">
@@ -137,23 +138,81 @@ if (document.body.id === "homepage") {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
 
-            const response = await fetch(`/tt/product/${id}?saleProducts=true`);
+            const response = await fetch(`/tt/product/${id}`);
             const product = await response.json();
             console.log(product);
-            product.images = ["ex1", "ex2", "ex3", "ex4", "ex5"];
 
             const productContainer = document.getElementById('product-info');
+
+            // Technical Specifications: Only include non-null values
+            const specs = {
+                "Brand": product.brand,
+                "Year": product.year,
+                "Color": product.color,
+                "Operating System": product.os,
+                "Screen": product.screen,
+                "Storage": product.storage,
+                "Processor": product.processor,
+                "Graphics Card": product.graphics_card,
+                "RAM Memory": product.ram_memory,
+                "Keyboard": product.keyboard,
+                "Dimensions": product.dimensions,
+                "Weight": product.weight ? 
+                    `${product.weight} kg / ${(product.weight * 35.274).toFixed(2)} oz` : null,
+                "Model Code": product.model_code
+            };
+
+            const filteredSpecs = Object.entries(specs)
+                .filter(([key, value]) => value !== null && value !== "") // Remove null/empty values
+                .map(([key, value]) => `
+                <tr>
+                    <th scope="row">${key}</th>
+                    <td>${value}</td>
+                </tr>
+            `).join('');
+
+            const technicalSpecsSection = filteredSpecs.length > 0 ? `
+                <div class="mt-4">
+                    <h4>Technical Specifications</h4>
+                    <table class="table table-responsive table-hover border rounded-3 overflow-hidden shadow">
+                        <tbody>${filteredSpecs}</tbody>
+                    </table>
+                </div>
+            ` : '';
 
             const productInfo = `
                 <div class="container my-4">
                     <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Back to Homepage</a>
                     <div class="row">
-                        <!-- Left side: Images Grid -->
+                        <!-- Left side: Image Carousel -->
                         <div class="col-lg-4 col-md-5 col-12">
-                            <div class="row">
-                                ${product.images.map((image, index) => `
-                                    <div class="col-4 mb-2">
-                                        <img src="${image}" alt="Product Image ${index + 1}" class="img-fluid w-100" />
+                            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner shadow border rounded">
+                                    ${Object.entries(product.images)
+                                    .sort(([a], [b]) => a - b) // Sort images by order
+                                    .map(([order, image], index) => `
+                                        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                                            <img src="../media/images/products/${image}" alt="Product Image ${order}" 
+                                            class="d-block w-100 img-fluid" />
+                                        </div>
+                                    `).join('')}
+                                </div>          
+                            </div>
+                            
+                            <!-- Thumbnails (Carousel Indicators) -->
+                            <div class="row justify-content-center mb-3 mt-2 gap-1">
+                                ${Object.entries(product.images)
+                                .sort(([a], [b]) => a - b)
+                                .map(([order, image], index) => `
+                                    <div class="col-2 p-0">
+                                        <img src="../media/images/products/${image}" 
+                                        class="img-thumbnail shadow" 
+                                        style="cursor:pointer;" 
+                                        onclick="document.querySelector(
+                                        '#productCarousel .carousel-item.active').classList.remove('active'); 
+                                                document.querySelector(
+                                                '#productCarousel .carousel-item:nth-child(${index + 1})').
+                                                classList.add('active');">
                                     </div>
                                 `).join('')}
                             </div>
@@ -162,20 +221,32 @@ if (document.body.id === "homepage") {
                         <!-- Right side: Product Info -->
                         <div class="col-lg-8 col-md-7 col-12">
                             <h2>${product.name}</h2>
-                            <p class="fw-bold">€${product.price}</p>
+                            <p class="fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                             <p>${product.description}</p>
+                            <!-- Product condition -->
+                            <p class="mb-0 d-flex align-items-center gap-1">
+                                <strong>Condition:</strong> <span class="badge ${
+                                product.product_condition === 'Like New' ? 'bg-success' : 
+                                product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
+                                } fs-6">${product.product_condition} </span>
+                            </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
-                                <a href="#!" class="btn btn-primary me-2">Add to cart</a>
-                                <a href="#!" class="btn btn-light border icon-hover">
+                                <a href="#!" class="btn btn-primary me-2 shadow">Add to cart</a>
+                                <a href="#!" class="btn btn-light border icon-hover shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                 </a>
                             </div>
+                            ${technicalSpecsSection}
+                            <!-- Date added -->
+                            <p><strong>Uploaded on:</strong> ${
+                                new Date(product.date_inserted).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>
             `;
             productContainer.innerHTML += productInfo;
         } catch (error) {
+            console.log("Error fetching product:", error);
             const productContainer = document.getElementById('product-info');
             productContainer.innerHTML = `<div class="container my-4">
                 <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Back to Homepage</a>

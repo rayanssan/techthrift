@@ -35,8 +35,19 @@ body {
   height: 300px;
 }
 
-.card img:hover {
+.product-link img, #productCarousel img {
+  aspect-ratio: 1;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+.product-link img:hover, #productCarousel img:hover {
   cursor: pointer;
+}
+
+#product-info .img-thumbnail {
+  aspect-ratio: 1;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 
 .footer {
