@@ -15,11 +15,9 @@ CREATE TABLE IF NOT EXISTS clients (
 CREATE TABLE IF NOT EXISTS entities (
     id INT PRIMARY KEY,
     nipc INT(9) UNIQUE NOT NULL,
-    numSpaces INT,
-    organizer INT UNIQUE,
+    entity_type ENUM('store', 'charity') NOT NULL,
 
-    FOREIGN KEY (id) REFERENCES clients(id),
-    FOREIGN KEY (organizer) REFERENCES clients(id) -- organizer
+    FOREIGN KEY (id) REFERENCES clients(id)
 );
 
 CREATE TABLE IF NOT EXISTS employees (
@@ -107,8 +105,6 @@ CREATE TABLE IF NOT EXISTS productImages (
 CREATE TABLE IF NOT EXISTS saleProducts (
     id INT PRIMARY KEY,
     price DECIMAL(10,2) NOT NULL,
-    sale INT UNIQUE,
-    bought INT UNIQUE,
 
     FOREIGN KEY (id) REFERENCES products(id)
 );
@@ -116,16 +112,26 @@ CREATE TABLE IF NOT EXISTS saleProducts (
 CREATE TABLE IF NOT EXISTS repairProducts (
     id INT PRIMARY KEY,
     problems VARCHAR(255),
+    client_nif INT(9),
+    client_nic INT(9),
 
-    FOREIGN KEY (id) REFERENCES products(id)
+    FOREIGN KEY (id) REFERENCES products(id),
+    FOREIGN KEY (client_nif) REFERENCES clients(nif),
+    FOREIGN KEY (client_nic) REFERENCES clients(nic)
 );
 
 CREATE TABLE IF NOT EXISTS donationProducts (
     id INT PRIMARY KEY,
-    charity INT NOT NULL,
+    charity_nipc INT(9) NOT NULL,
+    donor_nif INT(9),
+    donor_nic INT(9),
+    donor_nipc INT(9),
   
     FOREIGN KEY (id) REFERENCES products(id),
-    FOREIGN KEY (charity) REFERENCES entities(nipc)
+    FOREIGN KEY (charity_nipc) REFERENCES entities(nipc),
+    FOREIGN KEY (donor_nif) REFERENCES clients(nif),
+    FOREIGN KEY (donor_nic) REFERENCES clients(nic),
+    FOREIGN KEY (donor_nipc) REFERENCES entities(nipc)
 );
 
 CREATE TABLE IF NOT EXISTS charityProjects_products (
@@ -216,11 +222,11 @@ CREATE TABLE IF NOT EXISTS donations (
 
 CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    interestedUser INT,
-    watchedProduct INT,
+    interested_user INT,
+    watched_product INT,
 
-    FOREIGN KEY (interestedUser) REFERENCES clients(id),
-    FOREIGN KEY (watchedProduct) REFERENCES products(id)
+    FOREIGN KEY (interested_user) REFERENCES clients(id),
+    FOREIGN KEY (watched_product) REFERENCES products(id)
 );
 
 CREATE TABLE IF NOT EXISTS reports (
