@@ -7,12 +7,19 @@ const { db } = require('./dbConnection');
 
 // Get all products up for sale
 router.get('/tt', (req, res) => {
-    db.query('SELECT * FROM saleProducts sp INNER JOIN products p ON p.id = sp.id', [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+    db.query(
+        `SELECT p.*, sp.*, pi.image_path AS image 
+         FROM saleProducts sp
+         INNER JOIN products p ON p.id = sp.id
+         LEFT JOIN productImages pi ON p.id = pi.product AND pi.image_order = 1`,
+        [],
+        (err, rows) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json(rows);
         }
-        res.json(rows);
-    });
+    );
 });
 
 // Get all products in the system
@@ -28,27 +35,59 @@ router.get('/tt/product', (req, res) => {
 // Get details about a product
 router.get('/tt/product/:id', (req, res) => {
     const { id } = req.params;
-    const { saleProducts, name, condition, availability } = req.query;
 
-    let query = 'SELECT * FROM products WHERE id = ?';
-    let params = [id];
+    // Check if the product is in the saleProducts table
+    let isSaleProduct = false;
 
-    if (saleProducts === 'true') {
-        query = `
-            SELECT products.*, saleProducts.*
-            FROM products 
-            JOIN saleProducts ON products.id = saleProducts.id 
-            WHERE products.id = ?`;
-    }
+    // Query to check if the product is in the saleProducts table
+    let checkSaleQuery = 'SELECT 1 FROM saleProducts WHERE id = ? LIMIT 1';
 
-    db.query(query, params, (err, row) => {
+    db.query(checkSaleQuery, [id], (err, result) => {
         if (err) {
-            return res.status(404).send('Product not found');
+            return res.status(500).send('Database error');
         }
-        res.json(row[0]);
+
+        // If the product is found in the saleProducts table, set isSaleProduct to true
+        isSaleProduct = result.length > 0;
+
+        // Based on whether it's a sale product, modify the main query
+        let query = `SELECT * FROM products, productImages JOIN productImages ON 
+                    products.id = productImages.product WHERE id = ?`;
+        let params = [id];
+
+        if (isSaleProduct) {
+            query = `
+                SELECT products.*, saleProducts.*, productImages.*
+                FROM products
+                JOIN saleProducts ON products.id = saleProducts.id
+                JOIN productImages ON products.id = productImages.product
+                WHERE products.id = ?;
+            `;
+        }
+
+        // Execute the final query
+        db.query(query, params, (err, rows) => {
+            if (err || rows.length === 0) {
+                return res.status(404).send('Product not found');
+            }
+            // Create images object with keys as image_order and values as image_path
+            const product = rows[0];
+            const images = {};
+
+            rows.forEach(row => {
+                images[row.image_order] = row.image_path; // Assign the image path to the key being the image_order
+            });
+
+            // Build the response object
+            const response = {
+                ...product, // product info
+                images: images // image info
+            };
+
+            res.json(response);
+        });
     });
 });
-
 
 // Get filtered products
 router.get('/tt/products', (req, res) => {
@@ -102,19 +141,19 @@ router.post('/tt/add', (req, res) => {
     db.execute(`INSERT INTO products 
         (name, store_nipc, condition, availability, description, category) 
         VALUES (?, ?, ?, ?, ?, ?, ?)`, [
-        newProduct.name, 
+        newProduct.name,
         newProduct.store_nipc,
         newProduct.condition,
         newProduct.availability,
         newProduct.description,
         newProduct.category], function (err) {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        
-        newProduct.id = this.lastID;
-        res.status(201).json(newProduct); // Send back the newly added product
-    });
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+
+            newProduct.id = this.lastID;
+            res.status(201).json(newProduct); // Send back the newly added product
+        });
 });
 
 // Remove a product
@@ -142,13 +181,13 @@ router.post('/tt/sale/add', (req, res) => {
             return res.status(404).send('Product not found');
         }
         // Insert the product into the saleProducts table
-        db.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)', 
+        db.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
             [newSaleProduct.id, newSaleProduct.price], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            res.status(201).json({ message: 'Product set for sale', product: row });
-        });
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.status(201).json({ message: 'Product set for sale', product: row });
+            });
     });
 });
 
@@ -184,16 +223,16 @@ router.get('/tt/repair', (req, res) => {
 
 // Get details about a product up for repair
 router.get('/tt/repair/:id', (req, res) => {
-    db.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?', 
+    db.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?',
         [req.params.id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (rows.length === 0) {
-            return res.status(404).send('Product not found');
-        }
-        res.json(rows[0]);
-    });
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (rows.length === 0) {
+                return res.status(404).send('Product not found');
+            }
+            res.json(rows[0]);
+        });
 });
 
 // Set product up for repair
@@ -249,16 +288,16 @@ router.get('/tt/donation', (req, res) => {
 
 // Get details about a product up for donation
 router.get('/tt/donation/:id', (req, res) => {
-    db.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?', 
+    db.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?',
         [req.params.id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (rows.length === 0) {
-            return res.status(404).send('Product not found');
-        }
-        res.json(rows[0]);
-    });
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (rows.length === 0) {
+                return res.status(404).send('Product not found');
+            }
+            res.json(rows[0]);
+        });
 });
 
 // Set product up for donation
@@ -273,13 +312,13 @@ router.post('/tt/donation/add', (req, res) => {
             return res.status(404).send('Product not found');
         }
         // Insert the product into the donationProducts table
-        db.execute('INSERT INTO donationProducts (id, charity) VALUES (?)', 
+        db.execute('INSERT INTO donationProducts (id, charity) VALUES (?)',
             [newDonationProduct.id, newDonationProduct.charity], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            res.status(201).json({ message: 'Product set for donation', product: row });
-        });
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.status(201).json({ message: 'Product set for donation', product: row });
+            });
     });
 });
 
@@ -396,16 +435,16 @@ router.get('/ttuser/employee', (req, res) => {
 
 // Get details about an employee
 router.get('/ttuser/employee/:id', (req, res) => {
-    db.query('SELECT * FROM employees e INNER JOIN clients c ON c.id = e.id WHERE e.id = ?;', 
+    db.query('SELECT * FROM employees e INNER JOIN clients c ON c.id = e.id WHERE e.id = ?;',
         [req.params.id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (!rows) {
-            return res.status(404).send('Employee not found');
-        }
-        res.json(rows[0]);
-    });
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (!rows) {
+                return res.status(404).send('Employee not found');
+            }
+            res.json(rows[0]);
+        });
 });
 
 // Add new employee
@@ -420,13 +459,13 @@ router.post('/ttuser/employee/add', (req, res) => {
             return res.status(404).send('Client not found');
         }
         // Insert the user into the employees table
-        db.execute('INSERT INTO employees (id) VALUES (?)', 
+        db.execute('INSERT INTO employees (id) VALUES (?)',
             [newEmployee.id], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            res.status(201).json({ message: 'Employee successfully added', product: row });
-        });
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.status(201).json({ message: 'Employee successfully added', product: row });
+            });
     });
 });
 
@@ -479,16 +518,16 @@ router.get('/ttuser/store', (req, res) => {
 
 // Get details about a store
 router.get('/ttuser/store/:id', (req, res) => {
-    db.query('SELECT * FROM stores s INNER JOIN clients c ON c.id = s.id WHERE s.id = ?', 
+    db.query('SELECT * FROM stores s INNER JOIN clients c ON c.id = s.id WHERE s.id = ?',
         [req.params.id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (!rows) {
-            return res.status(404).send('Store not found');
-        }
-        res.json(rows);
-    });
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (!rows) {
+                return res.status(404).send('Store not found');
+            }
+            res.json(rows);
+        });
 });
 
 // Add new store
@@ -503,13 +542,13 @@ router.post('/ttuser/store/add', (req, res) => {
             return res.status(404).send('Client not found');
         }
         // Insert the store into the stores table
-        db.execute('INSERT INTO stores (id, nipc) VALUES (?, ?)', 
+        db.execute('INSERT INTO stores (id, nipc) VALUES (?, ?)',
             [newStore.id, newStore.nipc], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            res.status(201).json({ message: 'Store successfully added', product: row });
-        });
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.status(201).json({ message: 'Store successfully added', product: row });
+            });
     });
 });
 
@@ -562,16 +601,16 @@ router.get('/ttuser/charity', (req, res) => {
 
 // Get details about a charity
 router.get('/ttuser/charity/:id', (req, res) => {
-    db.query('SELECT * FROM charities ch INNER JOIN clients c ON c.id = ch.id WHERE ch.id = ?', 
+    db.query('SELECT * FROM charities ch INNER JOIN clients c ON c.id = ch.id WHERE ch.id = ?',
         [req.params.id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (!rows) {
-            return res.status(404).send('Charity not found');
-        }
-        res.json(rows[0]);
-    });
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (!rows) {
+                return res.status(404).send('Charity not found');
+            }
+            res.json(rows[0]);
+        });
 });
 
 // Add new charity
@@ -586,13 +625,13 @@ router.post('/ttuser/charity/add', (req, res) => {
             return res.status(404).send('Client not found');
         }
         // Insert the charity into the charities table
-        db.execute('INSERT INTO charities (id, nipc) VALUES (?, ?)', 
+        db.execute('INSERT INTO charities (id, nipc) VALUES (?, ?)',
             [newCharity.id, newCharity.nipc], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            res.status(201).json({ message: 'Charity successfully added', product: row });
-        });
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.status(201).json({ message: 'Charity successfully added', product: row });
+            });
     });
 });
 
@@ -637,13 +676,13 @@ router.delete('/ttuser/charity/remove/:id', (req, res) => {
 router.post('/ttuser/interest', (req, res) => {
     const { interestedUser, watchedProduct } = req.body;
 
-    db.execute('INSERT INTO interests (interestedUser, watchedProduct) VALUES (?, ?)', 
+    db.execute('INSERT INTO interests (interestedUser, watchedProduct) VALUES (?, ?)',
         [interestedUser, watchedProduct], function (err) {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        res.status(201).send('Interest successfully added');
-    });
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            res.status(201).send('Interest successfully added');
+        });
 });
 
 // Get user interests in products

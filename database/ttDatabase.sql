@@ -69,17 +69,17 @@ CREATE TABLE IF NOT EXISTS products (
     id INT PRIMARY KEY AUTO_INCREMENT,
     store_nipc INT NOT NULL,
     name VARCHAR(255) NOT NULL,
-    product_condition VARCHAR(255) NOT NULL,
-    availability VARCHAR(255) NOT NULL,
+    product_condition ENUM('Like New', 'Excellent', 'Good', 'Needs Repair') NOT NULL,
+    availability BOOLEAN NOT NULL,
     category VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    dateInserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Optional product specs
     brand VARCHAR(255),
-    modelCode VARCHAR(255),
+    model_code VARCHAR(255),
     color VARCHAR(255),
-    weight DECIMAL,
+    weight DECIMAL(5,2), -- must in kg
     dimensions VARCHAR(255),
     processor VARCHAR(255),
     screen VARCHAR(255),
@@ -96,11 +96,11 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE TABLE IF NOT EXISTS productImages (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id INT NOT NULL,
+    product INT NOT NULL,
     image_path VARCHAR(255) NOT NULL,
     image_order INT NOT NULL,
 
-    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (product) REFERENCES products(id),
     CHECK (image_order >= 1 AND image_order <= 5)
 );
 

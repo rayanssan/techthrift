@@ -34,9 +34,20 @@ body {
     }
 }
 
-.card {
+.product-link, #productCarousel {
+    img {
+        aspect-ratio: 1;
+        object-fit: contain;
+    }
     img:hover {
         cursor: pointer;
+    }
+}
+
+#product-info {
+    .img-thumbnail {
+        aspect-ratio: 1;
+        object-fit: contain;
     }
 }
 
