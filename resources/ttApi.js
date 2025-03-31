@@ -7,24 +7,130 @@ const { db } = require('./dbConnection');
 
 // Get all products up for sale
 router.get('/tt', (req, res) => {
-    db.query(
-        `SELECT p.*, sp.*, pi.image_path AS image 
-         FROM saleProducts sp
-         INNER JOIN products p ON p.id = sp.id
-         LEFT JOIN productImages pi ON p.id = pi.product AND pi.image_order = 1`,
-        [],
-        (err, rows) => {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json(rows);
+    const { name, condition, category, brand, color, processor,
+        storage, os, year, maxPrice, store } = req.query;
+
+    let query = `SELECT p.*, sp.*, pi.image_path AS image, c.name AS store
+        FROM saleProducts sp
+        INNER JOIN products p ON p.id = sp.id
+        INNER JOIN entities e ON p.store_nipc = e.nipc
+        INNER JOIN clients c ON e.id = c.id 
+        LEFT JOIN productImages pi ON p.id = pi.product AND pi.image_order = 1 
+        WHERE 1=1`;
+
+    let params = [];
+
+    if (name) {
+        query += ` AND name RLIKE ?`;
+        params.push(`%${name}%`);
+    }
+    if (condition) {
+        query += ` AND product_condition = ?`;
+        params.push(condition);
+    }
+    if (category) {
+        query += ` AND category RLIKE ?`;
+        params.push(category);
+    }
+    if (brand) {
+        query += ` AND brand RLIKE ?`;
+        params.push(brand);
+    }
+    if (color) {
+        query += ` AND color = ?`;
+        params.push(color);
+    }
+    if (processor) {
+        query += ` AND processor = ?`;
+        params.push(processor);
+    }
+    if (storage) {
+        query += ` AND storage = ?`;
+        params.push(storage);
+    }
+    if (os) {
+        query += ` AND os = ?`;
+        params.push(os);
+    }
+    if (year) {
+        query += ` AND year = ?`;
+        params.push(year);
+    }
+    if (maxPrice) {
+        query += ` AND price <= ?`;
+        params.push(maxPrice);
+    }
+    if (store) {
+        query += ' AND c.name RLIKE ?';
+        params.push(req.query.store);
+    }
+
+    db.query(query, params, (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
         }
-    );
+        res.json(rows);
+    });
 });
 
 // Get all products in the system
 router.get('/tt/product', (req, res) => {
-    db.query('SELECT * FROM products', [], (err, rows) => {
+    const { name, condition, category, brand, color, processor,
+        storage, os, year, availability, store } = req.query;
+
+    let query = `SELECT p.*, c.name AS store 
+        FROM products p 
+        INNER JOIN entities e ON p.store_nipc = e.nipc
+        INNER JOIN clients c ON e.id = c.id WHERE 1=1`;
+    let params = [];
+
+    // Apply filters dynamically
+    if (name) {
+        query += ' AND name RLIKE ?';
+        params.push(`%${req.query.name}%`);
+    }
+    if (condition) {
+        query += ' AND product_condition = ?';
+        params.push(req.query.product_condition);
+    }
+    if (category) {
+        query += ' AND category RLIKE ?';
+        params.push(req.query.category);
+    }
+    if (brand) {
+        query += ' AND brand RLIKE ?';
+        params.push(req.query.brand);
+    }
+    if (color) {
+        query += ' AND color = ?';
+        params.push(req.query.color);
+    }
+    if (processor) {
+        query += ' AND processor = ?';
+        params.push(req.query.processor);
+    }
+    if (storage) {
+        query += ' AND storage = ?';
+        params.push(req.query.storage);
+    }
+    if (os) {
+        query += ' AND os = ?';
+        params.push(req.query.os);
+    }
+    if (year) {
+        query += ' AND year = ?';
+        params.push(req.query.year);
+    }
+    if (availability) {
+        query += ' AND availability = ?';
+        params.push((availability === 'true' || availability === "1") ? 1 : 0);
+    }
+    if (store) {
+        query += ' AND c.name RLIKE ?';
+        params.push(req.query.store);
+    }
+
+    db.query(query, params, (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -75,7 +181,8 @@ router.get('/tt/product/:id', (req, res) => {
             const images = {};
 
             rows.forEach(row => {
-                images[row.image_order] = row.image_path; // Assign the image path to the key being the image_order
+                // Assign the image path to the key being the image_order
+                images[row.image_order] = row.image_path;
             });
 
             // Build the response object
@@ -86,52 +193,6 @@ router.get('/tt/product/:id', (req, res) => {
 
             res.json(response);
         });
-    });
-});
-
-// Get filtered products
-router.get('/tt/products', (req, res) => {
-    let { search, condition, availability } = req.query;
-    console.log('Received filters:', { search, condition, availability });  // Log received filters
-
-    let query = 'SELECT * FROM products WHERE 1=1';
-    let params = [];
-
-    if (search) {
-        query += ' AND name LIKE ?';
-        params.push(`%${search}%`);
-    }
-
-    if (condition) {
-        query += ' AND condition = ?';
-        params.push(condition);  // 'New' or 'Used'
-    }
-
-    if (availability !== undefined && availability !== '') {
-        query += ' AND availability = ?';
-        params.push(availability === 'true' ? 1 : 0);  // Convert to 1 or 0
-    }
-
-    console.log('Final query:', query);  // Log the final query
-    console.log('Query parameters:', params);  // Log the parameters
-
-    db.query(query, params, (err, rows) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error retrieving products');
-        }
-        res.json(rows);
-    });
-});
-
-// Get all unique conditions
-router.get('/tt/product-conditions', (req, res) => {
-    db.query('SELECT DISTINCT condition FROM products', [], (err, rows) => {
-        if (err) {
-            return res.status(500).send('Error retrieving conditions');
-        }
-        const conditions = rows.map(row => row.condition);
-        res.json(conditions);
     });
 });
 
@@ -213,7 +274,62 @@ router.put('/tt/sale/remove/:id', (req, res) => {
 
 // Get all products up for repair
 router.get('/tt/repair', (req, res) => {
-    db.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id', [], (err, rows) => {
+    const { name, category, condition, brand, color,
+        processor, storage, os, year, store } = req.query;
+
+    let query = `
+        SELECT p.*, rp.*, c.name AS store 
+        FROM repairProducts rp 
+        INNER JOIN products p ON p.id = rp.id
+        INNER JOIN entities e ON p.store_nipc = e.nipc
+        INNER JOIN clients c ON e.id = c.id
+        WHERE 1=1
+    `;
+    const params = [];
+
+    if (name) {
+        query += ' AND p.name LIKE ?';
+        params.push(`%${name}%`);
+    }
+    if (category) {
+        query += ' AND p.category = ?';
+        params.push(category);
+    }
+    if (condition) {
+        query += ' AND p.product_condition = ?';
+        params.push(condition);
+    }
+    if (brand) {
+        query += ' AND p.brand LIKE ?';
+        params.push(`%${brand}%`);
+    }
+    if (color) {
+        query += ' AND p.color LIKE ?';
+        params.push(`%${color}%`);
+    }
+    if (processor) {
+        query += ' AND p.processor LIKE ?';
+        params.push(`%${processor}%`);
+    }
+    if (storage) {
+        query += ' AND p.storage LIKE ?';
+        params.push(`%${storage}%`);
+    }
+    if (os) {
+        query += ' AND p.os LIKE ?';
+        params.push(`%${os}%`);
+    }
+    if (year) {
+        query += ' AND p.year = ?';
+        params.push(year);
+    }
+    if (store) {
+        query += ' AND c.name RLIKE ?';
+        params.push(req.query.store);
+    }
+
+    // Execute the query
+    db.query(query, params, (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -278,7 +394,72 @@ router.put('/tt/repair/remove/:id', (req, res) => {
 
 // Get all products up for donation
 router.get('/tt/donation', (req, res) => {
-    db.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id', [], (err, rows) => {
+    const { name, category, condition, brand, color, processor,
+        storage, os, year, store, charity } = req.query;
+
+    // Base query
+    let query = `
+        SELECT p.*, dp.*, c1.name AS store, c2.name AS charity
+        FROM donationProducts dp 
+        INNER JOIN products p ON p.id = dp.id
+        INNER JOIN entities e1 ON p.store_nipc = e1.nipc
+        INNER JOIN entities e2 ON dp.charity_nipc = e2.nipc
+        INNER JOIN clients c1 ON e1.id = c1.id 
+        INNER JOIN clients c2 ON e2.id = c2.id
+        WHERE 1=1
+    `;
+
+    // Prepare parameters for dynamic query
+    const params = [];
+
+    // Add conditions based on the provided query parameters
+    if (name) {
+        query += ' AND p.name LIKE ?';
+        params.push(`%${name}%`);
+    }
+    if (category) {
+        query += ' AND p.category = ?';
+        params.push(category);
+    }
+    if (condition) {
+        query += ' AND p.product_condition = ?';
+        params.push(condition);
+    }
+    if (brand) {
+        query += ' AND p.brand LIKE ?';
+        params.push(`%${brand}%`);
+    }
+    if (color) {
+        query += ' AND p.color LIKE ?';
+        params.push(`%${color}%`);
+    }
+    if (processor) {
+        query += ' AND p.processor LIKE ?';
+        params.push(`%${processor}%`);
+    }
+    if (storage) {
+        query += ' AND p.storage LIKE ?';
+        params.push(`%${storage}%`);
+    }
+    if (os) {
+        query += ' AND p.os LIKE ?';
+        params.push(`%${os}%`);
+    }
+    if (year) {
+        query += ' AND p.year = ?';
+        params.push(year);
+    }
+    if (store) {
+        query += ' AND c1.name RLIKE ?';
+        params.push(req.query.store);
+    }
+    if (charity) {
+        query += ' AND c2.name RLIKE ?';
+        params.push(req.query.charity);
+    }
+
+    // Execute the query
+    db.query(query, params, (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -354,11 +535,37 @@ router.get('/ttuser/client', (req, res) => {
 
 // Get details about a client
 router.get('/ttuser/client/:id', (req, res) => {
-    db.query('SELECT * FROM clients WHERE id = ?', [req.params.id], (err, rows) => {
+    const { id } = req.params;
+
+    // Check all possibilities (id, nif, nic, email, phone_number)
+    let query = `
+        SELECT * 
+        FROM clients 
+        WHERE id = ? OR nif = ? OR nic = ? OR email = ? OR phone_number = ?
+    `;
+
+    // Use the `id` parameter for all possible search options
+    db.query(query, [id, id, id, id, id], (err, rows) => {
         if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (rows.length === 0) {
             return res.status(404).send('Client not found');
         }
+
+        // Send the client details in the response
         res.json(rows[0]);
+    });
+});
+
+// Get all users in the system
+router.get('/ttuser', (req, res) => {
+    db.query('SELECT * FROM clients', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
     });
 });
 
@@ -371,7 +578,8 @@ router.post('/ttuser/client/add', (req, res) => {
     const columns = Object.keys(newClient).filter(key => newClient[key] !== undefined);
     const values = columns.map(col => newClient[col]);
 
-    const query = `INSERT INTO clients (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
+    const query = `INSERT INTO clients (${columns.join(', ')
+        }) VALUES (${columns.map(() => '?').join(', ')})`;
 
     db.execute(query, values, function (err) {
         if (err) {
@@ -387,7 +595,8 @@ router.put('/ttuser/client/edit', (req, res) => {
 
     /* Since some attributes are optional, extract keys and values from the newClient object, 
     filtering out any undefined values, and do not allow changing the id */
-    const columns = Object.keys(updatedClient).filter(key => updatedClient[key] !== undefined && key !== 'id');
+    const columns = Object.keys(updatedClient).filter(key =>
+        updatedClient[key] !== undefined && key !== 'id');
     const values = columns.map(col => updatedClient[col]);
 
     // Add the id at the end of the values array for the WHERE clause
@@ -435,16 +644,29 @@ router.get('/ttuser/employee', (req, res) => {
 
 // Get details about an employee
 router.get('/ttuser/employee/:id', (req, res) => {
-    db.query('SELECT * FROM employees e INNER JOIN clients c ON c.id = e.id WHERE e.id = ?;',
-        [req.params.id], (err, rows) => {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            if (!rows) {
-                return res.status(404).send('Employee not found');
-            }
-            res.json(rows[0]);
-        });
+    const { id } = req.params;
+
+    // Check all possibilities (id, nif, nic, email, phone_number)
+    let query = `
+        SELECT * 
+        FROM employees e
+        INNER JOIN clients c ON c.id = e.id
+        WHERE e.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?
+    `;
+
+    // Use the `id` parameter for all possible search options
+    db.query(query, [id, id, id, id, id], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (rows.length === 0) {
+            return res.status(404).send('Employee not found');
+        }
+
+        // Send the employee details in the response
+        res.json(rows[0]);
+    });
 });
 
 // Add new employee
@@ -474,7 +696,8 @@ router.put('/ttuser/employee/edit', (req, res) => {
     const updatedEmployee = req.body;
 
     // Extract keys and values from the updatedEmployee object, filtering out undefined values
-    const columns = Object.keys(updatedEmployee).filter(key => updatedEmployee[key] !== undefined && key !== 'id');
+    const columns = Object.keys(updatedEmployee).filter(key =>
+        updatedEmployee[key] !== undefined && key !== 'id');
     const values = columns.map(col => updatedEmployee[col]);
 
     // Add the id at the end of the values array for the WHERE clause
@@ -508,7 +731,8 @@ router.delete('/ttuser/employee/remove/:id', (req, res) => {
 
 // Get all stores
 router.get('/ttuser/store', (req, res) => {
-    db.query('SELECT * FROM stores s INNER JOIN clients c WHERE c.id = s.id', [], (err, rows) => {
+    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id 
+        AND e.entity_type = "store"`, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -518,16 +742,26 @@ router.get('/ttuser/store', (req, res) => {
 
 // Get details about a store
 router.get('/ttuser/store/:id', (req, res) => {
-    db.query('SELECT * FROM stores s INNER JOIN clients c ON c.id = s.id WHERE s.id = ?',
-        [req.params.id], (err, rows) => {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            if (!rows) {
-                return res.status(404).send('Store not found');
-            }
-            res.json(rows);
-        });
+    const { id } = req.params;
+
+    // Check all possibilities (id, nipc, email, phone_number)
+    let query = `
+        SELECT e.*, c.name, c.email, c.phone_number 
+        FROM entities e 
+        INNER JOIN clients c ON c.id = e.id 
+        WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
+        AND e.entity_type = "store"
+    `;
+
+    db.query(query, [id, id, id, id], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (rows.length === 0) {
+            return res.status(404).send('Store not found');
+        }
+        res.json(rows[0]);
+    });
 });
 
 // Add new store
@@ -541,8 +775,8 @@ router.post('/ttuser/store/add', (req, res) => {
         if (!row) {
             return res.status(404).send('Client not found');
         }
-        // Insert the store into the stores table
-        db.execute('INSERT INTO stores (id, nipc) VALUES (?, ?)',
+        // Insert the store into the entities table
+        db.execute('INSERT INTO entities (id, nipc, entity_type) VALUES (?, ?, "store")',
             [newStore.id, newStore.nipc], function (err) {
                 if (err) {
                     return res.status(500).send({ error: err.message });
@@ -557,13 +791,15 @@ router.put('/ttuser/store/edit', (req, res) => {
     const updatedStore = req.body;
 
     // Extract keys and values from the updatedStore object, filtering out undefined values
-    const columns = Object.keys(updatedStore).filter(key => updatedStore[key] !== undefined && key !== 'id');
+    const columns = Object.keys(updatedStore).filter(key => updatedStore[key]
+        !== undefined && key !== 'id');
     const values = columns.map(col => updatedStore[col]);
 
     // Add the id at the end of the values array for the WHERE clause
     values.push(updatedStore.id);
 
-    const query = `UPDATE stores SET ${columns.map(col => `${col} = ?`).join(', ')} WHERE id = ?`;
+    const query = `UPDATE entities e SET ${columns.map(col => `${col} = ?`).join(', ')
+        } WHERE e.id = ? AND e.entity_type = "store"`;
 
     db.execute(query, values, function (err) {
         if (err) {
@@ -578,20 +814,22 @@ router.put('/ttuser/store/edit', (req, res) => {
 
 // Remove store
 router.delete('/ttuser/store/remove/:id', (req, res) => {
-    db.execute('DELETE FROM stores WHERE id = ?', [req.params.id], function (err) {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).send('Store not found');
-        }
-        res.send('Store successfully removed');
-    });
+    db.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "store"',
+        [req.params.id], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Store not found');
+            }
+            res.send('Store successfully removed');
+        });
 });
 
 // Get all charities
 router.get('/ttuser/charity', (req, res) => {
-    db.query('SELECT * FROM charities ch INNER JOIN clients c WHERE c.id = ch.id', [], (err, rows) => {
+    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id
+         AND e.entity_type = "charity"`, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -601,16 +839,26 @@ router.get('/ttuser/charity', (req, res) => {
 
 // Get details about a charity
 router.get('/ttuser/charity/:id', (req, res) => {
-    db.query('SELECT * FROM charities ch INNER JOIN clients c ON c.id = ch.id WHERE ch.id = ?',
-        [req.params.id], (err, rows) => {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            if (!rows) {
-                return res.status(404).send('Charity not found');
-            }
-            res.json(rows[0]);
-        });
+    const { id } = req.params;
+
+    // Check all possibilities (id, nipc, email, phone_number)
+    let query = `
+        SELECT e.*, c.name, c.email, c.phone_number 
+        FROM entities e 
+        INNER JOIN clients c ON c.id = e.id 
+        WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
+        AND e.entity_type = "charity"
+    `;
+
+    db.query(query, [id, id, id, id], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (rows.length === 0) {
+            return res.status(404).send('Charity not found');
+        }
+        res.json(rows[0]);
+    });
 });
 
 // Add new charity
@@ -624,8 +872,8 @@ router.post('/ttuser/charity/add', (req, res) => {
         if (!row) {
             return res.status(404).send('Client not found');
         }
-        // Insert the charity into the charities table
-        db.execute('INSERT INTO charities (id, nipc) VALUES (?, ?)',
+        // Insert the charity into the entities table
+        db.execute('INSERT INTO entities (id, nipc, entity_type) VALUES (?, ?, "charity")',
             [newCharity.id, newCharity.nipc], function (err) {
                 if (err) {
                     return res.status(500).send({ error: err.message });
@@ -640,13 +888,15 @@ router.put('/ttuser/charity/edit', (req, res) => {
     const updatedCharity = req.body;
 
     // Extract keys and values from the updatedCharity object, filtering out undefined values
-    const columns = Object.keys(updatedCharity).filter(key => updatedCharity[key] !== undefined && key !== 'id');
+    const columns = Object.keys(updatedCharity).filter(key =>
+        updatedCharity[key] !== undefined && key !== 'id');
     const values = columns.map(col => updatedCharity[col]);
 
     // Add the id at the end of the values array for the WHERE clause
     values.push(updatedCharity.id);
 
-    const query = `UPDATE charities SET ${columns.map(col => `${col} = ?`).join(', ')} WHERE id = ?`;
+    const query = `UPDATE entities e SET ${columns.map(col => `${col} = ?`).join(', ')
+        } WHERE e.id = ? AND e.entity_type = "charity"`;
 
     db.execute(query, values, function (err) {
         if (err) {
@@ -661,15 +911,16 @@ router.put('/ttuser/charity/edit', (req, res) => {
 
 // Remove charity
 router.delete('/ttuser/charity/remove/:id', (req, res) => {
-    db.execute('DELETE FROM charities WHERE id = ?', [req.params.id], function (err) {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).send('Charity not found');
-        }
-        res.send('Charity successfully removed');
-    });
+    db.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "charity"',
+        [req.params.id], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Charity not found');
+            }
+            res.send('Charity successfully removed');
+        });
 });
 
 // Set user interest in product

@@ -12,7 +12,10 @@ INSERT INTO clients (name, email, phone_number, gender, password, dob, address, 
 ('Robert Brown', 'robertb@example.com', '777888999', 'Male', 'robertpass', 
 '1985-03-03', '654 Maple St', 987654321, 987654321);
 
-INSERT INTO entities (id, nipc) VALUES (1, 112233445), (2, 556677889);
+INSERT INTO entities (id, nipc,  entity_type) VALUES 
+(1, 112233445, "store"), 
+(2, 556677889, "charity");
+
 INSERT INTO employees (id, store) VALUES (3, 2);
 
 INSERT INTO categories (category) VALUES 
@@ -184,7 +187,7 @@ INSERT INTO saleProducts (id, price) VALUES
 (17, 119),
 (18, 149);
 
-INSERT INTO repairProducts (id, problems) VALUES (2, 'Broken screen');
-INSERT INTO donationProducts (id, charity) VALUES (2, 556677889);
-INSERT INTO interests (interestedUser, watchedProduct) VALUES (3, 1);
+INSERT INTO repairProducts (id, problems, client_nif) VALUES (2, 'Broken screen', 220349535);
+INSERT INTO donationProducts (id, charity_nipc, donor_nif) VALUES (2, 556677889, 220349535);
+INSERT INTO interests (interested_user, watched_product) VALUES (3, 1);
 INSERT INTO reports (report) VALUES ('15/02/2025 - 3 new users; 3 new products; 1 new interest');

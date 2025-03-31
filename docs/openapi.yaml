@@ -33,37 +33,68 @@ paths:
         - name: name
           in: query
           required: false
-          description: Nome dos equipamentos.
+          description: Nome dos equipamentos (busca parcial permitida).
           schema:
             type: string
         - name: category
           in: query
           required: false
-          description: Categoria dos equipamentos (ex. laptops, smartphones).
+          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
           schema:
             type: string
-        - name: price_range
+        - name: product_condition
           in: query
           required: false
-          description: Faixa de preço dos equipamentos (ex. 100-500).
+          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
           schema:
             type: string
-        - name: condition
+        - name: brand
           in: query
           required: false
-          description: Condição dos equipamentos.
+          description: Marca do equipamento (ex. Apple, Dell, Samsung).
           schema:
             type: string
-        - name: store_nipc
+        - name: color
           in: query
           required: false
-          description: NIPC da loja que detêm os equipamentos.
+          description: Cor do equipamento (ex. Preto, Branco, Azul).
+          schema:
+            type: string
+        - name: processor
+          in: query
+          required: false
+          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
+          schema:
+            type: string
+        - name: storage
+          in: query
+          required: false
+          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
+          schema:
+            type: string
+        - name: os
+          in: query
+          required: false
+          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
+          schema:
+            type: string
+        - name: year
+          in: query
+          required: false
+          description: Ano de fabricação do equipamento.
           schema:
             type: integer
-        - name: availability
+        - name: max_price
           in: query
           required: false
-          description: Disponibilidade dos equipamentos.
+          description: Preço máximo permitido nos resultados (aplicado a produtos em venda).
+          schema:
+            type: number
+            format: float
+        - name: store
+          in: query
+          required: false
+          description: Nome da loja que detém os equipamentos.
           schema:
             type: string
       responses:
@@ -86,37 +117,68 @@ paths:
         - name: name
           in: query
           required: false
-          description: Nome dos equipamentos.
+          description: Nome dos equipamentos (busca parcial permitida).
           schema:
             type: string
         - name: category
           in: query
           required: false
-          description: Categoria dos equipamentos (ex. laptops, smartphones).
+          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
           schema:
             type: string
-        - name: price_range
+        - name: product_condition
           in: query
           required: false
-          description: Faixa de preço dos equipamentos (ex. 100-500).
+          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
           schema:
             type: string
-        - name: condition
+        - name: brand
           in: query
           required: false
-          description: Condição dos equipamentos.
+          description: Marca do equipamento (ex. Apple, Dell, Samsung).
           schema:
             type: string
-        - name: store_nipc
+        - name: color
           in: query
           required: false
-          description: NIPC da loja que detêm os equipamentos.
+          description: Cor do equipamento (ex. Preto, Branco, Azul).
+          schema:
+            type: string
+        - name: processor
+          in: query
+          required: false
+          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
+          schema:
+            type: string
+        - name: storage
+          in: query
+          required: false
+          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
+          schema:
+            type: string
+        - name: os
+          in: query
+          required: false
+          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
+          schema:
+            type: string
+        - name: year
+          in: query
+          required: false
+          description: Ano de fabricação do equipamento.
           schema:
             type: integer
         - name: availability
           in: query
           required: false
-          description: Disponibilidade dos equipamentos.
+          description: Disponibilidade do equipamento (true, false, 1, 0).
+          schema:
+            type: string
+            enum: ["true", "false", "1", "0"]
+        - name: store
+          in: query
+          required: false
+          description: Nome da loja que detém os equipamentos.
           schema:
             type: string
       responses:
@@ -256,21 +318,70 @@ paths:
         - name: name
           in: query
           required: false
-          description: Nome dos equipamentos.
+          description: Nome dos equipamentos (busca parcial permitida).
           schema:
             type: string
         - name: category
           in: query
           required: false
-          description: Categoria dos equipamentos (ex. laptops, smartphones).
+          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
           schema:
             type: string
-        - name: store_nipc
+        - name: product_condition
           in: query
           required: false
-          description: NIPC da loja que detêm os equipamentos.
+          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
+          schema:
+            type: string
+        - name: brand
+          in: query
+          required: false
+          description: Marca do equipamento (ex. Apple, Dell, Samsung).
+          schema:
+            type: string
+        - name: color
+          in: query
+          required: false
+          description: Cor do equipamento (ex. Preto, Branco, Azul).
+          schema:
+            type: string
+        - name: processor
+          in: query
+          required: false
+          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
+          schema:
+            type: string
+        - name: storage
+          in: query
+          required: false
+          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
+          schema:
+            type: string
+        - name: os
+          in: query
+          required: false
+          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
+          schema:
+            type: string
+        - name: year
+          in: query
+          required: false
+          description: Ano de fabricação do equipamento.
           schema:
             type: integer
+        - name: max_price
+          in: query
+          required: false
+          description: Preço máximo permitido nos resultados (aplicado a produtos em venda).
+          schema:
+            type: number
+            format: float
+        - name: store
+          in: query
+          required: false
+          description: Nome da loja que detém os equipamentos.
+          schema:
+            type: string
       responses:
         '200':
           description: ""
@@ -363,27 +474,69 @@ paths:
         - name: name
           in: query
           required: false
-          description: Nome dos equipamentos.
+          description: Nome dos equipamentos (busca parcial permitida).
           schema:
             type: string
         - name: category
           in: query
           required: false
-          description: Categoria dos equipamentos (ex. laptops, smartphones).
+          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
           schema:
             type: string
-        - name: condition
+        - name: product_condition
           in: query
           required: false
-          description: Condição dos equipamentos.
+          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
           schema:
             type: string
-        - name: store_nipc
+        - name: brand
           in: query
           required: false
-          description: NIPC da loja que detêm os equipamentos.
+          description: Marca do equipamento (ex. Apple, Dell, Samsung).
+          schema:
+            type: string
+        - name: color
+          in: query
+          required: false
+          description: Cor do equipamento (ex. Preto, Branco, Azul).
+          schema:
+            type: string
+        - name: processor
+          in: query
+          required: false
+          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
+          schema:
+            type: string
+        - name: storage
+          in: query
+          required: false
+          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
+          schema:
+            type: string
+        - name: os
+          in: query
+          required: false
+          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
+          schema:
+            type: string
+        - name: year
+          in: query
+          required: false
+          description: Ano de fabricação do equipamento.
           schema:
             type: integer
+        - name: store
+          in: query
+          required: false
+          description: Nome da loja que detém os equipamentos.
+          schema:
+            type: string
+        - name: charity
+          in: query
+          required: false
+          description: Nome da entidade de beneficência que recebe os equipamentos.
+          schema:
+            type: string
       responses:
         '200':
           description: ""
@@ -466,31 +619,28 @@ paths:
         '400':
           description: "Invalid request. Data is incorrect or incomplete."
   
+  /ttuser:
+    get:
+      tags:
+        - ttuser
+      summary: Listar todos os usuários registados no sistema.
+      description: Retorna uma lista de usuários (clientes, empregados, lojas, e entidades de beneficência) registados no sistema.
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserClient'
+                  
   /ttuser/client:
     get:
       tags:
         - ttuser
       summary: Listar todos os clientes compradores.
-      description: Retorna uma lista de clientes compradores registados no sistema, com opção de busca e filtros.
-      parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nomes dos clientes.
-          schema:
-            type: string
-        - name: gender
-          in: query
-          required: false
-          description: Genéro dos clientes.
-          schema:
-            type: string
-        - name: dob
-          in: query
-          required: false
-          description: Data de nascimento dos clientes.
-          schema:
-            type: string
+      description: Retorna uma lista de clientes compradores registados no sistema.
       responses:
         '200':
           description: ""
@@ -584,26 +734,7 @@ paths:
       tags:
         - ttuser
       summary: Listar todos os empregados.
-      description: Retorna uma lista de empregados registados no sistema, com opção de busca e filtros.
-      parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nomes dos empregados.
-          schema:
-            type: string
-        - name: gender
-          in: query
-          required: false
-          description: Genéro dos empregados.
-          schema:
-            type: string
-        - name: dob
-          in: query
-          required: false
-          description: Data de nascimento dos empregados.
-          schema:
-            type: string
+      description: Retorna uma lista de empregados registados no sistema.
       responses:
         '200':
           description: ""
@@ -807,19 +938,19 @@ paths:
     get:
       tags:
         - ttuser
-      summary: Listar todos as entidades de beneficiência.
-      description: Retorna uma lista de entidades de beneficiência registadas no sistema, com opção de busca e filtros.
+      summary: Listar todos as entidades de beneficência.
+      description: Retorna uma lista de entidades de beneficência registadas no sistema, com opção de busca e filtros.
       parameters:
         - name: name
           in: query
           required: false
-          description: Nomes das entidades de beneficiência.
+          description: Nomes das entidades de beneficência.
           schema:
             type: string
         - name: address
           in: query
           required: false
-          description: Informação geográfica das entidades de beneficiência.
+          description: Informação geográfica das entidades de beneficência.
           schema:
             type: string
       responses:
@@ -836,13 +967,13 @@ paths:
     get:
       tags:
         - ttuser
-      summary: Consultar detalhes de uma entidade de beneficiência.
+      summary: Consultar detalhes de uma entidade de beneficência.
       description: Obtém as informações detalhadas de uma entidade de beneficiência específica.
       parameters:
         - name: id
           in: path
           required: true
-          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficiência.
+          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficência.
           schema:
             oneOf:
               - type: string
@@ -861,8 +992,8 @@ paths:
     post:
       tags:
         - ttuser
-      summary: Adicionar uma nova entidade de beneficiência.
-      description: Permite adicionar uma entidade de beneficiência ao sistema.
+      summary: Adicionar uma nova entidade de beneficência.
+      description: Permite adicionar uma entidade de beneficência ao sistema.
       requestBody:
         required: true
         content:
@@ -879,8 +1010,8 @@ paths:
     put:
       tags:
         - ttuser
-      summary: Editar informações de uma entidade de beneficiência existente.
-      description: Atualiza os dados de uma entidade de beneficiência no sistema.
+      summary: Editar informações de uma entidade de beneficência existente.
+      description: Atualiza os dados de uma entidade de beneficência no sistema.
       requestBody:
         required: true
         content:
@@ -897,13 +1028,13 @@ paths:
     delete:
       tags:
         - ttuser
-      summary: Remover uma entidade de beneficiência.
-      description: Exclui uma entidade de beneficiência do sistema.
+      summary: Remover uma entidade de beneficência.
+      description: Exclui uma entidade de beneficência do sistema.
       parameters:
         - name: id
           in: path
           required: true
-          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficiência a ser removida.
+          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficência a ser removida.
           schema:
             oneOf:
               - type: string
