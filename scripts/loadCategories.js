@@ -25,7 +25,7 @@ function loadCategories() {
         
         const link = document.createElement("a");
         link.className = "nav-link";
-        link.href = `/category?id=${encodeURIComponent(category)}`;
+        link.href = `/category?is=${encodeURIComponent(category)}`;
         link.textContent = category;
         
         // Change text color if category is selected

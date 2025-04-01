@@ -24,18 +24,17 @@ function renderProducts() {
 
     paginatedProducts.forEach(product => {
         const productCard = `
-        <div onclick="window.location.href = 'product?id=${product.id}';"
+        <div onclick="window.location.href = 'product?is=${product.id}';"
         id="productid-${product.id}" class="col-lg-3 col-md-6 col-sm-6 d-flex mb-auto product-link">
             <div class="card w-100 my-2 shadow h-100">
                 <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top">
                 <div class="card-body d-flex flex-column">
                     <h6 class="card-title text-truncate">${product.name}</h6>
-                    <p class="badge mb-2 d-flex ${
-                    product.product_condition === 'Like New' ? 'bg-success' : 
-                    product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
-                    }">${product.product_condition} </p>
+                    <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
+                product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
+            }">${product.product_condition} </p>
                     <p class="card-text fw-bold">€${product.price.
-                        replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </p>
                 </div>
             </div>
@@ -72,8 +71,7 @@ if (document.body.id === "homepage") {
      * 
      * This function makes an asynchronous request to the `/tt` endpoint to retrieve products
      * that are available for sale.
-     * It then populates the product container with product cards, including images, names, prices,
-     * and buttons for adding to cart or adding to favorites.
+     * It then populates the product container with product cards.
      *
      * @async
      * @function fetchProducts
@@ -113,7 +111,7 @@ if (document.body.id === "homepage") {
         });
 
     });
-// Load one single product's information if in a product's page
+    // Load one single product's information if in a product's page
 } else if (document.body.id === "productPage") {
 
     /**
@@ -135,7 +133,7 @@ if (document.body.id === "homepage") {
         try {
             // Get product ID from URL
             const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
+            const id = urlParams.get('is');
 
             const response = await fetch(`/tt/product/${id}`);
             const product = await response.json();
@@ -154,7 +152,7 @@ if (document.body.id === "homepage") {
                 "RAM Memory": product.ram_memory,
                 "Keyboard": product.keyboard,
                 "Dimensions": product.dimensions,
-                "Weight": product.weight ? 
+                "Weight": product.weight ?
                     `${product.weight} kg / ${(product.weight * 35.274).toFixed(2)} oz` : null,
                 "Model Code": product.model_code
             };
@@ -188,8 +186,8 @@ if (document.body.id === "homepage") {
                             <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
                                 <div class="carousel-inner shadow border rounded">
                                     ${Object.entries(product.images)
-                                    .sort(([a], [b]) => a - b) // Sort images by order
-                                    .map(([order, image], index) => `
+                    .sort(([a], [b]) => a - b) // Sort images by order
+                    .map(([order, image], index) => `
                                         <div class="carousel-item ${index === 0 ? 'active' : ''}">
                                             <img src="../media/images/products/${image}" 
                                             alt="Product Image ${order}" 
@@ -202,8 +200,8 @@ if (document.body.id === "homepage") {
                             <!-- Thumbnails (Carousel Indicators) -->
                             <div class="row justify-content-center mb-3 mt-2 gap-1">
                                 ${Object.entries(product.images)
-                                .sort(([a], [b]) => a - b)
-                                .map(([order, image], index) => `
+                    .sort(([a], [b]) => a - b)
+                    .map(([order, image], index) => `
                                     <div class="col-2 p-0">
                                         <img src="../media/images/products/${image}" 
                                         class="img-thumbnail shadow" 
@@ -213,8 +211,7 @@ if (document.body.id === "homepage") {
                                         this.style.border = '2px solid navy'; 
                                         document.querySelector('#product-info #productCarousel .carousel-item.active').
                                         classList.remove('active'); 
-                                        document.querySelector('#product-info #productCarousel .carousel-item:nth-child(${
-                                        index + 1})').classList.add('active');">
+                                        document.querySelector('#product-info #productCarousel .carousel-item:nth-child(${index + 1})').classList.add('active');">
                                     </div>
                                 `).join('')}
                             </div>
@@ -227,10 +224,9 @@ if (document.body.id === "homepage") {
                             <p>${product.description}</p>
                             <!-- Product condition -->
                             <p class="mb-0 d-flex align-items-center gap-1">
-                                <strong>Condition:</strong> <span class="badge ${
-                                product.product_condition === 'Like New' ? 'bg-success' : 
-                                product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
-                                } fs-6">${product.product_condition} </span>
+                                <strong>Condition:</strong> <span class="badge ${product.product_condition === 'Like New' ? 'bg-success' :
+                    product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
+                } fs-6">${product.product_condition} </span>
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
                                 <a href="#!" class="btn btn-primary me-2 shadow">Add to cart</a>
@@ -240,8 +236,7 @@ if (document.body.id === "homepage") {
                             </div>
                             ${technicalSpecsSection}
                             <!-- Date added -->
-                            <p><strong>Uploaded on:</strong> ${
-                                new Date(product.date_inserted).toLocaleDateString()}</p>
+                            <p><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>
@@ -257,18 +252,65 @@ if (document.body.id === "homepage") {
         }
     }
 
-    document.addEventListener('DOMContentLoaded', fetchOneSellingProduct);
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchOneSellingProduct().then(() => {
+            this.querySelectorAll(".carousel-item").forEach( item => {
+                item.addEventListener("click", () => {
+                    let modal = document.getElementById("image-popup");
+                    const imageSrc = item.querySelector("img").src;
+
+                    // Create modal if it doesn’t exist
+                    if (!modal) {
+                        modal = document.createElement("div");
+                        modal.id = "image-popup";
+                        modal.style.position = "fixed";
+                        modal.style.top = "0";
+                        modal.style.left = "0";
+                        modal.style.width = "100vw";
+                        modal.style.height = "100vh";
+                        modal.style.background = "rgba(0, 0, 0, 0.8)";
+                        modal.style.display = "flex";
+                        modal.style.justifyContent = "center";
+                        modal.style.alignItems = "center";
+                        modal.style.zIndex = "9999";
+                        modal.innerHTML = `
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 text-center rounded" style="background: white;">
+                                    <button type="button" class="btn-close 
+                                    position-absolute top-0 end-0 m-3"
+                                    aria-label="Close"></button>
+                                    <img src="${imageSrc}" class="img-fluid 
+                                    rounded shadow-lg" style="max-width: 90vw; max-height: 90vh;" />
+                                </div>
+                            </div>
+                        `;
+
+                        document.body.appendChild(modal);
+
+                        modal.querySelector(".btn-close").addEventListener("click", () => {
+                            modal.remove();
+                        });
+                        // Close modal when clicking outside the image
+                        modal.addEventListener("click", (event) => {
+                            if (event.target === modal) {
+                                modal.remove();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    });
 } else if (document.body.id === "categoryPage") {
     /**
-     * Fetches products of a given cateogry that are being sold from the 
+     * Fetches products of a given category that are being sold from the 
      * TechThrift Dabatase, using the API, 
      * and dynamically renders them in the product list.
      * 
      * This function makes an asynchronous request to the `/tt` endpoint, with a filter 
      * for the current requested category, to retrieve products
      * that are available for sale.
-     * It then populates the product container with product cards, including images, names, prices,
-     * and buttons for adding to cart or adding to favorites.
+     * It then populates the product container with product cards.
      *
      * @async
      * @function fetchProducts
@@ -279,14 +321,32 @@ if (document.body.id === "homepage") {
         try {
             // Get category from URL
             const urlParam = new URLSearchParams(window.location.search);
-            const category = urlParam.get('id');
+            const category = urlParam.get('is');
 
             // Set title of the current page
             document.title += " - " + category;
             document.getElementById("category-indicator").textContent = category;
 
-            const response = await fetch(`/tt?category=${category}`);
-            products = await response.json();
+            // Fetch products for the given category
+            const urls = [`/tt?category=${encodeURIComponent(category)}`];
+
+            // If category is "Accessories", include Audio and Smartwatches
+            if (category.toLowerCase() === "accessories") {
+                urls.push("/tt?category=audio", "/tt?category=smartwatches");
+            }
+
+            // Fetch all requests
+            const responses = await Promise.all(urls.map(url => fetch(url)));
+            const data = await Promise.all(responses.map(response => response.json()));
+
+            // Merge all results and remove potential duplicates
+            const uniqueProducts = new Map();
+            data.flat().forEach(product => {
+                uniqueProducts.set(product.id, product);
+            });
+
+            products = Array.from(uniqueProducts.values());
+
             if (products.length > 0) {
                 renderProducts();
             } else {
@@ -310,6 +370,91 @@ if (document.body.id === "homepage") {
 
     document.addEventListener('DOMContentLoaded', () => {
         fetchCategorySellingProducts();
+
+        document.getElementById('paginationPrevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderProducts();
+            }
+        });
+        document.getElementById('paginationNextPage').addEventListener('click', () => {
+            if (currentPage * productsPerPage < products.length) {
+                currentPage++;
+                renderProducts();
+            }
+        });
+
+    });
+} else if (document.body.id === "searchPage") {
+    /**
+     * Fetches products for search results that are being sold from the 
+     * TechThrift Dabatase, using the API, 
+     * and dynamically renders them in the product list.
+     * 
+     * This function makes an asynchronous request to the `/tt` endpoint, with a filter 
+     * for the current requested name, to retrieve products
+     * that are available for sale.
+     * It then populates the product container with product cards.
+     *
+     * @async
+     * @function fetchProducts
+     * @returns {Promise<void>} Resolves when the products are successfully fetched and rendered.
+     * @throws {Error} Logs an error to the console if the API request fails.
+     */
+    async function fetchSearchSellingProducts() {
+        try {
+            // Get search query from URL
+            const urlParam = new URLSearchParams(window.location.search);
+            const search = urlParam.get('is');
+
+            // Set title of the current page
+            document.title += " - " + search;
+            document.getElementById("search-indicator").textContent = `Search results for "${search}"`;
+
+            const urls = [
+                `/tt?name=${encodeURIComponent(search)}`,
+                `/tt?category=${encodeURIComponent(search)}`,
+                `/tt?color=${encodeURIComponent(search)}`,
+                `/tt?os=${encodeURIComponent(search)}`,
+                `/tt?storage=${encodeURIComponent(search)}`
+            ];
+
+            // Fetch all requests
+            const responses = await Promise.all(urls.map(url => fetch(url)));
+            const data = await Promise.all(responses.map(response => response.json()));
+
+            // Merge results and remove duplicates
+            const uniqueProducts = new Map();
+
+            data.flat().forEach(product => {
+                uniqueProducts.set(product.id, product);
+            });
+
+            products = Array.from(uniqueProducts.values()); // Convert Map back to an array
+
+            if (products.length > 0) {
+                renderProducts();
+            } else {
+                const productContainer = document.getElementById('product-list');
+                productContainer.innerHTML = `<div class="container my-4">
+                <p class="text-center fw-bold display-4">No results found.</p>
+                <p class="text-center">Try searching something else or come back later.</p>
+                </div>`;
+                document.getElementById("paginationControls").remove();
+            }
+        } catch (error) {
+            const productContainer = document.getElementById('product-list');
+            productContainer.innerHTML = `<div class="container my-4">
+            <p class="text-center fw-bold display-4">Sorry, an error happened. ☹️</p>
+            <p class="text-center">Please try refreshing the page.</p>
+            </div>`;
+            document.getElementById("paginationControls").remove();
+            console.error('Error fetching products:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSearchSellingProducts();
 
         document.getElementById('paginationPrevPage').addEventListener('click', () => {
             if (currentPage > 1) {

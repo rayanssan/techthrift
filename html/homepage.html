@@ -26,11 +26,12 @@
                     <a id="header-brand" href="/homepage">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
-                    <div class="input-group flex-grow-1">
-                        <input type="text" class="form-control" placeholder="Search for electronics..."
+                    <form id="search-form" class="input-group flex-grow-1">
+                        <input id="search-input" type="text" class="form-control" 
+                            placeholder="Search for electronics..."
                             aria-label="Search">
-                        <button class="btn btn-dark" type="button">Search</button>
-                    </div>
+                        <button class="btn btn-dark" type="submit">Search</button>
+                    </form>
                 </div>
                 <!-- Left elements -->
 
@@ -44,7 +45,7 @@
                         <i class="fas fa-heart m-1 me-md-2"></i>
                         <p class="d-none d-md-block mb-0">Wishlist</p>
                     </a>
-                    <a href="#" class="border rounded py-1 px-3 nav-link d-flex align-items-center">
+                    <a href="/cart" class="border rounded py-1 px-3 nav-link d-flex align-items-center">
                         <i class="fas fa-shopping-cart m-1 me-md-2"></i>
                         <p class="d-none d-md-block mb-0">My cart</p>
                     </a>
@@ -94,7 +95,7 @@
                         Learn more
                     </button>
                     <button type="button" class="btn btn-light shadow-0 text-primary pt-2 border border-white">
-                        <span class="pt-1">Purchase now</span>
+                        <a href="#product-list" class="pt-1">Purchase now</a>
                     </button>
                 </div>
                 <img id="main-banner-brand" alt="TechThrift's logo" src="../media/images/logo_white.png">
@@ -107,7 +108,7 @@
     <section>
         <div class="container my-5">
             <header class="mb-4">
-                <h3>New products</h3>
+                <h3>Just In</h3>
             </header>
             <div class="row" id="product-list">
                 <!-- Products will be injected here dynamically -->
@@ -299,6 +300,7 @@
     <!-- Footer -->
 
     <!-- Scripts -->
+    <script src="../scripts/search.js"></script>
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
     <!-- Scripts -->

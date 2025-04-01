@@ -21,43 +21,43 @@ router.get('/tt', (req, res) => {
     let params = [];
 
     if (name) {
-        query += ` AND name RLIKE ?`;
+        query += ` AND p.name LIKE ?`;
         params.push(`%${name}%`);
     }
     if (condition) {
-        query += ` AND product_condition = ?`;
+        query += ` AND p.product_condition = ?`;
         params.push(condition);
     }
     if (category) {
-        query += ` AND category RLIKE ?`;
+        query += ` AND p.category RLIKE ?`;
         params.push(category);
     }
     if (brand) {
-        query += ` AND brand RLIKE ?`;
+        query += ` AND p.brand RLIKE ?`;
         params.push(brand);
     }
     if (color) {
-        query += ` AND color = ?`;
-        params.push(color);
+        query += ` AND p.color LIKE ?`;
+        params.push(`%${color}%`);
     }
     if (processor) {
-        query += ` AND processor = ?`;
+        query += ` AND p.processor = ?`;
         params.push(processor);
     }
     if (storage) {
-        query += ` AND storage = ?`;
+        query += ` AND p.storage = ?`;
         params.push(storage);
     }
     if (os) {
-        query += ` AND os = ?`;
+        query += ` AND p.os = ?`;
         params.push(os);
     }
     if (year) {
-        query += ` AND year = ?`;
+        query += ` AND p.year = ?`;
         params.push(year);
     }
     if (maxPrice) {
-        query += ` AND price <= ?`;
+        query += ` AND sp.price <= ?`;
         params.push(maxPrice);
     }
     if (store) {
@@ -86,43 +86,43 @@ router.get('/tt/product', (req, res) => {
 
     // Apply filters dynamically
     if (name) {
-        query += ' AND name RLIKE ?';
+        query += ' AND p.name LIKE ?';
         params.push(`%${req.query.name}%`);
     }
     if (condition) {
-        query += ' AND product_condition = ?';
+        query += ' AND p.product_condition = ?';
         params.push(req.query.product_condition);
     }
     if (category) {
-        query += ' AND category RLIKE ?';
+        query += ' AND p.category RLIKE ?';
         params.push(req.query.category);
     }
     if (brand) {
-        query += ' AND brand RLIKE ?';
+        query += ' AND p.brand RLIKE ?';
         params.push(req.query.brand);
     }
     if (color) {
-        query += ' AND color = ?';
-        params.push(req.query.color);
+        query += ' AND p.color LIKE ?';
+        params.push(`%${req.query.color}%`);
     }
     if (processor) {
-        query += ' AND processor = ?';
+        query += ' AND p.processor = ?';
         params.push(req.query.processor);
     }
     if (storage) {
-        query += ' AND storage = ?';
+        query += ' AND p.storage = ?';
         params.push(req.query.storage);
     }
     if (os) {
-        query += ' AND os = ?';
+        query += ' AND p.os = ?';
         params.push(req.query.os);
     }
     if (year) {
-        query += ' AND year = ?';
+        query += ' AND p.year = ?';
         params.push(req.query.year);
     }
     if (availability) {
-        query += ' AND availability = ?';
+        query += ' AND p.availability = ?';
         params.push((availability === 'true' || availability === "1") ? 1 : 0);
     }
     if (store) {

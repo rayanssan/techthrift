@@ -12,8 +12,8 @@ app.use(express.static(__dirname));
 
 // Homepage, entry point
 app.get(['/homepage', '/'], (req, res) => {
-    const homepagePath = path.join(__dirname, 'html/homepage.html');
-    res.sendFile(homepagePath, (err) => {
+    const pagePath = path.join(__dirname, 'html/homepage.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving homepage.html:', err);
             res.status(500).send('Internal Server Error');
@@ -23,8 +23,8 @@ app.get(['/homepage', '/'], (req, res) => {
 
 // Product for sale
 app.get('/product', (req, res) => {
-    const homepagePath = path.join(__dirname, 'html/product.html');
-    res.sendFile(homepagePath, (err) => {
+    const pagePath = path.join(__dirname, 'html/product.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving homepage.html:', err);
             res.status(500).send('Internal Server Error');
@@ -34,8 +34,30 @@ app.get('/product', (req, res) => {
 
 // Category
 app.get('/category', (req, res) => {
-    const homepagePath = path.join(__dirname, 'html/category.html');
-    res.sendFile(homepagePath, (err) => {
+    const pagePath = path.join(__dirname, 'html/category.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving homepage.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Search
+app.get('/search', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/search.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving homepage.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Cart
+app.get('/cart', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/cart.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving homepage.html:', err);
             res.status(500).send('Internal Server Error');
@@ -45,8 +67,8 @@ app.get('/category', (req, res) => {
 
 // Authentication
 app.get('/authentication', (req, res) => {
-    const homepagePath = path.join(__dirname, 'html/authentication.html');
-    res.sendFile(homepagePath, (err) => {
+    const pagePath = path.join(__dirname, 'html/authentication.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving homepage.html:', err);
             res.status(500).send('Internal Server Error');
@@ -56,8 +78,8 @@ app.get('/authentication', (req, res) => {
 
 // Admin Dashboard
 app.get('/adminDashboard', (req, res) => {
-    const adminDashboardPath = path.join(__dirname, 'html/adminDashboard.html');
-    res.sendFile(adminDashboardPath, (err) => {
+    const pagePath = path.join(__dirname, 'html/adminDashboard.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving adminDashboard.html:', err);
             res.status(500).send('Internal Server Error');
@@ -67,8 +89,8 @@ app.get('/adminDashboard', (req, res) => {
 
 // Admin Products
 app.get('/adminProducts', (req, res) => {
-    const adminProductsPath = path.join(__dirname, 'html/adminProducts.html');
-    res.sendFile(adminProductsPath, (err) => {
+    const pagePath = path.join(__dirname, 'html/adminProducts.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving adminProducts.html:', err);
             res.status(500).send('Internal Server Error');
@@ -78,8 +100,8 @@ app.get('/adminProducts', (req, res) => {
 
 // Admin Users
 app.get('/adminUsers', (req, res) => {
-    const adminUsersPath = path.join(__dirname, 'html/adminUsers.html');
-    res.sendFile(adminUsersPath, (err) => {
+    const pagePath = path.join(__dirname, 'html/adminUsers.html');
+    res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving adminadminUsers.html:', err);
             res.status(500).send('Internal Server Error');
