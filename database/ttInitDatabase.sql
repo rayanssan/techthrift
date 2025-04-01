@@ -48,9 +48,9 @@ dimensions, processor, screen, ram_memory, graphics_card, storage, keyboard, os,
 'Intel Core i7', '15.6-inch Full HD (1920x1080)', '16GB', 'Intel Iris Xe', 
 '1TB SSD', 'Backlit (UK Layout)', 'Windows 11', 2022),
 
-(7, 'LG OLED 65-inch TV', 112233445, 'Like New', 1, '65-inch OLED 4K smart TV with HDR', 
+(7, 'LG OLED 65-inch Smart TV', 112233445, 'Like New', 1, '65-inch OLED 4K smart TV with HDR', 
 'TVs & Monitors', 'LG', 'OLED65C1', 'Black', 24.0, '1449 x 830 x 46 mm', NULL, 
-'65-inch OLED 4K (3840x2160)', NULL, NULL, 'N/A', NULL, 'webOS', 2021),
+'65-inch OLED 4K (3840x2160)', NULL, NULL, null, NULL, 'webOS', 2021),
 
 (8, 'Nintendo Switch', 112233445, 'Excellent', 1, 'Hybrid gaming console from Nintendo', 
 'Gaming', 'Nintendo', 'HAC-001(-01)', 'Neon Red/Blue', 0.398, '102 x 239 x 14 mm', 

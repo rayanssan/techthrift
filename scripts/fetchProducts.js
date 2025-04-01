@@ -235,6 +235,8 @@ if (document.body.id === "homepage") {
                                 </a>
                             </div>
                             ${technicalSpecsSection}
+                            <!-- Store -->
+                            <p class="mb-2"><strong>Sold by:</strong> ${product.store}</p>
                             <!-- Date added -->
                             <p><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
                         </div>
@@ -415,6 +417,7 @@ if (document.body.id === "homepage") {
                 `/tt?name=${encodeURIComponent(search)}`,
                 `/tt?category=${encodeURIComponent(search)}`,
                 `/tt?color=${encodeURIComponent(search)}`,
+                `/tt?processor=${encodeURIComponent(search)}`,
                 `/tt?os=${encodeURIComponent(search)}`,
                 `/tt?storage=${encodeURIComponent(search)}`
             ];

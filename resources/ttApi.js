@@ -29,28 +29,28 @@ router.get('/tt', (req, res) => {
         params.push(condition);
     }
     if (category) {
-        query += ` AND p.category RLIKE ?`;
-        params.push(category);
+        query += ` AND p.category LIKE ?`;
+        params.push(`%${category}%`);
     }
     if (brand) {
-        query += ` AND p.brand RLIKE ?`;
-        params.push(brand);
+        query += ` AND p.brand LIKE ?`;
+        params.push(`%${brand}%`);
     }
     if (color) {
         query += ` AND p.color LIKE ?`;
         params.push(`%${color}%`);
     }
     if (processor) {
-        query += ` AND p.processor = ?`;
-        params.push(processor);
+        query += ` AND p.processor LIKE ?`;
+        params.push(`%${processor}%`);
     }
     if (storage) {
-        query += ` AND p.storage = ?`;
-        params.push(storage);
+        query += ` AND p.storage LIKE ?`;
+        params.push(`%${storage}%`);
     }
     if (os) {
-        query += ` AND p.os = ?`;
-        params.push(os);
+        query += ` AND p.os LIKE ?`;
+        params.push(`%${os}%`);
     }
     if (year) {
         query += ` AND p.year = ?`;
@@ -62,7 +62,7 @@ router.get('/tt', (req, res) => {
     }
     if (store) {
         query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        params.push(`%${store}%`);
     }
 
     db.query(query, params, (err, rows) => {
@@ -87,39 +87,39 @@ router.get('/tt/product', (req, res) => {
     // Apply filters dynamically
     if (name) {
         query += ' AND p.name LIKE ?';
-        params.push(`%${req.query.name}%`);
+        params.push(`%${name}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
-        params.push(req.query.product_condition);
+        params.push(condition);
     }
     if (category) {
-        query += ' AND p.category RLIKE ?';
-        params.push(req.query.category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (brand) {
-        query += ' AND p.brand RLIKE ?';
-        params.push(req.query.brand);
+        query += ' AND p.brand LIKE ?';
+        params.push(`%${brand}%`);
     }
     if (color) {
         query += ' AND p.color LIKE ?';
-        params.push(`%${req.query.color}%`);
+        params.push(`%${color}%`);
     }
     if (processor) {
-        query += ' AND p.processor = ?';
-        params.push(req.query.processor);
+        query += ' AND p.processor LIKE ?';
+        params.push(`%${processor}%`);
     }
     if (storage) {
-        query += ' AND p.storage = ?';
-        params.push(req.query.storage);
+        query += ' AND p.storage LIKE ?';
+        params.push(`%${storage}%`);
     }
     if (os) {
-        query += ' AND p.os = ?';
-        params.push(req.query.os);
+        query += ' AND p.os LIKE ?';
+        params.push(`%${os}%`);
     }
     if (year) {
         query += ' AND p.year = ?';
-        params.push(req.query.year);
+        params.push(year);
     }
     if (availability) {
         query += ' AND p.availability = ?';
@@ -127,7 +127,7 @@ router.get('/tt/product', (req, res) => {
     }
     if (store) {
         query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        params.push(`%${store}%`);
     }
 
     db.query(query, params, (err, rows) => {
@@ -163,10 +163,12 @@ router.get('/tt/product/:id', (req, res) => {
 
         if (isSaleProduct) {
             query = `
-                SELECT products.*, saleProducts.*, productImages.*
+                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
                 FROM products
                 JOIN saleProducts ON products.id = saleProducts.id
                 JOIN productImages ON products.id = productImages.product
+                JOIN entities ON products.store_nipc = entities.nipc
+                JOIN clients ON entities.id = clients.id
                 WHERE products.id = ?;
             `;
         }
@@ -292,8 +294,8 @@ router.get('/tt/repair', (req, res) => {
         params.push(`%${name}%`);
     }
     if (category) {
-        query += ' AND p.category = ?';
-        params.push(category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
@@ -325,7 +327,7 @@ router.get('/tt/repair', (req, res) => {
     }
     if (store) {
         query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        params.push(`%${store}%`);
     }
 
     // Execute the query
@@ -418,8 +420,8 @@ router.get('/tt/donation', (req, res) => {
         params.push(`%${name}%`);
     }
     if (category) {
-        query += ' AND p.category = ?';
-        params.push(category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
@@ -451,11 +453,11 @@ router.get('/tt/donation', (req, res) => {
     }
     if (store) {
         query += ' AND c1.name RLIKE ?';
-        params.push(req.query.store);
+        params.push(`%${store}%`);
     }
     if (charity) {
         query += ' AND c2.name RLIKE ?';
-        params.push(req.query.charity);
+        params.push(`%${charity}%`);
     }
 
     // Execute the query
