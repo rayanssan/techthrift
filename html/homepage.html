@@ -60,70 +60,21 @@
         <div class="container justify-content-center justify-content-md-between">
             <!-- Toggle button -->
             <button class="navbar-toggler border py-2 text-dark" type="button" data-mdb-toggle="collapse"
-                data-mdb-target="#navbarLeftAlignExample" aria-controls="navbarLeftAlignExample" aria-expanded="false"
+                data-mdb-target="#navbarLeftAlignExample" 
+                aria-controls="navbarLeftAlignExample" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
 
             <!-- Collapsible wrapper -->
             <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
-                <!-- Left links -->
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Smartphones</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Laptops & PCs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Gaming</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">TVs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Audio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Tablets</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Cameras</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Smartwatches</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Accessories</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="#">Home Appliances</a>
-                    </li>
-                    <!-- Navbar dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Others
-                        </a>
-                        <!-- Dropdown menu -->
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li>
-                                <a class="dropdown-item" href="#">Action</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="#">Another action</a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </li>
-                        </ul>
-                    </li>
+                <!-- Links -->
+                <ul id="categories-nav" class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- Links for category pages will be injected here -->
                 </ul>
-                <!-- Left links -->
+                <!-- Links -->
             </div>
+            <!-- Collapsible wrapper -->
         </div>
         <!-- Container wrapper -->
     </nav>
@@ -348,7 +299,8 @@
     <!-- Footer -->
 
     <!-- Scripts -->
-    <script src="./scripts/fetchProducts.js"></script>
+    <script src="../scripts/loadCategories.js"></script>
+    <script src="../scripts/fetchProducts.js"></script>
     <!-- Scripts -->
 
 </body>

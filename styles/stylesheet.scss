@@ -1,6 +1,8 @@
 
 body {
     background-color: #f8f9fa;
+    font-family: "Lucida Grande", sans-serif;
+    transition: all;
 }
 
 .navbar-brand {
@@ -39,8 +41,18 @@ body {
         aspect-ratio: 1;
         object-fit: contain;
     }
-    img:hover {
+    &:hover {
         cursor: pointer;
+    }
+    .card .badge {
+        width: fit-content;
+        font-size: small;
+    }
+    .card:hover {
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+    .card:active {
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
     }
 }
 
@@ -48,6 +60,16 @@ body {
     .img-thumbnail {
         aspect-ratio: 1;
         object-fit: contain;
+
+        .active {
+            border: 2px solid navy;
+        }
+    }
+    .img-thumbnail:hover {
+        filter:brightness(0.9);
+    }
+    .img-thumbnail:active {
+        filter:brightness(0.8);
     }
 }
 

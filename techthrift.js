@@ -32,6 +32,17 @@ app.get('/product', (req, res) => {
     });
 });
 
+// Category
+app.get('/category', (req, res) => {
+    const homepagePath = path.join(__dirname, 'html/category.html');
+    res.sendFile(homepagePath, (err) => {
+        if (err) {
+            console.error('Error serving homepage.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 // Authentication
 app.get('/authentication', (req, res) => {
     const homepagePath = path.join(__dirname, 'html/authentication.html');

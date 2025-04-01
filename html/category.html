@@ -15,7 +15,7 @@
     <!-- Stylesheets -->
 </head>
 
-<body id="productPage">
+<body id="categoryPage">
 
     <!-- Header -->
     <header class="p-3 bg-white border-bottom">
@@ -84,11 +84,25 @@
     <!-- Navbar -->
     <!-- Header -->
 
-    <!-- Product Information -->
-    <div id="product-info">
-        <!-- Product information will be injected here dynamically -->
-    </div>
-    <!-- Product Information -->  
+    <!-- Products -->
+    <section>
+        <div class="container my-5">
+            <header class="mb-4">
+                <h3 id="category-indicator"></h3>
+            </header>
+            <div class="row" id="product-list">
+                <!-- Products will be injected here dynamically -->
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="d-flex justify-content-center mt-4">
+                <button id="paginationPrevPage" class="btn btn-secondary me-2" disabled>Previous</button>
+                <span id="paginationPageIndicator" class="align-self-center">Page 1</span>
+                <button id="paginationNextPage" class="btn btn-secondary ms-2">Next</button>
+            </div>
+        </div>
+    </section>
+    <!-- Products -->
 
     <!-- Footer -->
     <section class="mt-5" style="background-color: #f5f5f5;">

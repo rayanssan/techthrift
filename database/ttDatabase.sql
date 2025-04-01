@@ -62,6 +62,18 @@ CREATE TABLE IF NOT EXISTS space (
 CREATE TABLE IF NOT EXISTS categories (
     category VARCHAR(255) PRIMARY KEY NOT NULL
 );
+INSERT INTO categories (category) VALUES 
+("Smartphones"),
+("Laptops & PCs"),
+("Smartwatches"),
+('Gaming'),
+('TVs & Monitors'),
+('Audio'),
+('Tablets'),
+('Cameras'),
+('Accessories'),
+('Home Appliances'),
+('Other');
 
 CREATE TABLE IF NOT EXISTS products (
     id INT PRIMARY KEY AUTO_INCREMENT,

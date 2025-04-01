@@ -1,5 +1,7 @@
 body {
   background-color: #f8f9fa;
+  font-family: "Lucida Grande", sans-serif;
+  transition: all;
 }
 
 .navbar-brand {
@@ -40,14 +42,34 @@ body {
   -o-object-fit: contain;
      object-fit: contain;
 }
-.product-link img:hover, #productCarousel img:hover {
+.product-link:hover, #productCarousel:hover {
   cursor: pointer;
+}
+.product-link .card .badge, #productCarousel .card .badge {
+  width: -moz-fit-content;
+  width: fit-content;
+  font-size: small;
+}
+.product-link .card:hover, #productCarousel .card:hover {
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+.product-link .card:active, #productCarousel .card:active {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
 }
 
 #product-info .img-thumbnail {
   aspect-ratio: 1;
   -o-object-fit: contain;
      object-fit: contain;
+}
+#product-info .img-thumbnail .active {
+  border: 2px solid navy;
+}
+#product-info .img-thumbnail:hover {
+  filter: brightness(0.9);
+}
+#product-info .img-thumbnail:active {
+  filter: brightness(0.8);
 }
 
 .footer {

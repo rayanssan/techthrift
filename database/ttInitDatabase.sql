@@ -18,19 +18,6 @@ INSERT INTO entities (id, nipc,  entity_type) VALUES
 
 INSERT INTO employees (id, store) VALUES (3, 2);
 
-INSERT INTO categories (category) VALUES 
-("Smartphones"),
-("Laptops & PCs"),
-("Smartwatches"),
-('Gaming'),
-('TVs & Monitors'),
-('Audio'),
-('Tablets'),
-('Cameras'),
-('Accessories'),
-('Home Appliances'),
-('Other');
-
 INSERT INTO products (id, name, store_nipc, product_condition, 
 availability, description, category, brand, model_code, color, weight, 
 dimensions, processor, screen, ram_memory, graphics_card, storage, keyboard, os, year) VALUES
