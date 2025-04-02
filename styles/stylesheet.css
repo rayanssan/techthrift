@@ -78,3 +78,30 @@ body {
   text-align: center;
   padding: 15px;
 }/*# sourceMappingURL=stylesheet.css.map */
+
+.sidebar .nav-link {
+  transition: box-shadow 0.02s ease-in-out, background-color 0.2s ease-in-out;
+  border-radius: 5px;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fixed-top {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  left: 0;
+  right: 0;
+}
+.bg-white {
+  background-color: white !important;
+}
+.shadow {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
