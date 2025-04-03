@@ -1,0 +1,14 @@
+@media (max-width: 768px) {
+  #filtersContainer.fixed-top {
+    position: relative !important;
+  }
+  #filtersContainer select {
+    max-width: 100% !important;
+  }
+  #filtersContainer div {
+    flex-direction: column;
+  }
+  #filtersContainer div input[type=range] {
+    width: 100%;
+  }
+}/*# sourceMappingURL=mediaqueries.css.map */

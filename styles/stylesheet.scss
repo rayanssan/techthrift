@@ -1,3 +1,5 @@
+@import "mediaqueries";
+
 body {
     background-color: #f8f9fa;
     font-family: "Lucida Grande", sans-serif;
@@ -82,6 +84,52 @@ body {
     }
 }
 
+#search-form {
+    button[type=submit] {
+        border-top-right-radius: var(--bs-border-radius);
+        border-bottom-right-radius: var(--bs-border-radius);
+    }
+
+    #recent-searches-wrapper {
+        position: relative;
+        width: inherit;
+        margin: 0;
+
+        #recent-searches {
+            position: absolute;
+            width: inherit;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+            border-bottom-right-radius: var(--bs-border-radius);
+            border-bottom-left-radius: var(--bs-border-radius);
+        }
+
+        #recent-searches-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #recent-searches-list li a {
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+
+        #recent-searches-list li a:hover {
+            cursor: pointer;
+            background-color: #f1f1f1;
+        }
+    }
+}
+
 .footer {
     background-color: #343a40;
     color: white;
@@ -120,18 +168,9 @@ body {
         padding: 10px 15px;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     }
-}
 
-// Responsive styling for filters
-@media (max-width: 768px) {
-    #filtersContainer {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    select, input, button {
-        width: 100%;
-        margin-bottom: 10px;
+    select {
+        max-width: 130px;
     }
 }
 
@@ -145,6 +184,8 @@ select {
     border-radius: 5px;
     background-color: white;
     cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:focus {
         outline: none;
@@ -163,10 +204,9 @@ select {
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
-    width: 100%;
-    height: 6px;
-    background: #ddd;
-    border-radius: 5px;
+    height: 16px;
+    background: white;
+    border-radius: 10px;
     outline: none;
     transition: background 0.3s;
     cursor: pointer;

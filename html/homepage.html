@@ -83,7 +83,7 @@
         <div class="container justify-content-center justify-content-md-between">
             <!-- Sidebar navigation for narrow displays  -->
             <!-- Toggle button -->
-            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark" type="button"
+            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark w-100" type="button"
                 data-mdb-toggle="collapse" data-mdb-target="#navbarLeftAlignExample"
                 aria-controls="navbarLeftAlignExample" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
@@ -143,48 +143,58 @@
             </header>
 
             <!-- Filters and Sorting -->
-            <div id="filtersContainer" class="d-flex mb-3 align-items-center justify-content-between">
-                <div class="d-flex">
-                    <select id="filterBrand" class="form-select me-2 w-auto">
-                        <option value="">Brand</option>
-                        <!-- Options dynamically added -->
-                    </select>
+            <div id="filtersContainer" class="container-fluid">
+                <div class="row g-2 align-items-center d-flex w-100">
+                    <!-- Filters -->
+                    <div class="col-12 col-md-auto d-flex flex-wrap justify-content-center w-100 gap-2">
+                        <select id="filterBrand" class="form-select w-auto">
+                            <option value="">Brand</option>
+                            <!-- Options dynamically added -->
+                        </select>
 
-                    <select id="filterCondition" class="form-select me-2 w-auto">
-                        <option value="">Condition</option>
-                        <option value="Like New">Like New</option>
-                        <option value="Excellent">Excellent</option>
-                        <option value="Good">Good</option>
-                        <option value="Needs Repair">Needs Repair</option>
-                    </select>
+                        <select id="filterCondition" class="form-select w-auto">
+                            <option value="">Condition</option>
+                            <option value="Like New">Like New</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Needs Repair">Needs Repair</option>
+                        </select>
 
-                    <select id="filterColor" class="form-select me-2 w-auto">
-                        <option value="">Color</option>
-                        <!-- Options dynamically added -->
-                    </select>
+                        <select id="filterColor" class="form-select w-auto">
+                            <option value="">Color</option>
+                            <!-- Options dynamically added -->
+                        </select>
 
-                    <select id="filterYear" class="form-select me-2 w-auto">
-                        <option value="">Year</option>
-                        <!-- Options dynamically added -->
-                    </select>
+                        <select id="filterYear" class="form-select w-auto">
+                            <option value="">Year</option>
+                            <!-- Options dynamically added -->
+                        </select>
 
-                    <!-- Price Range with Fixed Width -->
-                    <div id="price-filter-container">
-                        <label for="maxPrice">Max Price</label>
-                        <input type="range" id="maxPrice" class="form-range w-auto" min="0" max="5000" step="10">
-                        <span id="maxPriceValue">€5000</span>
+                        <!-- Price Range -->
+                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
+                            <label for="maxPrice" class="me-2">Max Price</label>
+                            <input type="range" id="maxPrice" class="mb-0 border">
+                            <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
+                        </div>
+
+                        <!-- Apply Button -->
+                        <div class="col-12 col-md-auto">
+                            <button id="applyFilters" class="m-0 btn btn-outline-primary w-100">Filter</button>
+                        </div>
+
+                        <!-- Sorting Dropdown -->
+                        <div class="col-12 col-md-auto">
+                            <select id="sortDropdown" class="form-select">
+                                <option value="">Sort By</option>
+                                <option value="price-asc">Price: Low to High</option>
+                                <option value="price-desc">Price: High to Low</option>
+                                <option value="condition">Condition</option>
+                            </select>
+                        </div>
                     </div>
-                    <button id="applyFilters" class="btn border">Filter</button>
                 </div>
-
-                <!-- Sorting Dropdown -->
-                <select id="sortDropdown" class="form-select w-auto">
-                    <option value="">Sort By</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="condition">Condition</option>
-                </select>
             </div>
+            <!-- Filters and Sorting -->
 
             <div class="row" id="product-list">
                 <!-- Products will be injected here dynamically -->

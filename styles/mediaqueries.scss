@@ -1,0 +1,18 @@
+// Responsive styling for filters
+@media (max-width: 768px) {
+    #filtersContainer {
+        &.fixed-top {
+            position: relative !important;
+        }
+        select {
+            max-width: 100% !important;
+        }
+        div {
+            flex-direction: column;
+
+            input[type='range'] {
+                width: 100%;
+            }
+        }
+    }
+}
