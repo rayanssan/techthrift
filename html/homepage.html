@@ -168,10 +168,12 @@
                         <!-- Options dynamically added -->
                     </select>
 
-                    <!-- Price Range -->
-                    <input type="number" id="minPrice" class="form-control me-2 w-auto" placeholder="Min Price">
-                    <input type="number" id="maxPrice" class="form-control me-2 w-auto" placeholder="Max Price">
-
+                    <!-- Price Range with Fixed Width -->
+                    <div id="price-filter-container">
+                        <label for="maxPrice">Max Price</label>
+                        <input type="range" id="maxPrice" class="form-range w-auto" min="0" max="5000" step="10">
+                        <span id="maxPriceValue">€5000</span>
+                    </div>
                     <button id="applyFilters" class="btn border">Filter</button>
                 </div>
 
