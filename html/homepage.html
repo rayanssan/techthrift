@@ -35,9 +35,8 @@
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
                     <form id="search-form" class="input-group flex-grow-1">
-                        <input id="search-input" type="text" class="form-control" 
-                            placeholder="Search for electronics..."
-                            aria-label="Search">
+                        <input id="search-input" type="text" class="form-control"
+                            placeholder="Search for electronics..." aria-label="Search">
                         <button class="btn btn-dark" type="submit">Search</button>
                         <!-- Recent Searches -->
                         <div id="recent-searches-wrapper">
@@ -84,22 +83,16 @@
         <div class="container justify-content-center justify-content-md-between">
             <!-- Sidebar navigation for narrow displays  -->
             <!-- Toggle button -->
-            <button id="sidebar-toggle" 
-                class="navbar-toggler border py-2 text-dark" type="button" 
-                data-mdb-toggle="collapse"
-                data-mdb-target="#navbarLeftAlignExample" 
-                aria-controls="navbarLeftAlignExample" aria-expanded="false"
-                aria-label="Toggle navigation">
+            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark" type="button"
+                data-mdb-toggle="collapse" data-mdb-target="#navbarLeftAlignExample"
+                aria-controls="navbarLeftAlignExample" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
             <!-- Toggle button -->
-            <div id="categories-sidebar"
-            class="offcanvas offcanvas-start navbar-nav collapse" 
-            tabindex="-1">
+            <div id="categories-sidebar" class="offcanvas offcanvas-start navbar-nav collapse" tabindex="-1">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title">Categories</h5>
-                    <button type="button" class="btn-close" 
-                    data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <!-- Links for category pages will be injected here -->
             </div>
@@ -148,6 +141,49 @@
             <header class="mb-4">
                 <h3>Just In</h3>
             </header>
+
+            <!-- Filters and Sorting -->
+            <div id="filtersContainer" class="d-flex mb-3 align-items-center justify-content-between">
+                <div class="d-flex">
+                    <select id="filterBrand" class="form-select me-2 w-auto">
+                        <option value="">Brand</option>
+                        <!-- Options dynamically added -->
+                    </select>
+
+                    <select id="filterCondition" class="form-select me-2 w-auto">
+                        <option value="">Condition</option>
+                        <option value="Like New">Like New</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Needs Repair">Needs Repair</option>
+                    </select>
+
+                    <select id="filterColor" class="form-select me-2 w-auto">
+                        <option value="">Color</option>
+                        <!-- Options dynamically added -->
+                    </select>
+
+                    <select id="filterYear" class="form-select me-2 w-auto">
+                        <option value="">Year</option>
+                        <!-- Options dynamically added -->
+                    </select>
+
+                    <!-- Price Range -->
+                    <input type="number" id="minPrice" class="form-control me-2 w-auto" placeholder="Min Price">
+                    <input type="number" id="maxPrice" class="form-control me-2 w-auto" placeholder="Max Price">
+
+                    <button id="applyFilters" class="btn border">Filter</button>
+                </div>
+
+                <!-- Sorting Dropdown -->
+                <select id="sortDropdown" class="form-select w-auto">
+                    <option value="">Sort By</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="condition">Condition</option>
+                </select>
+            </div>
+
             <div class="row" id="product-list">
                 <!-- Products will be injected here dynamically -->
             </div>

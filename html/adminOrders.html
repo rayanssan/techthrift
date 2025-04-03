@@ -139,6 +139,46 @@
                 document.getElementById('sellTab').classList.toggle('active', type === 'sell');
                 document.getElementById('repairTab').classList.toggle('active', type === 'repair');
             }
+
+            // Fetch the repair orders and populate the orders table
+            async function fetchRepairOrders() {
+                try {
+                    const res = await fetch('/tt/repair');
+                    const repairs = await res.json();
+                    const repairList = document.getElementById('order-list');
+
+                    repairList.innerHTML = '';  // Clear existing data
+
+                    repairs.forEach(repair => {
+                        const row = document.createElement('tr');
+                        
+                        const orderIdCell = document.createElement('td');
+                        orderIdCell.textContent = repair.id;  // Assuming 'id' is the order ID from the 'repairProducts' table
+                        row.appendChild(orderIdCell);
+
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = 'Repair Order';  // Static for repairs
+                        row.appendChild(typeCell);
+
+                        const detailsCell = document.createElement('td');
+                        detailsCell.textContent = repair.name;  // Example: Show product name as details
+                        row.appendChild(detailsCell);
+
+                        const statusCell = document.createElement('td');
+                        statusCell.textContent = repair.status ? 'Completed' : 'Pending';  // Assuming 'status' field exists
+                        row.appendChild(statusCell);
+
+                        repairList.appendChild(row);
+                    });
+                } catch (err) {
+                    console.error('Error fetching repair orders:', err);
+                }
+            }
+
+            // Call fetchRepairOrders when the page loads
+            window.onload = function() {
+                fetchRepairOrders();
+            };
         </script>
     </body>
 </html>

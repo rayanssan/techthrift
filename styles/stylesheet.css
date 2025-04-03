@@ -37,23 +37,28 @@ body {
   height: 300px;
 }
 
-.product-link img, #productCarousel img {
+.product-link img,
+#productCarousel img {
   aspect-ratio: 1;
   -o-object-fit: contain;
      object-fit: contain;
 }
-.product-link:hover, #productCarousel:hover {
+.product-link:hover,
+#productCarousel:hover {
   cursor: pointer;
 }
-.product-link .card .badge, #productCarousel .card .badge {
+.product-link .card .badge,
+#productCarousel .card .badge {
   width: -moz-fit-content;
   width: fit-content;
   font-size: small;
 }
-.product-link .card:hover, #productCarousel .card:hover {
+.product-link .card:hover,
+#productCarousel .card:hover {
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
 }
-.product-link .card:active, #productCarousel .card:active {
+.product-link .card:active,
+#productCarousel .card:active {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
 }
 
@@ -116,4 +121,15 @@ body {
 #search-form #recent-searches-wrapper #recent-searches-list li a:hover {
   cursor: pointer;
   background-color: #f1f1f1;
+}
+
+.sidebar .nav-link {
+  transition: box-shadow 0.02s ease-in-out, background-color 0.2s ease-in-out;
+  border-radius: 5px;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
 }/*# sourceMappingURL=stylesheet.css.map */

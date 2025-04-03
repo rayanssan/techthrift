@@ -594,3 +594,92 @@ if (document.body.id === "homepage") {
     });
 
 }
+
+if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
+    document.addEventListener("DOMContentLoaded", () => {
+        const filterBrand = document.getElementById("filterBrand");
+        const filterCondition = document.getElementById("filterCondition");
+        const filterColor = document.getElementById("filterColor");
+        const filterYear = document.getElementById("filterYear");
+        const minPrice = document.getElementById("minPrice");
+        const maxPrice = document.getElementById("maxPrice");
+        const applyFiltersButton = document.getElementById("applyFilters");
+        const sortDropdown = document.getElementById("sortDropdown");
+        const filtersContainer = document.getElementById("filtersContainer");
+
+        let filteredProducts = [];
+        let products = [];
+        let filtersOffsetTop = filtersContainer.offsetTop;
+
+        async function fetchInitialProducts() {
+            try {
+                const response = await fetch("/tt");
+                const data = await response.json();
+
+                const uniqueProducts = new Map();
+                data.forEach(product => uniqueProducts.set(product.id, product));
+
+                products = Array.from(uniqueProducts.values());
+                filteredProducts = [...products];
+                renderProducts();
+            } catch (error) {
+                console.error("Error fetching initial products:", error);
+            }
+        }
+
+        async function applyFilters() {
+            try {
+                const queryParams = new URLSearchParams();
+                if (filterBrand.value) queryParams.append("brand", filterBrand.value);
+                if (filterCondition.value) queryParams.append("condition", filterCondition.value);
+                if (filterColor.value) queryParams.append("color", filterColor.value);
+                if (filterYear.value) queryParams.append("year", filterYear.value);
+                if (minPrice.value) queryParams.append("minPrice", minPrice.value);
+                if (maxPrice.value) queryParams.append("maxPrice", maxPrice.value);
+
+                const response = await fetch(`/tt?${queryParams.toString()}`);
+                const data = await response.json();
+
+                const uniqueProducts = new Map();
+                data.forEach(product => uniqueProducts.set(product.id, product));
+
+                filteredProducts = Array.from(uniqueProducts.values());
+                renderProducts();
+            } catch (error) {
+                console.error("Error applying filters:", error);
+            }
+        }
+
+        function applySorting() {
+            let productsToSort = filteredProducts.length ? filteredProducts : products;
+
+            if (sortDropdown.value === "price-asc") {
+                productsToSort.sort((a, b) => a.price - b.price);
+            } else if (sortDropdown.value === "price-desc") {
+                productsToSort.sort((a, b) => b.price - a.price);
+            } else if (sortDropdown.value === "condition") {
+                const conditionOrder = ["Like New", "Excellent", "Good", "Needs Repair"];
+                productsToSort.sort((a, b) => conditionOrder.indexOf(a.product_condition) - conditionOrder.indexOf(b.product_condition));
+            }
+            renderProducts();
+        }
+
+        applyFiltersButton.addEventListener("click", applyFilters);
+        sortDropdown.addEventListener("change", applySorting);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            filtersOffsetTop = filtersContainer.offsetTop; 
+            // Ensure correct offset after DOM loads
+        });
+        // Update pagination controls    
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > filtersOffsetTop) {
+                filtersContainer.classList.add("fixed-top", "bg-white", "shadow");
+            } else {
+                filtersContainer.classList.remove("fixed-top", "bg-white", "shadow");
+            }
+        });
+
+        fetchInitialProducts();
+    });
+}

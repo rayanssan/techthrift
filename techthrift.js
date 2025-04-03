@@ -120,6 +120,17 @@ app.get('/adminUsers', (req, res) => {
     });
 });
 
+// Admin Orders
+app.get('/adminOrders', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/adminOrders.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving adminadminOrders.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
