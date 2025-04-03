@@ -39,15 +39,29 @@
                             placeholder="Search for electronics..."
                             aria-label="Search">
                         <button class="btn btn-dark" type="submit">Search</button>
+                        <!-- Recent Searches -->
+                        <div id="recent-searches-wrapper">
+                            <div id="recent-searches" style="display: none;">
+                                <ul id="recent-searches-list">
+                                    <!-- Recent searches will be injected here -->
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Recent Searches -->
                     </form>
                 </div>
                 <!-- Left elements -->
 
                 <!-- Right elements -->
-                <div class="col-lg-5 col-sm-8 col-8 d-flex justify-content-end ms-auto">
+                <div class="col-lg-5 col-sm-9 col-8 d-flex justify-content-end ms-auto">
                     <a href="/authentication" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center">
                         <i class="fas fa-user-alt m-1 me-md-2"></i>
                         <p class="d-none d-md-block mb-0">Sign in</p>
+                    </a>
+                    <a href="/storesMap" class="me-1 border rounded py-1 px-3 nav-link d-flex 
+                    align-items-center">
+                        <i class="fas fa-store m-1 me-md-2"></i>
+                        <p class="d-none d-md-block mb-0">Stores</p>
                     </a>
                     <a href="#" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center">
                         <i class="fas fa-heart m-1 me-md-2"></i>
@@ -55,7 +69,7 @@
                     </a>
                     <a href="/cart" class="border rounded py-1 px-3 nav-link d-flex align-items-center">
                         <i class="fas fa-shopping-cart m-1 me-md-2"></i>
-                        <p class="d-none d-md-block mb-0">My cart</p>
+                        <p class="d-none d-md-block mb-0">Cart</p>
                     </a>
                 </div>
                 <!-- Right elements -->
@@ -67,26 +81,38 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white">
         <!-- Container wrapper -->
         <div class="container justify-content-center justify-content-md-between">
+            <!-- Sidebar navigation for narrow displays  -->
             <!-- Toggle button -->
-            <button class="navbar-toggler border py-2 text-dark" type="button" data-mdb-toggle="collapse"
+            <button id="sidebar-toggle" 
+                class="navbar-toggler border py-2 text-dark" type="button" 
+                data-mdb-toggle="collapse"
                 data-mdb-target="#navbarLeftAlignExample" 
                 aria-controls="navbarLeftAlignExample" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
+            <!-- Toggle button -->
+            <div id="categories-sidebar"
+            class="offcanvas offcanvas-start navbar-nav collapse" 
+            tabindex="-1">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Categories</h5>
+                    <button type="button" class="btn-close" 
+                    data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <!-- Links for category pages will be injected here -->
+            </div>
+            <!-- Sidebar navigation for narrow displays  -->
 
-            <!-- Collapsible wrapper -->
+            <!-- Navigation for wide displays-->
             <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
                 <!-- Links -->
                 <ul id="categories-nav" class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/homepage">Home</a>
-                    </li>
                     <!-- Links for category pages will be injected here -->
                 </ul>
                 <!-- Links -->
             </div>
-            <!-- Collapsible wrapper -->
+            <!-- Navigation for wide displays -->
         </div>
         <!-- Container wrapper -->
     </nav>
@@ -97,7 +123,7 @@
     <section>
         <div class="container my-5">
             <header class="mb-4">
-                <h3 id="search-indicator"></h3>
+                <h3 id="search-indicator" class="text-truncate"></h3>
             </header>
             <div class="row" id="product-list">
                 <!-- Products will be injected here dynamically -->

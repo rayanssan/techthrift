@@ -183,7 +183,9 @@ if (document.body.id === "homepage") {
                     <div class="row">
                         <!-- Left side: Image Carousel -->
                         <div class="col-lg-4 col-md-5 col-12">
-                            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div id="productCarousel" class="carousel slide" 
+                            style="background: white;"
+                            data-bs-ride="carousel">
                                 <div class="carousel-inner shadow border rounded">
                                     ${Object.entries(product.images)
                     .sort(([a], [b]) => a - b) // Sort images by order
@@ -229,8 +231,9 @@ if (document.body.id === "homepage") {
                 } fs-6">${product.product_condition} </span>
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
-                                <a href="#!" class="btn btn-primary me-2 shadow">Add to cart</a>
-                                <a href="#!" class="btn btn-light border icon-hover shadow">
+                                ${localStorage.getItem('cartProducts') && localStorage.getItem('cartProducts').includes(product.id) ?
+                    `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` : `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
+                                <a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                 </a>
                             </div>
@@ -244,6 +247,21 @@ if (document.body.id === "homepage") {
                 </div>
             `;
             productContainer.innerHTML += productInfo;
+            // Add event listener for "Add to cart" button
+            document.getElementById('add-to-cart-button').addEventListener('click', function () {
+                // Get the current cart products from localStorage (initialize as an empty array if not set)
+                let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
+
+                // Add the current product's id to the cart array if not already in the cart
+                if (!cartProducts.includes(product.id)) {
+                    cartProducts.push(product.id);
+                    localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+                }
+
+                this.textContent = "In your cart";
+                this.classList.replace("btn-primary", "btn-success");
+                window.location.href = "/cart";
+            });
         } catch (error) {
             console.log("Error fetching product:", error);
             const productContainer = document.getElementById('product-info');
@@ -256,7 +274,7 @@ if (document.body.id === "homepage") {
 
     document.addEventListener('DOMContentLoaded', function () {
         fetchOneSellingProduct().then(() => {
-            this.querySelectorAll(".carousel-item").forEach( item => {
+            this.querySelectorAll(".carousel-item").forEach(item => {
                 item.addEventListener("click", () => {
                     let modal = document.getElementById("image-popup");
                     const imageSrc = item.querySelector("img").src;
@@ -279,10 +297,10 @@ if (document.body.id === "homepage") {
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content border-0 text-center rounded" style="background: white;">
                                     <button type="button" class="btn-close 
-                                    position-absolute top-0 end-0 m-3"
+                                    position-absolute top-0 end-0 pt-4 pb-2" style="padding-right: 25px;"
                                     aria-label="Close"></button>
                                     <img src="${imageSrc}" class="img-fluid 
-                                    rounded shadow-lg" style="max-width: 90vw; max-height: 90vh;" />
+                                    p-3 mt-5 border-top shadow-lg" style="max-width: 80vw; max-height: 80vh;" />
                                 </div>
                             </div>
                         `;
@@ -419,7 +437,7 @@ if (document.body.id === "homepage") {
                 `/tt?color=${encodeURIComponent(search)}`,
                 `/tt?processor=${encodeURIComponent(search)}`,
                 `/tt?os=${encodeURIComponent(search)}`,
-                `/tt?storage=${encodeURIComponent(search)}`
+                `/tt?storage=${encodeURIComponent(search)}`,
             ];
 
             // Fetch all requests
@@ -473,4 +491,106 @@ if (document.body.id === "homepage") {
         });
 
     });
+} else if (document.body.id === "cartPage") {
+    /**
+     * Fetches the products added to the cart from the localStorage and 
+     * displays them on the page.
+     * 
+     * This function retrieves the product IDs stored in `localStorage` under the key "cartProducts",
+     * fetches the details of each product from the server using those IDs, and then renders the products
+     * in the cart. If there are no products in the cart, it displays a message indicating the cart is empty.
+     * In case of an error, an error message is shown.
+     * 
+     * @async
+     * @function
+     * @throws {Error} If there is an issue with fetching product data.
+     */
+    async function fetchCartProducts() {
+        try {
+            // Get product IDs from local storage cart items
+            let cartProductIds = JSON.parse(localStorage.getItem('cartProducts')) || [];
+
+            // Fetch details for each product
+            const productRequests = cartProductIds.map(id =>
+                fetch(`/tt/product/${id}`)
+            );
+
+            const responses = await Promise.all(productRequests);
+            const data = await Promise.all(responses.map(response => response.json()));
+            products = data;
+
+            if (products.length > 0) {
+                renderCartProducts();
+            } else {
+                const productContainer = document.getElementById('product-list');
+                productContainer.innerHTML = `<div class="container my-4">
+                <p class="text-center fw-bold display-4">Nothing in the cart yet.</p>
+                <p class="text-center">Time to go thrifting!</p>
+                </div>`;
+            }
+        } catch (error) {
+            const productContainer = document.getElementById('product-list');
+            productContainer.innerHTML = `<div class="container my-4">
+            <p class="text-center fw-bold display-4">Sorry, an error happened. ☹️</p>
+            <p class="text-center">Please try refreshing the page.</p>
+            </div>`;
+            console.error('Error fetching products:', error);
+        }
+    }
+
+    /**
+     * Renders the products in the shopping cart on the webpage. 
+     * This function also handles the removal of a product
+     * from the cart and from `localStorage`.
+     * 
+     * @function
+     */
+    function renderCartProducts() {
+        const productContainer = document.getElementById('product-list');
+        productContainer.innerHTML = ''; // Clear previous content
+
+        const start = (currentPage - 1) * productsPerPage;
+        const end = start + productsPerPage;
+        const paginatedProducts = products.slice(start, end);
+
+        paginatedProducts.forEach(product => {
+            const productCard = `
+            <div id="productid-${product.id}" class="col-lg-3 col-md-6 col-sm-6 d-flex mb-auto product-link">
+                <div class="card w-100 my-2 shadow h-100">
+                    <img alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title text-truncate">${product.name}</h6>
+                        <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
+                    product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
+                }">${product.product_condition} </p>
+                        <p class="card-text fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                        <!-- Button to remove product from cart -->
+                        <button class="btn btn-danger btn-sm remove-product" data-product-id="${product.id}">X</button>
+                    </div>
+                </div>
+            </div>`;
+
+            productContainer.innerHTML += productCard;
+            // Event listeners for button to remove products from the cart
+            document.querySelectorAll('.remove-product').forEach(button => {
+                button.addEventListener('click', function (event) {
+                    const productId = button.getAttribute('data-product-id');
+
+                    // Remove the product ID from the cart in localStorage
+                    let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
+                    cartProducts = cartProducts.filter(id => id != productId);
+                    localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+
+                    // Remove the product card from the interface
+                    const productCard = document.getElementById(`productid-${productId}`);
+                    productCard.remove();
+                });
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchCartProducts();
+    });
+
 }

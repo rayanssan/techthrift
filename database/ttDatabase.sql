@@ -105,11 +105,11 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE TABLE IF NOT EXISTS productImages (
-    id INT PRIMARY KEY AUTO_INCREMENT,
     product INT NOT NULL,
     image_path VARCHAR(255) NOT NULL,
     image_order INT NOT NULL,
 
+    PRIMARY KEY (product, image_order),
     FOREIGN KEY (product) REFERENCES products(id),
     CHECK (image_order >= 1 AND image_order <= 5)
 );

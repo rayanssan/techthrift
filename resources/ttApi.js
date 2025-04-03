@@ -61,7 +61,7 @@ router.get('/tt', (req, res) => {
         params.push(maxPrice);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
+        query += ' AND c.name LIKE ?';
         params.push(`%${store}%`);
     }
 
@@ -126,7 +126,7 @@ router.get('/tt/product', (req, res) => {
         params.push((availability === 'true' || availability === "1") ? 1 : 0);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
+        query += ' AND c.name LIKE ?';
         params.push(`%${store}%`);
     }
 
@@ -326,7 +326,7 @@ router.get('/tt/repair', (req, res) => {
         params.push(year);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
+        query += ' AND c.name LIKE ?';
         params.push(`%${store}%`);
     }
 
@@ -452,11 +452,11 @@ router.get('/tt/donation', (req, res) => {
         params.push(year);
     }
     if (store) {
-        query += ' AND c1.name RLIKE ?';
+        query += ' AND c1.name LIKE ?';
         params.push(`%${store}%`);
     }
     if (charity) {
-        query += ' AND c2.name RLIKE ?';
+        query += ' AND c2.name LIKE ?';
         params.push(`%${charity}%`);
     }
 

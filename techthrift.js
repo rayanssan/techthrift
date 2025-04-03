@@ -26,7 +26,7 @@ app.get('/product', (req, res) => {
     const pagePath = path.join(__dirname, 'html/product.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving homepage.html:', err);
+            console.error('Error serving product.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -37,7 +37,7 @@ app.get('/category', (req, res) => {
     const pagePath = path.join(__dirname, 'html/category.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving homepage.html:', err);
+            console.error('Error serving category.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -48,7 +48,7 @@ app.get('/search', (req, res) => {
     const pagePath = path.join(__dirname, 'html/search.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving homepage.html:', err);
+            console.error('Error serving search.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -59,7 +59,18 @@ app.get('/cart', (req, res) => {
     const pagePath = path.join(__dirname, 'html/cart.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving homepage.html:', err);
+            console.error('Error serving cart.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Stores Map
+app.get('/storesMap', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/storesMap.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving storesMap.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -70,7 +81,7 @@ app.get('/authentication', (req, res) => {
     const pagePath = path.join(__dirname, 'html/authentication.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving homepage.html:', err);
+            console.error('Error serving authentication.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });

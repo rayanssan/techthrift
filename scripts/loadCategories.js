@@ -18,6 +18,7 @@ function loadCategories() {
     const selectedCategory = urlParam.get('id');
     
     const navList = document.getElementById("categories-nav");
+    const sidebarList = document.getElementById("categories-sidebar");
     
     categories.forEach(category => {
         const listItem = document.createElement("li");
@@ -36,7 +37,39 @@ function loadCategories() {
         
         listItem.appendChild(link);
         navList.appendChild(listItem);
+
+        // Create sidebar item
+        const sidebarItem = document.createElement("li");
+        sidebarItem.className = "nav-item";
+
+        const sidebarLink = document.createElement("a");
+        sidebarLink.className = "nav-link border-top border-bottom p-3";
+        sidebarLink.href = `/category?is=${encodeURIComponent(category)}`;
+        sidebarLink.textContent = category;
+
+        if (category === selectedCategory) {
+            sidebarLink.style.color = "navy";
+            sidebarLink.style.fontWeight = "bolder";
+        }
+
+        sidebarItem.appendChild(sidebarLink);
+        sidebarList.appendChild(sidebarItem);
     });
 }
 
 document.addEventListener("DOMContentLoaded", loadCategories);
+
+// Event listeners for the sidebar
+document.getElementById("sidebar-toggle").addEventListener("click", function () {
+    document.getElementById("categories-sidebar").classList.toggle("show");
+});
+document.querySelector("#categories-sidebar .btn-close").
+addEventListener("click", function () {
+    document.getElementById("categories-sidebar").classList.remove("show");
+});
+// Close the sidebar if window width changes
+window.addEventListener("resize", function () {
+    if (window.innerWidth >= 992) {
+        document.getElementById("categories-sidebar").classList.remove("show");
+    }
+});
