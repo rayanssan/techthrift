@@ -2,6 +2,7 @@
 
 const express = require('express');
 const path = require('path');
+const os = require('os');
 const app = express();
 const PORT = 3000;
 const dbConnection = require('./resources/dbConnection.js');
@@ -131,6 +132,19 @@ app.get('/adminOrders', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+function getLocalIPAddress() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1'; // fallback
+}
+
+app.listen(PORT);
+app.listen(PORT, getLocalIPAddress(), () => {
+    console.log(`Server is running on http://${getLocalIPAddress()}:${PORT} and http://localhost:${PORT}`);
 });

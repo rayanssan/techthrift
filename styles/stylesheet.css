@@ -1,4 +1,15 @@
+@media (max-width: 1200px) {
+  #search-form {
+    display: none !important;
+  }
+  #search-form-mobile {
+    display: flex !important;
+  }
+}
 @media (max-width: 768px) {
+  .main-banner #main-banner-brand {
+    display: none;
+  }
   #filtersContainer.fixed-top {
     position: relative !important;
   }
@@ -91,16 +102,16 @@ body {
   filter: brightness(0.8);
 }
 
-#search-form button[type=submit] {
+#search-form button[type=submit], #search-form-mobile button[type=submit] {
   border-top-right-radius: var(--bs-border-radius);
   border-bottom-right-radius: var(--bs-border-radius);
 }
-#search-form #recent-searches-wrapper {
+#search-form #recent-searches-wrapper, #search-form #recent-searches-wrapper-mobile, #search-form-mobile #recent-searches-wrapper, #search-form-mobile #recent-searches-wrapper-mobile {
   position: relative;
   width: inherit;
   margin: 0;
 }
-#search-form #recent-searches-wrapper #recent-searches {
+#search-form #recent-searches-wrapper #recent-searches, #search-form #recent-searches-wrapper #recent-searches-mobile, #search-form #recent-searches-wrapper-mobile #recent-searches, #search-form #recent-searches-wrapper-mobile #recent-searches-mobile, #search-form-mobile #recent-searches-wrapper #recent-searches, #search-form-mobile #recent-searches-wrapper #recent-searches-mobile, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-mobile {
   position: absolute;
   width: inherit;
   background-color: white;
@@ -112,12 +123,12 @@ body {
   border-bottom-right-radius: var(--bs-border-radius);
   border-bottom-left-radius: var(--bs-border-radius);
 }
-#search-form #recent-searches-wrapper #recent-searches-list {
+#search-form #recent-searches-wrapper #recent-searches-list, #search-form #recent-searches-wrapper #recent-searches-list-mobile, #search-form #recent-searches-wrapper-mobile #recent-searches-list, #search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile, #search-form-mobile #recent-searches-wrapper #recent-searches-list, #search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
-#search-form #recent-searches-wrapper #recent-searches-list li a {
+#search-form #recent-searches-wrapper #recent-searches-list li a, #search-form #recent-searches-wrapper #recent-searches-list-mobile li a, #search-form #recent-searches-wrapper-mobile #recent-searches-list li a, #search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile li a, #search-form-mobile #recent-searches-wrapper #recent-searches-list li a, #search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile li a, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list li a, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile li a {
   overflow-x: hidden;
   text-overflow: ellipsis;
   padding: 8px 12px;
@@ -125,9 +136,17 @@ body {
   color: #333;
   display: block;
 }
-#search-form #recent-searches-wrapper #recent-searches-list li a:hover {
+#search-form #recent-searches-wrapper #recent-searches-list li a:hover, #search-form #recent-searches-wrapper #recent-searches-list-mobile li a:hover, #search-form #recent-searches-wrapper-mobile #recent-searches-list li a:hover, #search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile li a:hover, #search-form-mobile #recent-searches-wrapper #recent-searches-list li a:hover, #search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile li a:hover, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list li a:hover, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile li a:hover {
   cursor: pointer;
   background-color: #f1f1f1;
+}
+
+#search-form {
+  max-width: 500px;
+}
+
+#search-form-mobile {
+  display: none;
 }
 
 .footer {
