@@ -29,15 +29,14 @@
     <header class="p-3 bg-white border-bottom">
         <div class="container">
             <div class="row align-items-center gap-3">
-                <!-- Left elements -->
-                <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
+                <!-- Header Elements -->
+                <div class="d-flex align-items-center">
                     <a id="header-brand" href="/homepage">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
                     <form id="search-form" class="input-group flex-grow-1">
-                        <input id="search-input" type="text" class="form-control" 
-                            placeholder="Search for electronics..."
-                            aria-label="Search">
+                        <input id="search-input" type="text" class="form-control"
+                            placeholder="Search for electronics..." aria-label="Search">
                         <button class="btn btn-dark" type="submit">Search</button>
                         <!-- Recent Searches -->
                         <div id="recent-searches-wrapper">
@@ -49,30 +48,47 @@
                         </div>
                         <!-- Recent Searches -->
                     </form>
+                    <div class="d-flex align-items-center ms-auto">
+                        <a href="/authentication" class="me-1 border 
+                        rounded py-1 px-3 nav-link d-flex 
+                            align-items-center">
+                            <i class="fas fa-user-alt m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Sign in</p>
+                        </a>
+                        <a href="/storesMap" class="me-1 border 
+                        rounded py-1 px-3 nav-link d-flex 
+                        align-items-center">
+                            <i class="fas fa-store m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Stores</p>
+                        </a>
+                        <a href="#" class="me-1 border rounded 
+                        py-1 px-3 nav-link d-flex align-items-center">
+                            <i class="fas fa-heart m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Wishlist</p>
+                        </a>
+                        <a href="/cart" class="border rounded 
+                        py-1 px-3 nav-link d-flex align-items-center">
+                            <i class="fas fa-shopping-cart m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Cart</p>
+                        </a>
+                    </div>
                 </div>
-                <!-- Left elements -->
 
-                <!-- Right elements -->
-                <div class="col-lg-5 col-sm-9 col-8 d-flex justify-content-end ms-auto">
-                    <a href="/authentication" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center">
-                        <i class="fas fa-user-alt m-1 me-md-2"></i>
-                        <p class="d-none d-md-block mb-0">Sign in</p>
-                    </a>
-                    <a href="/storesMap" class="me-1 border rounded py-1 px-3 nav-link d-flex 
-                    align-items-center">
-                        <i class="fas fa-store m-1 me-md-2"></i>
-                        <p class="d-none d-md-block mb-0">Stores</p>
-                    </a>
-                    <a href="#" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center">
-                        <i class="fas fa-heart m-1 me-md-2"></i>
-                        <p class="d-none d-md-block mb-0">Wishlist</p>
-                    </a>
-                    <a href="/cart" class="border rounded py-1 px-3 nav-link d-flex align-items-center">
-                        <i class="fas fa-shopping-cart m-1 me-md-2"></i>
-                        <p class="d-none d-md-block mb-0">Cart</p>
-                    </a>
-                </div>
-                <!-- Right elements -->
+                <form id="search-form-mobile" class="input-group flex-grow-1">
+                    <input id="search-input-mobile" type="text" class="form-control"
+                        placeholder="Search for electronics..." aria-label="Search">
+                    <button class="btn btn-dark" type="submit">Search</button>
+                    <!-- Recent Searches -->
+                    <div id="recent-searches-wrapper-mobile">
+                        <div id="recent-searches-mobile" style="display: none;">
+                            <ul id="recent-searches-list-mobile">
+                                <!-- Recent searches will be injected here -->
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Recent Searches -->
+                </form>
+                <!-- Header Elements -->
             </div>
         </div>
     </header>
@@ -83,22 +99,21 @@
         <div class="container justify-content-center justify-content-md-between">
             <!-- Sidebar navigation for narrow displays  -->
             <!-- Toggle button -->
-            <button id="sidebar-toggle" 
-                class="navbar-toggler border py-2 text-dark" type="button" 
-                data-mdb-toggle="collapse"
-                data-mdb-target="#navbarLeftAlignExample" 
-                aria-controls="navbarLeftAlignExample" aria-expanded="false"
+            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark w-100" 
+            type="button"
+                data-mdb-toggle="collapse" data-mdb-target="#navbarLeftAlignExample"
+                aria-controls="navbarLeftAlignExample" aria-expanded="false" 
                 aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
             <!-- Toggle button -->
-            <div id="categories-sidebar"
-            class="offcanvas offcanvas-start navbar-nav collapse" 
+            <div id="categories-sidebar" class="offcanvas offcanvas-start 
+            navbar-nav collapse w-100" 
             tabindex="-1">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title">Categories</h5>
-                    <button type="button" class="btn-close" 
-                    data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" 
+                    aria-label="Close"></button>
                 </div>
                 <!-- Links for category pages will be injected here -->
             </div>
