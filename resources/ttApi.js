@@ -733,12 +733,44 @@ router.delete('/ttuser/employee/remove/:id', (req, res) => {
 
 // Get all stores
 router.get('/ttuser/store', (req, res) => {
-    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id 
-        AND e.entity_type = "store"`, [], (err, rows) => {
+    db.query(`SELECT * FROM entities e
+        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "store"
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
+        `, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(rows[0]);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            const existingStore = acc.find(store => store.name === row.name);
+
+            if (existingStore) {
+                // Push the opening hours to the existing store object
+                existingStore.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result);
     });
 });
 
@@ -748,9 +780,10 @@ router.get('/ttuser/store/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.phone_number 
+        SELECT e.*, c.name, c.email, c.password, c.phone_number, c.address, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
         WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
         AND e.entity_type = "store"
     `;
@@ -762,7 +795,37 @@ router.get('/ttuser/store/:id', (req, res) => {
         if (rows.length === 0) {
             return res.status(404).send('Store not found');
         }
-        res.json(rows[0]);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            const existingStore = acc.find(store => store.name === row.name);
+
+            if (existingStore) {
+                // Push the opening hours to the existing store object
+                existingStore.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result[0]);
     });
 });
 
@@ -830,12 +893,43 @@ router.delete('/ttuser/store/remove/:id', (req, res) => {
 
 // Get all charities
 router.get('/ttuser/charity', (req, res) => {
-    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id
-         AND e.entity_type = "charity"`, [], (err, rows) => {
+    db.query(`SELECT * FROM entities e 
+        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "charity"
+        LEFT JOIN entityHours eh ON eh.entity = e.id `, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(rows);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            const existingCharity = acc.find(charity => charity.name === row.name);
+
+            if (existingCharity) {
+                // Push the opening hours to the existing charity object
+                existingCharity.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result);
     });
 });
 
@@ -845,9 +939,10 @@ router.get('/ttuser/charity/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.phone_number 
+        SELECT e.*, c.name, c.email, c.password, c.phone_number, c.address, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
         WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
         AND e.entity_type = "charity"
     `;
@@ -859,7 +954,38 @@ router.get('/ttuser/charity/:id', (req, res) => {
         if (rows.length === 0) {
             return res.status(404).send('Charity not found');
         }
-        res.json(rows[0]);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            // Check if the charity already exists in the accumulator
+            const existingCharity = acc.find(charity => charity.name === row.name);
+
+            if (existingCharity) {
+                // Push the opening hours to the existing charity object
+                existingCharity.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result[0]);
     });
 });
 

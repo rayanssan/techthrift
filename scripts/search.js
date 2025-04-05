@@ -4,7 +4,18 @@
 let recentSearches = JSON.parse(localStorage.getItem("recentSearches")) || 
 ['Apple', 'Android', 'Windows'];
 
-// Reusable function to populate recent searches
+/**
+ * Populates the recent searches list into the provided DOM list 
+ * element and displays the container.
+ * 
+ * Adds clickable links that redirect the user to the search page for that term,
+ * while also updating the recent searches list in localStorage.
+ * 
+ * @param {HTMLElement} listElement - The <ul> element where the 
+ * list of searches will be inserted.
+ * @param {HTMLElement} container - The container element that 
+ * wraps the list, which will be shown.
+ */
 function populateRecentSearches(listElement, container) {
     listElement.innerHTML = '';
 
@@ -31,7 +42,20 @@ function populateRecentSearches(listElement, container) {
     container.style.display = 'block';
 }
 
-// Handles both desktop and mobile search form logic
+/**
+ * Sets up event listeners and logic for a search form including input behavior,
+ * recent search dropdown handling, and form submission logic.
+ * 
+ * This function is designed to be reusable for both desktop and mobile search forms.
+ *
+ * @param {Object} config - Configuration object with form element IDs.
+ * @param {string} config.formId - The ID of the form element.
+ * @param {string} config.inputId - The ID of the input element inside the form.
+ * @param {string} config.containerId - The ID of the container 
+ * that holds the recent searches list.
+ * @param {string} config.listId - The ID of the <ul> 
+ * element that displays the recent searches.
+ */
 function setupSearchForm({
     formId,
     inputId,

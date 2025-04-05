@@ -132,6 +132,26 @@ app.get('/adminOrders', (req, res) => {
     });
 });
 
+// Nominatim OpenStreetMap API
+app.get("/geocode", async (req, res) => {
+    const query = req.query.q;
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: "Error contacting Nominatim API" });
+    }
+});
+
+/**
+ * Retrieves the local machine's IPv4 address from the network interfaces.
+ * 
+ * Iterates through all network interfaces and returns the first non-internal IPv4 address found.
+ * If no external IPv4 address is found, returns the fallback `127.0.0.1`.
+ *
+ * @returns {string} The local IP address, or `'127.0.0.1'` (localhost) if none found.
+ */
 function getLocalIPAddress() {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
@@ -146,5 +166,6 @@ function getLocalIPAddress() {
 
 app.listen(PORT);
 app.listen(PORT, getLocalIPAddress(), () => {
-    console.log(`Server is running on http://${getLocalIPAddress()}:${PORT} and http://localhost:${PORT}`);
+    console.log(`Server is running on http://${getLocalIPAddress()}:${
+        PORT} and http://localhost:${PORT}`);
 });

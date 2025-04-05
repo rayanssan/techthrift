@@ -465,6 +465,9 @@ if (document.body.id === "homepage") {
             });
 
             products = Array.from(uniqueProducts.values()); // Convert Map back to an array
+            document.getElementById("search-indicator").insertAdjacentHTML('afterend', `
+                <span>${products.length} products found.</span>
+            `);
 
             if (products.length > 0) {
                 renderProducts();
