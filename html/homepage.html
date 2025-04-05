@@ -20,6 +20,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="../media/images/favicon/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="TechThrift" />
     <link rel="manifest" href="../media/images/favicon/site.webmanifest" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
     <!-- Favicons -->
 </head>
 
@@ -165,15 +167,27 @@
 
             <!-- Filters and Sorting -->
             <div id="filtersContainer" class="container-fluid">
-                <div class="row g-2 align-items-center d-flex w-100">
-                    <!-- Filters -->
-                    <div class="col-12 col-md-auto d-flex flex-wrap justify-content-center w-100 gap-2">
-                        <select id="filterBrand" class="form-select w-auto">
+                <div class="row g-2 align-items-center w-100">
+                    
+                    <!-- Botão toggle (visível apenas em mobile) mantendo seu estilo atual -->
+                    <div class="col-12 d-lg-none text-end">
+                        <div class="d-inline-block">
+                            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+                                <i class="bi bi-filter me-1"></i> Filters
+                            </button>
+                        </div>
+                    </div>
+                    
+
+
+                    <!-- Filtros (com collapse para ecrãs pequenos) -->
+                    <div id="filtersCollapse" class="collapse d-md-flex flex-wrap justify-content-center w-100 gap-2 show">
+                        <select id="filterBrand" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Brand</option>
                             <!-- Options dynamically added -->
                         </select>
 
-                        <select id="filterCondition" class="form-select w-auto">
+                        <select id="filterCondition" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Condition</option>
                             <option value="Like New">Like New</option>
                             <option value="Excellent">Excellent</option>
@@ -181,12 +195,12 @@
                             <option value="Needs Repair">Needs Repair</option>
                         </select>
 
-                        <select id="filterColor" class="form-select w-auto">
+                        <select id="filterColor" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Color</option>
                             <!-- Options dynamically added -->
                         </select>
 
-                        <select id="filterYear" class="form-select w-auto">
+                        <select id="filterYear" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Year</option>
                             <!-- Options dynamically added -->
                         </select>
@@ -198,12 +212,9 @@
                             <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
                         </div>
 
-                        <!-- Apply Button -->
-                        <div class="col-12 col-md-auto">
-                            <button id="applyFilters" class="m-0 btn btn-outline-primary w-100">Filter</button>
-                        </div>
+                        
 
-                        <!-- Sorting Dropdown -->
+                        <!-- Ordenação -->
                         <div class="col-12 col-md-auto">
                             <select id="sortDropdown" class="form-select">
                                 <option value="">Sort By</option>
@@ -215,6 +226,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Filters and Sorting -->
 
             <div class="row" id="product-list">
@@ -409,6 +421,8 @@
     <script src="../scripts/search.js"></script>
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Scripts -->
 
 </body>
