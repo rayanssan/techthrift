@@ -144,28 +144,6 @@ app.get("/geocode", async (req, res) => {
     }
 });
 
-/**
- * Retrieves the local machine's IPv4 address from the network interfaces.
- * 
- * Iterates through all network interfaces and returns the first non-internal IPv4 address found.
- * If no external IPv4 address is found, returns the fallback `127.0.0.1`.
- *
- * @returns {string} The local IP address, or `'127.0.0.1'` (localhost) if none found.
- */
-function getLocalIPAddress() {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name]) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                return iface.address;
-            }
-        }
-    }
-    return '127.0.0.1'; // fallback
-}
-
-app.listen(PORT);
-app.listen(PORT, getLocalIPAddress(), () => {
-    console.log(`Server is running on http://${getLocalIPAddress()}:${
-        PORT} and http://localhost:${PORT}`);
+app.listen(PORT,'0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });

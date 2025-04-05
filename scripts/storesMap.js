@@ -130,7 +130,7 @@ async function geocodeAddress(storeName, address, email, phoneNumber, openingHou
     const queryAddress = attempt === 1 ? address : simplifyAddress(address);
 
     try {
-        const response = await fetch(`http://localhost:3000/geocode?q=${encodeURIComponent(queryAddress)}`);
+        const response = await fetch(`/geocode?q=${encodeURIComponent(queryAddress)}`);
         const text = await response.text();
         let data;
 
