@@ -5,6 +5,7 @@ let currentPage = 1;
 const productsPerPage = 12;
 let products = [];
 
+
 /**
  * Renders the products dynamically, showing a maximum of 12 per page.
  * Uses pagination to display products correctly across multiple pages.
@@ -611,7 +612,6 @@ if (document.body.id === "homepage") {
 }
 
 if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
-    // Filters and sorting
     document.addEventListener("DOMContentLoaded", () => {
         const filterBrand = document.getElementById("filterBrand");
         const filterCondition = document.getElementById("filterCondition");
@@ -623,91 +623,149 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
         const sortDropdown = document.getElementById("sortDropdown");
         const filtersContainer = document.getElementById("filtersContainer");
 
+        let allProducts = [];
         let filteredProducts = [];
-        let products = [];
         let filtersOffsetTop = filtersContainer.offsetTop;
 
         async function populateFilterOptions() {
             try {
-                const response = await fetch("/tt");
-                const data = await response.json();
+                let endpoint = '/tt';
+                if (document.body.id === "categoryPage") {
+                    const urlParam = new URLSearchParams(window.location.search);
+                    const category = urlParam.get('is');
+                    endpoint = `/tt?category=${encodeURIComponent(category)}`;
+                } else if (document.body.id === "searchPage") {
+                    const urlParam = new URLSearchParams(window.location.search);
+                    const search = urlParam.get('is');
+                    endpoint = `/tt?name=${encodeURIComponent(search)}`;
+                }
 
-                const brands = [...new Set(data.map(p => p.brand))].sort();
-                const colors = [...new Set(data.map(p => p.color))].sort();
-                const years = [...new Set(data.map(p => p.year))].sort();
+                const response = await fetch(endpoint);
+                allProducts = await response.json();
+                filteredProducts = [...allProducts];
+                products = [...filteredProducts];
+                
+                renderProducts();
 
-                populateDropdown(filterBrand, brands, "Brand");
-                populateDropdown(filterColor, colors, "Color");
-                populateDropdown(filterYear, years, "Year");
+                const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))].sort();
+                const colors = [...new Set(allProducts.map(p => p.color).filter(Boolean))].sort();
+                const years = [...new Set(allProducts.map(p => p.year).filter(Boolean))].sort();
+                const conditions = [...new Set(allProducts.map(p => p.product_condition).filter(Boolean))].sort();
+
+                populateDropdown(filterBrand, brands, "All Brands");
+                populateDropdown(filterCondition, conditions, "All Conditions");
+                populateDropdown(filterColor, colors, "All Colors");
+                populateDropdown(filterYear, years, "All Years");
+
+                const maxProductPrice = Math.max(...allProducts.map(p => p.price), 0);
+                maxPrice.max = Math.ceil(maxProductPrice * 1.1);
+                maxPrice.value = maxPrice.max;
+                maxPriceValue.textContent = `€${maxPrice.value}`;
             } catch (error) {
                 console.error("Error fetching filter options:", error);
+                document.getElementById('product-list').innerHTML = `
+                    <div class="alert alert-danger text-center my-4">
+                        <strong>Error loading products</strong>
+                        <p>Please refresh the page</p>
+                    </div>`;
             }
         }
 
         function populateDropdown(selectElement, items, defaultText) {
             selectElement.innerHTML = `<option value="">${defaultText}</option>`;
             items.forEach(item => {
-                if (item) {
-                    const option = document.createElement("option");
-                    option.value = item;
-                    option.textContent = item;
-                    selectElement.appendChild(option);
-                }
+                const option = document.createElement("option");
+                option.value = item;
+                option.textContent = item;
+                selectElement.appendChild(option);
             });
         }
 
-        async function applyFilters() {
+        function applyFilters() {
             try {
-                const queryParams = new URLSearchParams();
-                if (filterBrand.value) queryParams.append("brand", filterBrand.value);
-                if (filterCondition.value) queryParams.append("condition", filterCondition.value);
-                if (filterColor.value) queryParams.append("color", filterColor.value);
-                if (filterYear.value) queryParams.append("year", filterYear.value);
-                if (maxPrice.value) queryParams.append("maxPrice", maxPrice.value);
-
-                const response = await fetch(`/tt?${queryParams.toString()}`);
-                const data = await response.json();
-
-                const uniqueProducts = new Map();
-                data.forEach(product => uniqueProducts.set(product.id, product));
-
-                filteredProducts = Array.from(uniqueProducts.values());
+                const brand = filterBrand.value;
+                const condition = filterCondition.value;
+                const color = filterColor.value;
+                const year = filterYear.value;
+                const price = parseFloat(maxPrice.value);
+                const maxAllowedPrice = parseFloat(maxPrice.max);
+        
+                filteredProducts = allProducts.filter(product => {
+                    const matchesBrand = !brand || product.brand === brand;
+                    const matchesCondition = !condition || product.product_condition === condition;
+                    const matchesColor = !color || product.color === color;
+                    const matchesYear = !year || String(product.year) === year;
+                    const matchesPrice = price >= maxAllowedPrice || product.price <= price;
+        
+                    return matchesBrand && matchesCondition && matchesColor && matchesYear && matchesPrice;
+                });
+        
+                applySorting(false);
+                products = [...filteredProducts];
+                currentPage = 1;
                 renderProducts();
+        
+                if (products.length === 0) {
+                    document.getElementById('product-list').innerHTML = `
+                        <div class="alert alert-warning text-center my-4">
+                            <strong>No products found</strong>
+                            <p>Try adjusting your filters</p>
+                        </div>`;
+                }
             } catch (error) {
                 console.error("Error applying filters:", error);
+                document.getElementById('product-list').innerHTML = `
+                    <div class="alert alert-danger text-center my-4">
+                        <strong>Filter error</strong>
+                        <p>Please try again</p>
+                    </div>`;
             }
         }
+        
+       
 
-        function applySorting() {
-            let productsToSort = filteredProducts.length ? filteredProducts : products;
-
+        function applySorting(shouldRender = true) {
             if (sortDropdown.value === "price-asc") {
-                productsToSort.sort((a, b) => a.price - b.price);
+                filteredProducts.sort((a, b) => a.price - b.price);
             } else if (sortDropdown.value === "price-desc") {
-                productsToSort.sort((a, b) => b.price - a.price);
+                filteredProducts.sort((a, b) => b.price - a.price);
             } else if (sortDropdown.value === "condition") {
                 const conditionOrder = ["Like New", "Excellent", "Good", "Needs Repair"];
-                productsToSort.sort((a, b) => conditionOrder.indexOf(a.product_condition) - conditionOrder.indexOf(b.product_condition));
+                filteredProducts.sort((a, b) => 
+                    conditionOrder.indexOf(a.product_condition) - 
+                    conditionOrder.indexOf(b.product_condition)
+                );
             }
-            renderProducts();
+
+            if (shouldRender) {
+                products = [...filteredProducts];
+                currentPage = 1;
+                renderProducts();
+            }
         }
 
-        applyFiltersButton.addEventListener("click", applyFilters);
-        sortDropdown.addEventListener("change", applySorting);
+        sortDropdown.addEventListener("change", () => applySorting());
+
+        [filterBrand, filterCondition, filterColor, filterYear].forEach(filter => {
+            filter.addEventListener("change", applyFilters);
+        });
 
         maxPrice.addEventListener("input", () => {
-            maxPriceValue.textContent = maxPrice.value;
+            maxPriceValue.textContent = `€${maxPrice.value}`;
+        });
+
+        maxPrice.addEventListener("change", () => {
+            applyFilters();
         });
 
         window.addEventListener("scroll", () => {
             if (window.scrollY > filtersOffsetTop) {
-                filtersContainer.classList.add("fixed-top", "bg-white", "shadow");
+                filtersContainer.classList.add("fixed-top", "bg-white", "shadow-sm", "p-3");
+                document.body.classList.add("pt-5");
             } else {
-                filtersContainer.classList.remove("fixed-top", "bg-white", "shadow");
+                filtersContainer.classList.remove("fixed-top", "bg-white", "shadow-sm", "p-3");
+                document.body.classList.remove("pt-5");
             }
-        });
-        document.getElementById("maxPrice").addEventListener("input", function () {
-            document.getElementById("maxPriceValue").textContent = `€${this.value}`;
         });
 
         populateFilterOptions();
