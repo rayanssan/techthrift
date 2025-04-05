@@ -1,5 +1,21 @@
-// Responsive styling for filters
+
+@media (max-width: 1200px) {
+    #search-form {
+        display: none !important;
+    }
+    
+    #search-form-mobile {
+        display: flex !important;
+    }
+}
+
 @media (max-width: 768px) {
+    .main-banner {
+        #main-banner-brand {
+            display: none;
+        }
+    }
+
     #filtersContainer {
         &.fixed-top {
             position: relative !important;

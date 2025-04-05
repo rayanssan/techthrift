@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS clients (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(20) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    nif INT UNIQUE,
-    nic INT UNIQUE,
+    nif CHAR(9) UNIQUE,
+    nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
     address VARCHAR(255)
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS clients (
 
 CREATE TABLE IF NOT EXISTS entities (
     id INT PRIMARY KEY,
-    nipc INT(9) UNIQUE NOT NULL,
+    nipc CHAR(9) UNIQUE NOT NULL,
     entity_type ENUM('store', 'charity') NOT NULL,
 
     FOREIGN KEY (id) REFERENCES clients(id)
@@ -28,6 +28,24 @@ CREATE TABLE IF NOT EXISTS employees (
     FOREIGN KEY (id) REFERENCES clients(id),
     FOREIGN KEY (store) REFERENCES entities(id)
 );
+
+CREATE TRIGGER ensure_store_entity_type
+BEFORE INSERT ON employees
+FOR EACH ROW
+BEGIN
+    DECLARE etype VARCHAR(10);
+
+    -- Get the entity_type as a string
+    SELECT CAST(entity_type AS CHAR) INTO etype
+    FROM entities
+    WHERE id = NEW.store;
+
+    -- If the entity_type is not 'store', raise an error
+    IF etype IS NULL OR etype != 'store' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Employees can only be linked to entities of type "store"';
+    END IF;
+END;
 
 CREATE TABLE IF NOT EXISTS entityHours (
     entity INT,
@@ -49,16 +67,6 @@ CREATE TABLE IF NOT EXISTS charityProjects (
     FOREIGN KEY (organizer) REFERENCES clients(id)
 );
 
-CREATE TABLE IF NOT EXISTS space (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    area INT,
-    store INT NOT NULL,
-    charityProject INT NOT NULL,
-    
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
-);
-
 CREATE TABLE IF NOT EXISTS categories (
     category VARCHAR(255) PRIMARY KEY NOT NULL
 );
@@ -77,7 +85,7 @@ INSERT INTO categories (category) VALUES
 
 CREATE TABLE IF NOT EXISTS products (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    store_nipc INT NOT NULL,
+    store_nipc CHAR(9) NOT NULL,
     name VARCHAR(255) NOT NULL,
     product_condition ENUM('Like New', 'Excellent', 'Good', 'Needs Repair') NOT NULL,
     availability BOOLEAN NOT NULL,
@@ -124,8 +132,8 @@ CREATE TABLE IF NOT EXISTS saleProducts (
 CREATE TABLE IF NOT EXISTS repairProducts (
     id INT PRIMARY KEY,
     problems VARCHAR(255),
-    client_nif INT(9),
-    client_nic INT(9),
+    client_nif CHAR(9),
+    client_nic CHAR(9),
 
     FOREIGN KEY (id) REFERENCES products(id),
     FOREIGN KEY (client_nif) REFERENCES clients(nif),
@@ -134,10 +142,10 @@ CREATE TABLE IF NOT EXISTS repairProducts (
 
 CREATE TABLE IF NOT EXISTS donationProducts (
     id INT PRIMARY KEY,
-    charity_nipc INT(9) NOT NULL,
-    donor_nif INT(9),
-    donor_nic INT(9),
-    donor_nipc INT(9),
+    charity_nipc CHAR(9) NOT NULL,
+    donor_nif CHAR(9),
+    donor_nic CHAR(9),
+    donor_nipc CHAR(9),
   
     FOREIGN KEY (id) REFERENCES products(id),
     FOREIGN KEY (charity_nipc) REFERENCES entities(nipc),
