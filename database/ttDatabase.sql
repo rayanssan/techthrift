@@ -152,11 +152,13 @@ CREATE TABLE IF NOT EXISTS transactions (
     employee INT NOT NULL,
     value DECIMAL(10,2),
     deliveryCost DECIMAL(10,2) NOT NULL,
+    saleProduct INT NOT NULL,
 
     PRIMARY KEY (store, numSeq),
     FOREIGN KEY (client) REFERENCES clients(id),
     FOREIGN KEY (employee) REFERENCES employees(id),
-    FOREIGN KEY (store) REFERENCES entities(id)
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (saleProducts) REFERENCES saleProducts(id)
 );
 
 CREATE TABLE IF NOT EXISTS repairs (
@@ -224,6 +226,10 @@ CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     interested_user INT,
     watched_product INT,
+    minPrice DECIMAL(10,2),
+    maxPrice DECIMAL(10,2),
+    minYear DECIMAL(10,2),
+    maxYear DECIMAL(10,2),
 
     FOREIGN KEY (interested_user) REFERENCES clients(id),
     FOREIGN KEY (watched_product) REFERENCES products(id)
