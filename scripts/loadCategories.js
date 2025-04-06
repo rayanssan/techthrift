@@ -15,7 +15,7 @@ function loadCategories() {
     
     // Get category from URL
     const urlParam = new URLSearchParams(window.location.search);
-    const selectedCategory = urlParam.get('id');
+    const selectedCategory = urlParam.get('is');
     
     const navList = document.getElementById("categories-nav");
     const sidebarList = document.getElementById("categories-sidebar");

@@ -125,6 +125,9 @@
             <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
                 <!-- Links -->
                 <ul id="categories-nav" class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/homepage">Home</a>
+                    </li>
                     <!-- Links for category pages will be injected here -->
                 </ul>
                 <!-- Links -->
@@ -145,46 +148,56 @@
 
             <!-- Filters and Sorting -->
             <div id="filtersContainer" class="container-fluid">
-                <div class="row g-2 align-items-center d-flex w-100">
+                <div class="row g-2 align-items-center w-100">
+                    <!-- Toggle button for filters in narrow displays -->
+                    <div class="col-12 d-lg-none text-end">
+                        <div class="d-inline-block">
+                            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+                                <i class="bi bi-filter me-1"></i> Filters
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Toggle button for filters in narrow displays -->
                     <!-- Filters -->
-                    <div class="col-12 col-md-auto d-flex flex-wrap justify-content-center w-100 gap-2">
-                        <select id="filterBrand" class="form-select w-auto">
+                    <div id="filtersCollapse"
+                        class="collapse d-md-flex flex-wrap justify-content-center w-100 gap-2 mt-3 show">
+                        <!-- Brand -->
+                        <select id="filterBrand" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Brand</option>
                             <!-- Options dynamically added -->
                         </select>
-
-                        <select id="filterCondition" class="form-select w-auto">
+                        <!-- Brand -->
+                        <!-- Condition -->
+                        <select id="filterCondition" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Condition</option>
                             <option value="Like New">Like New</option>
                             <option value="Excellent">Excellent</option>
                             <option value="Good">Good</option>
                             <option value="Needs Repair">Needs Repair</option>
                         </select>
-
-                        <select id="filterColor" class="form-select w-auto">
+                        <!-- Condition -->
+                        <!-- Color -->
+                        <select id="filterColor" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Color</option>
                             <!-- Options dynamically added -->
                         </select>
-
-                        <select id="filterYear" class="form-select w-auto">
+                        <!-- Color -->
+                        <!-- Year -->
+                        <select id="filterYear" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Year</option>
                             <!-- Options dynamically added -->
                         </select>
-
+                        <!-- Year -->
                         <!-- Price Range -->
-                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
+                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-2">
                             <label for="maxPrice" class="me-2">Max Price</label>
                             <input type="range" id="maxPrice" class="mb-0 border">
                             <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
                         </div>
-
-                        <!-- Apply Button -->
-                        <div class="col-12 col-md-auto">
-                            <button id="applyFilters" class="m-0 btn btn-outline-primary w-100">Filter</button>
-                        </div>
-
-                        <!-- Sorting Dropdown -->
-                        <div class="col-12 col-md-auto">
+                        <!-- Price Range -->
+                        <!-- Sorting -->
+                        <div class="col-12 col-md-auto mb-2">
                             <select id="sortDropdown" class="form-select">
                                 <option value="">Sort By</option>
                                 <option value="price-asc">Price: Low to High</option>
@@ -192,6 +205,7 @@
                                 <option value="condition">Condition</option>
                             </select>
                         </div>
+                        <!-- Sorting -->
                     </div>
                 </div>
             </div>

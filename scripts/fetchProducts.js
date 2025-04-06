@@ -614,7 +614,8 @@ if (document.body.id === "homepage") {
 
 }
 
-if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
+if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
+document.getElementById("filtersContainer")) {
     document.addEventListener("DOMContentLoaded", () => {
         const filterBrand = document.getElementById("filterBrand");
         const filterCondition = document.getElementById("filterCondition");
@@ -637,18 +638,33 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
                     const urlParam = new URLSearchParams(window.location.search);
                     const category = urlParam.get('is');
                     endpoint = `/tt?category=${encodeURIComponent(category)}`;
+                    if (category == "Accessories") {
+                        // Include categories that fall under Accessories
+                        const accessoryCategories = ["Audio", "Smartwatches", "Accessories"];
+                        // Fetch all categories separately and merge
+                        const fetches = await Promise.all(
+                            accessoryCategories.map(cat =>
+                                fetch(`/tt?category=${encodeURIComponent(cat)}`).then(res => res.json())
+                            )
+                        );
+                        allProducts = fetches.flat();
+                    } else {
+                        const response = await fetch(endpoint);
+                        allProducts = await response.json();
+                    }
                 } else if (document.body.id === "searchPage") {
                     const urlParam = new URLSearchParams(window.location.search);
                     const search = urlParam.get('is');
                     endpoint = `/tt?name=${encodeURIComponent(search)}`;
+                    const response = await fetch(endpoint);
+                    allProducts = await response.json();
+                } else {
+                    const response = await fetch(endpoint);
+                    allProducts = await response.json();
                 }
 
-                const response = await fetch(endpoint);
-                allProducts = await response.json();
                 filteredProducts = [...allProducts];
                 products = [...filteredProducts];
-                
-                renderProducts();
 
                 const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))].sort();
                 const colors = [...new Set(allProducts.map(p => p.color).filter(Boolean))].sort();
@@ -665,12 +681,12 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
                 maxPrice.value = maxPrice.max;
                 maxPriceValue.textContent = `€${maxPrice.value}`;
             } catch (error) {
-                console.error("Error fetching filter options:", error);
-                document.getElementById('product-list').innerHTML = `
-                    <div class="alert alert-danger text-center my-4">
-                        <strong>Error loading products</strong>
-                        <p>Please refresh the page</p>
-                    </div>`;
+                const productContainer = document.getElementById('product-list');
+                productContainer.innerHTML = `<div class="container my-4">
+                <p class="text-center fw-bold display-4">Sorry, an error happened. ☹️</p>
+                <p class="text-center">Please try refreshing the page.</p>
+                </div>`;
+                console.error('Error fetching products:', error);
             }
         }
 
@@ -709,24 +725,24 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id)) {
                 renderProducts();
         
                 if (products.length === 0) {
-                    document.getElementById('product-list').innerHTML = `
-                        <div class="alert alert-warning text-center my-4">
-                            <strong>No products found</strong>
-                            <p>Try adjusting your filters</p>
-                        </div>`;
+                    document.getElementById('product-list').innerHTML = `<div class="container my-4">
+                    <p class="text-center fw-bold display-4">No products found.</p>
+                    <p class="text-center">Try adjusting your filters.</p>
+                    </div>`;
+                    document.getElementById("paginationControls").classList.replace("d-flex", "d-none");
+                } else if (document.getElementById("paginationControls").classList.contains("d-none")) {
+                    document.getElementById("paginationControls").classList.replace("d-none", "d-flex");
                 }
             } catch (error) {
-                console.error("Error applying filters:", error);
-                document.getElementById('product-list').innerHTML = `
-                    <div class="alert alert-danger text-center my-4">
-                        <strong>Filter error</strong>
-                        <p>Please try again</p>
-                    </div>`;
+                const productContainer = document.getElementById('product-list');
+                productContainer.innerHTML = `<div class="container my-4">
+                <p class="text-center fw-bold display-4">Sorry, an error happened. ☹️</p>
+                <p class="text-center">Please try refreshing the page.</p>
+                </div>`;
+                console.error('Error fetching products:', error);
             }
         }
         
-       
-
         function applySorting(shouldRender = true) {
             if (sortDropdown.value === "price-asc") {
                 filteredProducts.sort((a, b) => a.price - b.price);
