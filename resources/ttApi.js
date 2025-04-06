@@ -21,48 +21,48 @@ router.get('/tt', (req, res) => {
     let params = [];
 
     if (name) {
-        query += ` AND name RLIKE ?`;
+        query += ` AND p.name LIKE ?`;
         params.push(`%${name}%`);
     }
     if (condition) {
-        query += ` AND product_condition = ?`;
+        query += ` AND p.product_condition = ?`;
         params.push(condition);
     }
     if (category) {
-        query += ` AND category RLIKE ?`;
-        params.push(category);
+        query += ` AND p.category LIKE ?`;
+        params.push(`%${category}%`);
     }
     if (brand) {
-        query += ` AND brand RLIKE ?`;
-        params.push(brand);
+        query += ` AND p.brand LIKE ?`;
+        params.push(`%${brand}%`);
     }
     if (color) {
-        query += ` AND color = ?`;
-        params.push(color);
+        query += ` AND p.color LIKE ?`;
+        params.push(`%${color}%`);
     }
     if (processor) {
-        query += ` AND processor = ?`;
-        params.push(processor);
+        query += ` AND p.processor LIKE ?`;
+        params.push(`%${processor}%`);
     }
     if (storage) {
-        query += ` AND storage = ?`;
-        params.push(storage);
+        query += ` AND p.storage LIKE ?`;
+        params.push(`%${storage}%`);
     }
     if (os) {
-        query += ` AND os = ?`;
-        params.push(os);
+        query += ` AND p.os LIKE ?`;
+        params.push(`%${os}%`);
     }
     if (year) {
-        query += ` AND year = ?`;
+        query += ` AND p.year = ?`;
         params.push(year);
     }
     if (maxPrice) {
-        query += ` AND price <= ?`;
+        query += ` AND sp.price <= ?`;
         params.push(maxPrice);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
     }
 
     db.query(query, params, (err, rows) => {
@@ -86,48 +86,48 @@ router.get('/tt/product', (req, res) => {
 
     // Apply filters dynamically
     if (name) {
-        query += ' AND name RLIKE ?';
-        params.push(`%${req.query.name}%`);
+        query += ' AND p.name LIKE ?';
+        params.push(`%${name}%`);
     }
     if (condition) {
-        query += ' AND product_condition = ?';
-        params.push(req.query.product_condition);
+        query += ' AND p.product_condition = ?';
+        params.push(condition);
     }
     if (category) {
-        query += ' AND category RLIKE ?';
-        params.push(req.query.category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (brand) {
-        query += ' AND brand RLIKE ?';
-        params.push(req.query.brand);
+        query += ' AND p.brand LIKE ?';
+        params.push(`%${brand}%`);
     }
     if (color) {
-        query += ' AND color = ?';
-        params.push(req.query.color);
+        query += ' AND p.color LIKE ?';
+        params.push(`%${color}%`);
     }
     if (processor) {
-        query += ' AND processor = ?';
-        params.push(req.query.processor);
+        query += ' AND p.processor LIKE ?';
+        params.push(`%${processor}%`);
     }
     if (storage) {
-        query += ' AND storage = ?';
-        params.push(req.query.storage);
+        query += ' AND p.storage LIKE ?';
+        params.push(`%${storage}%`);
     }
     if (os) {
-        query += ' AND os = ?';
-        params.push(req.query.os);
+        query += ' AND p.os LIKE ?';
+        params.push(`%${os}%`);
     }
     if (year) {
-        query += ' AND year = ?';
-        params.push(req.query.year);
+        query += ' AND p.year = ?';
+        params.push(year);
     }
     if (availability) {
-        query += ' AND availability = ?';
+        query += ' AND p.availability = ?';
         params.push((availability === 'true' || availability === "1") ? 1 : 0);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
     }
 
     db.query(query, params, (err, rows) => {
@@ -163,10 +163,12 @@ router.get('/tt/product/:id', (req, res) => {
 
         if (isSaleProduct) {
             query = `
-                SELECT products.*, saleProducts.*, productImages.*
+                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
                 FROM products
                 JOIN saleProducts ON products.id = saleProducts.id
                 JOIN productImages ON products.id = productImages.product
+                JOIN entities ON products.store_nipc = entities.nipc
+                JOIN clients ON entities.id = clients.id
                 WHERE products.id = ?;
             `;
         }
@@ -292,8 +294,8 @@ router.get('/tt/repair', (req, res) => {
         params.push(`%${name}%`);
     }
     if (category) {
-        query += ' AND p.category = ?';
-        params.push(category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
@@ -324,8 +326,8 @@ router.get('/tt/repair', (req, res) => {
         params.push(year);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
     }
 
     // Execute the query
@@ -418,8 +420,8 @@ router.get('/tt/donation', (req, res) => {
         params.push(`%${name}%`);
     }
     if (category) {
-        query += ' AND p.category = ?';
-        params.push(category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
@@ -450,12 +452,12 @@ router.get('/tt/donation', (req, res) => {
         params.push(year);
     }
     if (store) {
-        query += ' AND c1.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c1.name LIKE ?';
+        params.push(`%${store}%`);
     }
     if (charity) {
-        query += ' AND c2.name RLIKE ?';
-        params.push(req.query.charity);
+        query += ' AND c2.name LIKE ?';
+        params.push(`%${charity}%`);
     }
 
     // Execute the query
@@ -731,12 +733,44 @@ router.delete('/ttuser/employee/remove/:id', (req, res) => {
 
 // Get all stores
 router.get('/ttuser/store', (req, res) => {
-    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id 
-        AND e.entity_type = "store"`, [], (err, rows) => {
+    db.query(`SELECT * FROM entities e
+        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "store"
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
+        `, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(rows[0]);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            const existingStore = acc.find(store => store.name === row.name);
+
+            if (existingStore) {
+                // Push the opening hours to the existing store object
+                existingStore.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result);
     });
 });
 
@@ -746,9 +780,10 @@ router.get('/ttuser/store/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.phone_number 
+        SELECT e.*, c.name, c.email, c.password, c.phone_number, c.address, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
         WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
         AND e.entity_type = "store"
     `;
@@ -760,7 +795,37 @@ router.get('/ttuser/store/:id', (req, res) => {
         if (rows.length === 0) {
             return res.status(404).send('Store not found');
         }
-        res.json(rows[0]);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            const existingStore = acc.find(store => store.name === row.name);
+
+            if (existingStore) {
+                // Push the opening hours to the existing store object
+                existingStore.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result[0]);
     });
 });
 
@@ -828,12 +893,43 @@ router.delete('/ttuser/store/remove/:id', (req, res) => {
 
 // Get all charities
 router.get('/ttuser/charity', (req, res) => {
-    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id
-         AND e.entity_type = "charity"`, [], (err, rows) => {
+    db.query(`SELECT * FROM entities e 
+        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "charity"
+        LEFT JOIN entityHours eh ON eh.entity = e.id `, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(rows);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            const existingCharity = acc.find(charity => charity.name === row.name);
+
+            if (existingCharity) {
+                // Push the opening hours to the existing charity object
+                existingCharity.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result);
     });
 });
 
@@ -843,9 +939,10 @@ router.get('/ttuser/charity/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.phone_number 
+        SELECT e.*, c.name, c.email, c.password, c.phone_number, c.address, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
         WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
         AND e.entity_type = "charity"
     `;
@@ -857,7 +954,38 @@ router.get('/ttuser/charity/:id', (req, res) => {
         if (rows.length === 0) {
             return res.status(404).send('Charity not found');
         }
-        res.json(rows[0]);
+        // Process the rows
+        const result = rows.reduce((acc, row) => {
+            // Check if the charity already exists in the accumulator
+            const existingCharity = acc.find(charity => charity.name === row.name);
+
+            if (existingCharity) {
+                // Push the opening hours to the existing charity object
+                existingCharity.opening_hours.push({
+                    day: row.day,
+                    hours: row.hours
+                });
+            } else {
+                // Push organized data into the accumulator
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    password: row.password,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    opening_hours: [{
+                        day: row.day,
+                        hours: row.hours
+                    }]
+                });
+            }
+
+            return acc;
+        }, []);
+
+        res.json(result[0]);
     });
 });
 

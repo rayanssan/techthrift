@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TechThrift</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+    <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles/stylesheet.css">
+    <!-- Stylesheets -->
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../media/images/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="../media/images/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../media/images/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="TechThrift" />
+    <link rel="manifest" href="../media/images/favicon/site.webmanifest" />
+    <!-- Favicons -->
+</head>
+
+<body id="searchPage">
+
+    <!-- Header -->
+    <header class="p-3 bg-white border-bottom">
+        <div class="container">
+            <div class="row align-items-center gap-3">
+                <!-- Header Elements -->
+                <div class="d-flex align-items-center">
+                    <a id="header-brand" href="/homepage">
+                        <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
+                    </a>
+                    <form id="search-form" class="input-group flex-grow-1">
+                        <input id="search-input" type="text" class="form-control"
+                            placeholder="Search for electronics..." aria-label="Search">
+                        <button class="btn btn-dark" type="submit">Search</button>
+                        <!-- Recent Searches -->
+                        <div id="recent-searches-wrapper">
+                            <div id="recent-searches" style="display: none;">
+                                <ul id="recent-searches-list">
+                                    <!-- Recent searches will be injected here -->
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Recent Searches -->
+                    </form>
+                    <div class="d-flex align-items-center ms-auto">
+                        <a href="/authentication" class="me-1 border 
+                        rounded py-1 px-3 nav-link d-flex 
+                            align-items-center">
+                            <i class="fas fa-user-alt m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Sign in</p>
+                        </a>
+                        <a href="/storesMap" class="me-1 border 
+                        rounded py-1 px-3 nav-link d-flex 
+                        align-items-center">
+                            <i class="fas fa-store m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Stores</p>
+                        </a>
+                        <a href="#" class="me-1 border rounded 
+                        py-1 px-3 nav-link d-flex align-items-center">
+                            <i class="fas fa-heart m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Wishlist</p>
+                        </a>
+                        <a href="/cart" class="border rounded 
+                        py-1 px-3 nav-link d-flex align-items-center">
+                            <i class="fas fa-shopping-cart m-1 me-md-2"></i>
+                            <p class="d-none d-md-block mb-0">Cart</p>
+                        </a>
+                    </div>
+                </div>
+
+                <form id="search-form-mobile" class="input-group flex-grow-1">
+                    <input id="search-input-mobile" type="text" class="form-control"
+                        placeholder="Search for electronics..." aria-label="Search">
+                    <button class="btn btn-dark" type="submit">Search</button>
+                    <!-- Recent Searches -->
+                    <div id="recent-searches-wrapper-mobile">
+                        <div id="recent-searches-mobile" style="display: none;">
+                            <ul id="recent-searches-list-mobile">
+                                <!-- Recent searches will be injected here -->
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Recent Searches -->
+                </form>
+                <!-- Header Elements -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <!-- Container wrapper -->
+        <div class="container justify-content-center justify-content-md-between">
+            <!-- Sidebar navigation for narrow displays  -->
+            <!-- Toggle button -->
+            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark w-100" 
+            type="button"
+                data-mdb-toggle="collapse" data-mdb-target="#navbarLeftAlignExample"
+                aria-controls="navbarLeftAlignExample" aria-expanded="false" 
+                aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- Toggle button -->
+            <div id="categories-sidebar" class="offcanvas offcanvas-start 
+            navbar-nav collapse w-100" 
+            tabindex="-1">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Categories</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" 
+                    aria-label="Close"></button>
+                </div>
+                <!-- Links for category pages will be injected here -->
+            </div>
+            <!-- Sidebar navigation for narrow displays  -->
+
+            <!-- Navigation for wide displays-->
+            <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
+                <!-- Links -->
+                <ul id="categories-nav" class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/homepage">Home</a>
+                    </li>
+                    <!-- Links for category pages will be injected here -->
+                </ul>
+                <!-- Links -->
+            </div>
+            <!-- Navigation for wide displays -->
+        </div>
+        <!-- Container wrapper -->
+    </nav>
+    <!-- Navbar -->
+    <!-- Header -->
+
+    <!-- Products -->
+    <section>
+        <div class="container my-5">
+            <header class="mb-4">
+                <h3 id="search-indicator" class="text-truncate"></h3>
+            </header>
+
+            <!-- Filters and Sorting -->
+            <div id="filtersContainer" class="container-fluid">
+                <div class="row g-2 mt-3 align-items-center w-100">
+                    <!-- Toggle button for filters in narrow displays -->
+                    <div class="col-12 d-lg-none text-end">
+                        <div class="d-inline-block">
+                            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+                                <i class="bi bi-filter me-1"></i> Filters
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Toggle button for filters in narrow displays -->
+                    <!-- Filters -->
+                    <div id="filtersCollapse"
+                        class="collapse d-md-flex flex-wrap justify-content-center w-100 gap-2 show">
+                        <!-- Brand -->
+                        <select id="filterBrand" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Brand</option>
+                            <!-- Options dynamically added -->
+                        </select>
+                        <!-- Brand -->
+                        <!-- Condition -->
+                        <select id="filterCondition" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Condition</option>
+                            <option value="Like New">Like New</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Needs Repair">Needs Repair</option>
+                        </select>
+                        <!-- Condition -->
+                        <!-- Color -->
+                        <select id="filterColor" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Color</option>
+                            <!-- Options dynamically added -->
+                        </select>
+                        <!-- Color -->
+                        <!-- Year -->
+                        <select id="filterYear" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Year</option>
+                            <!-- Options dynamically added -->
+                        </select>
+                        <!-- Year -->
+                        <!-- Price Range -->
+                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <label for="maxPrice" class="me-2">Max Price</label>
+                            <input type="range" id="maxPrice" class="mb-0 border">
+                            <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
+                        </div>
+                        <!-- Price Range -->
+                        <!-- Sorting -->
+                        <div class="col-12 col-md-auto mb-2">
+                            <select id="sortDropdown" class="form-select">
+                                <option value="">Sort By</option>
+                                <option value="price-asc">Price: Low to High</option>
+                                <option value="price-desc">Price: High to Low</option>
+                                <option value="condition">Condition</option>
+                            </select>
+                        </div>
+                        <!-- Sorting -->
+                    </div>
+                </div>
+            </div>
+            <!-- Filters and Sorting -->
+
+            <div class="row" id="product-list">
+                <!-- Products will be injected here dynamically -->
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="d-flex justify-content-center mt-4">
+                <button id="paginationPrevPage" class="btn btn-secondary me-2" disabled>Previous</button>
+                <span id="paginationPageIndicator" class="align-self-center">Page 1</span>
+                <button id="paginationNextPage" class="btn btn-secondary ms-2">Next</button>
+            </div>
+        </div>
+    </section>
+    <!-- Products -->
+
+    <!-- Footer -->
+    <section class="mt-5" style="background-color: #f5f5f5;">
+        <div class="container text-dark pt-3">
+            <header class="pt-4 pb-3">
+                <h3>Why choose us</h3>
+            </header>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <figure class="d-flex align-items-center mb-4">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                            <i class="fas fa-camera-retro fa-2x fa-fw text-primary floating"></i>
+                        </span>
+                        <figcaption class="info">
+                            <h6 class="title">Reasonable prices</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <figure class="d-flex align-items-center mb-4">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                            <i class="fas fa-star fa-2x fa-fw text-primary floating"></i>
+                        </span>
+                        <figcaption class="info">
+                            <h6 class="title">Best quality</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <figure class="d-flex align-items-center mb-4">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                            <i class="fas fa-plane fa-2x fa-fw text-primary floating"></i>
+                        </span>
+                        <figcaption class="info">
+                            <h6 class="title">Worldwide shipping</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <figure class="d-flex align-items-center mb-4">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                            <i class="fas fa-users fa-2x fa-fw text-primary floating"></i>
+                        </span>
+                        <figcaption class="info">
+                            <h6 class="title">Customer satisfaction</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <figure class="d-flex align-items-center mb-4">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                            <i class="fas fa-thumbs-up fa-2x fa-fw text-primary floating"></i>
+                        </span>
+                        <figcaption class="info">
+                            <h6 class="title">Happy customers</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <figure class="d-flex align-items-center mb-4">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                            <i class="fas fa-box fa-2x fa-fw text-primary floating"></i>
+                        </span>
+                        <figcaption class="info">
+                            <h6 class="title">Thousand items</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="text-center text-lg-start text-muted" style="background-color: #f5f5f5;">
+        <!-- Footer Links  -->
+        <section class="">
+            <div class="container text-center text-md-start pt-4 pb-4">
+                <div class="row mt-3">
+                    <!-- Grid column -->
+                    <div class="col-12 col-lg-3 col-sm-12 mb-2">
+                        <a id="footer-brand" href="#">
+                            <img alt="TechThrift's logo" src="../media/images/logo.png">
+                        </a>
+                        <p class="mt-2 text-dark">
+                            © 2025 Copyright: TechThrift.
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-6 col-sm-4 col-lg-2">
+                        <!-- Links -->
+                        <h6 class="text-uppercase text-dark fw-bold mb-2">
+                            Store
+                        </h6>
+                        <ul class="list-unstyled mb-4">
+                            <li><a class="text-muted" href="#">About us</a></li>
+                            <li><a class="text-muted" href="#">Find store</a></li>
+                            <li><a class="text-muted" href="#">Categories</a></li>
+                            <li><a class="text-muted" href="#">Blogs</a></li>
+                        </ul>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-6 col-sm-4 col-lg-2">
+                        <!-- Links -->
+                        <h6 class="text-uppercase text-dark fw-bold mb-2">
+                            Information
+                        </h6>
+                        <ul class="list-unstyled mb-4">
+                            <li><a class="text-muted" href="#">Help center</a></li>
+                            <li><a class="text-muted" href="#">Money refund</a></li>
+                            <li><a class="text-muted" href="#">Shipping info</a></li>
+                            <li><a class="text-muted" href="#">Refunds</a></li>
+                        </ul>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-6 col-sm-4 col-lg-2">
+                        <!-- Links -->
+                        <h6 class="text-uppercase text-dark fw-bold mb-2">
+                            Support
+                        </h6>
+                        <ul class="list-unstyled mb-4">
+                            <li><a class="text-muted" href="#">Help center</a></li>
+                            <li><a class="text-muted" href="#">Documents</a></li>
+                            <li><a class="text-muted" href="#">Account restore</a></li>
+                            <li><a class="text-muted" href="#">My orders</a></li>
+                        </ul>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-12 col-sm-12 col-lg-3">
+                        <!-- Links -->
+                        <h6 class="text-uppercase text-dark fw-bold mb-2">Newsletter</h6>
+                        <p class="text-muted">Stay in touch with latest updates about our products and offers</p>
+                        <div class="input-group mb-3">
+                            <input type="email" class="form-control border" placeholder="Email" aria-label="Email"
+                                aria-describedby="button-addon2">
+                            <button class="btn btn-light border shadow-0" type="button" id="button-addon2"
+                                data-mdb-ripple-color="dark">
+                                Join
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Grid column -->
+                </div>
+            </div>
+        </section>
+        <!-- Footer Links  -->
+
+        <div class="">
+            <div class="container">
+                <div class="d-flex justify-content-between py-4 border-top">
+                    <div>
+                        <i class="fab fa-lg fa-cc-visa text-dark"></i>
+                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                        <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
+                        <i class="fab fa-lg fa-cc-paypal text-dark"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer -->
+
+    <!-- Scripts -->
+    <script src="../scripts/search.js"></script>
+    <script src="../scripts/loadCategories.js"></script>
+    <script src="../scripts/fetchProducts.js"></script>
+    <!-- Scripts -->
+
+</body>
+
+</html>
