@@ -1,0 +1,25 @@
+@media (max-width: 1200px) {
+  #search-form {
+    display: none !important;
+  }
+  #search-form-mobile {
+    display: flex !important;
+  }
+}
+@media (max-width: 768px) {
+  .main-banner #main-banner-brand {
+    display: none;
+  }
+  #filtersContainer.fixed-top {
+    position: relative !important;
+  }
+  #filtersContainer select {
+    max-width: 100% !important;
+  }
+  #filtersContainer div {
+    flex-direction: column;
+  }
+  #filtersContainer div input[type=range] {
+    width: 100%;
+  }
+}/*# sourceMappingURL=mediaqueries.css.map */
