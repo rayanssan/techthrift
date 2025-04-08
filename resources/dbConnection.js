@@ -4,22 +4,36 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2');
 const connection = {
-    host: 'localhost',
+    host: '0.0.0.0',
     user: 'root',
     password: '',
     database: 'tt_database',
     multipleStatements: true
 };
 
-let db = mysql.createConnection(connection);
-db.connect((err) => {
-    if (err) {
-        console.log('Error: No TechThrift databases exist.');
-        process.exit(1);
-    } else {
-        console.log('Connected to the TechThrift database.');
-    }
-});
+let db;
 
-// Export the database connection and router
-module.exports = { db, router };
+const connectToDb = async () => {
+    try {
+        db = mysql.createConnection(connection);
+        await new Promise((resolve, reject) => {
+            db.connect((err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+        console.log('Connected to the TechThrift database.');
+        return true;
+    } catch (err) {
+        return false;
+    }
+};
+
+// Flag for database connection
+const dbReady = connectToDb();
+
+// Export the database connection, router, and flag
+module.exports = { db, router, dbReady };
