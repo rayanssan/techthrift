@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS clients (
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
-    address VARCHAR(255)
-
+    address VARCHAR(255),
+    city VARCHAR(255),
+    country VARCHAR(255)
 ); 
 
 CREATE TABLE IF NOT EXISTS entities (
@@ -20,13 +21,44 @@ CREATE TABLE IF NOT EXISTS entities (
     FOREIGN KEY (id) REFERENCES clients(id)
 );
 
+CREATE TRIGGER check_entity_client_fields
+BEFORE INSERT ON entities
+FOR EACH ROW
+BEGIN
+    DECLARE address_ VARCHAR(255);
+    DECLARE city_ VARCHAR(255);
+    DECLARE country_ VARCHAR(255);
+    DECLARE nic_ CHAR(9);
+    DECLARE nif_ CHAR(9);
+    DECLARE dob_ DATE;
+    DECLARE gender_ ENUM('Male', 'Female', 'Other');
+
+    -- Get relevant fields from clients
+    SELECT address, city, country, nic, nif, dob, gender
+    INTO address_, city_, country_, nic_, nif_, dob_, gender_
+    FROM clients
+    WHERE id = NEW.id;
+
+    -- Check required fields are NOT NULL
+    IF address_ IS NULL OR city_ IS NULL OR country_ IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Entities must have address, city, and country NOT NULL';
+    END IF;
+
+    -- Check forbidden fields are NULL
+    IF nic_ IS NOT NULL OR nif_ IS NOT NULL OR dob_ IS NOT NULL OR gender_ IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Entities must NOT have NIC, NIF, DOB, or gender set';
+    END IF;
+END;
+
 CREATE TABLE IF NOT EXISTS employees (
     id INT PRIMARY KEY,
-    store INT NOT NULL,
+    store CHAR(9) NOT NULL,
     internal_number INT UNIQUE,
 
     FOREIGN KEY (id) REFERENCES clients(id),
-    FOREIGN KEY (store) REFERENCES entities(id)
+    FOREIGN KEY (store) REFERENCES entities(nipc)
 );
 
 CREATE TRIGGER ensure_store_entity_type
@@ -38,7 +70,7 @@ BEGIN
     -- Get the entity_type as a string
     SELECT CAST(entity_type AS CHAR) INTO etype
     FROM entities
-    WHERE id = NEW.store;
+    WHERE nipc = NEW.store;
 
     -- If the entity_type is not 'store', raise an error
     IF etype IS NULL OR etype != 'store' THEN

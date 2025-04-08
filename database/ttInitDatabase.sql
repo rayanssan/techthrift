@@ -1,33 +1,33 @@
 -- Initial data to populate the databases
 
-INSERT INTO clients (id, name, email, phone_number, password, address) VALUES
-(1, 'TechThrift HQ', 'janesmith@example.com', '987654321', 'securepass', 'Rua Augusta 10, 1100-053 Lisboa Portugal'),
-(2, "Michael\'s Charity", 'michaelj@example.com', '111222333', 'mikepass', 'Avenida da Liberdade 200, 1250-147 Lisboa Portugal'),
-(3, 'Tech Reboot', 'techreboot@example.com', '912345678', 'rebootpass', 'Avenida Gustavo Eiffel 218, 4000-279 Porto Portugal'),
+INSERT INTO clients (id, name, email, phone_number, password, address, city, country) VALUES
+(1, 'TechThrift HQ', 'janesmith@example.com', '987654321', 'securepass', 'Rua Augusta 10, 1100-053', "Lisbon", "Portugal"),
+(2, "Michael\'s Charity", 'michaelj@example.com', '111222333', 'mikepass', 'Avenida da Liberdade 200, 1250-147', "Lisbon", "Portugal"),
+(3, 'Tech Reboot', 'techreboot@example.com', '912345678', 'rebootpass', 'Avenida Gustavo Eiffel 218, 4000-279', "Porto", "Portugal"),
 (4, 'Lisbon Gadgets', 'lisbongadgets@example.com', '934567890', 'gadget123', 
-'Centro Vasco da Gama, Av. Dom João II 40 loja 2.010, 1990-094 Lisboa Portugal'),
-(5, 'RefurbishPoint', 'refurbish@example.com', '965432109', 'refurb321', 'Freeport Outlet Av. Euro 2004, Loja 0.12, 
-2890-154 Alcochete Portugal'),
-(6, 'Charity Hands', 'handscharity@example.com', '938271645', 'helpme', 'Rua de Benfica 100, 1500-088 Lisboa Portugal'),
-(7, 'EcoDevices', 'eco@example.com', '936598741', 'greenpass', 'Rua Carlos Vieira Ramos 19, 2770-183 Paço de Arcos Portugal'),
-(8, 'Gadget Goodies', 'gadgetgoodies@example.com', '923456789', 'goodies123', 'Forum Algarve, Loja 0.22, 8009-020 Faro Portugal'),
-(9, 'TechRelove', 'techrelove@example.com', '965887741', 'reloveit', '38.7343° N, 9.1530° W'),
-(10, 'Circuit Stop', 'circuitstop@example.com', '934455667', 'stopcircuit', 'Avenida da Boavista 610, 4149-071 Porto Portugal'),
-(11, 'Restart Tech', 'restarttech@example.com', '914785236', 'restartme', 'Rua do Carmo 30, 1200-094 Lisboa Portugal'),
-(12, 'Digital Hope Charity', 'hopecharity@example.com', '936121213', 'hopepass', 'Rua da Madalena 55, 1100-150 Lisboa Portugal'),
-(13, 'Kindware', 'kindware@example.com', '918273645', 'kindpass', 'Rua do Ouro 78, 1100-063 Lisboa Portugal'),
-(14, 'DonateTech', 'donatetech@example.com', '913243546', 'donatepass', 'Rua Rodrigues Sampaio 170, 1150-280 Lisboa Portugal'),
-(15, 'Empower Electronics', 'empower@example.com', '919876543', 'empowerme', 'Rua Conde Redondo 145, 1150-104 Lisboa Portugal'),
-(16, 'TechRevive', 'techrevive@example.com', '633345678', 'revivepass', 'Carrer de Pau Claris 101, 08010 Barcelona, Spain'),
-(17, 'Gadget Galaxy', 'gadgetgalaxy@example.com', '644556789', 'galaxypass', 'Carrer de Gran de Gracia 100, 08008 Barcelona, Spain'),
-(18, 'RebootZone', 'rebootzone@example.com', '661234567', 'rebootzonepass', 'Calle de Toledo 89, 28005 Madrid, Spain'),
-(19, 'El Mundo del Gadget', 'mundogadget@example.com', '612345678', 'gadget12345', 'Calle de Fuencarral 78, 28004 Madrid, Spain'),
-(20, 'Reciclaje Digital', 'reciclajedigital@example.com', '623456789', 'digitalrecycle', 'Carrer de València 150, 46005 Valencia, Spain'),
-(21, 'Segunda Mano Tech', 'segunda@example.com', '612345789', 'segundatechpass', 'Carrer de la Pau 15, 46003 Valencia, Spain'),
-(22, 'Gizmos España', 'gizmos@example.com', '625678901', 'gizmospass', 'Avenida de la Constitución 10, 41001 Sevilla, Spain'),
-(23, 'E-Tech Spain', 'etechspain@example.com', '635789012', 'etech1234', 'Calle del Carmen 34, 41003 Sevilla, Spain'),
-(24, 'ReparaTech', 'reparatech@example.com', '644321098', 'reparapass', 'Carrer de la Diputació 125, 08015 Barcelona, Spain'),
-(25, 'Tech & Co.', 'techco@example.com', '651234567', 'techcotech', 'Calle de San Bernardo 78, 28015 Madrid, Spain');
+'Centro Vasco da Gama, Av. Dom João II 40 loja 2.010, 1990-094', "Lisbon", "Portugal"),
+(5, 'RefurbishPoint', 'refurbish@example.com', '965432109', 'refurb321', 'Freeport Outlet, Av. Euro 2004, Loja 0.12, 
+2890-154', "Alcochete", "Portugal"),
+(6, 'Charity Hands', 'handscharity@example.com', '938271645', 'helpme', 'Rua de Benfica 100, 1500-088', "Lisbon", "Portugal"),
+(7, 'EcoDevices', 'eco@example.com', '936598741', 'greenpass', 'Rua Carlos Vieira Ramos 19, 2770-183', 'Paço de Arcos', 'Portugal'),
+(8, 'Gadget Goodies', 'gadgetgoodies@example.com', '923456789', 'goodies123', 'Forum Algarve, Loja 0.22, 8009-020', 'Faro', 'Portugal'),
+(9, 'TechRelove', 'techrelove@example.com', '965887741', 'reloveit', '38.7343° N, 9.1530° W', 'Lisbon', 'Portugal'),
+(10, 'Circuit Stop', 'circuitstop@example.com', '934455667', 'stopcircuit', 'Avenida da Boavista 610, 4149-071', 'Porto', 'Portugal'),
+(11, 'Restart Tech', 'restarttech@example.com', '914785236', 'restartme', 'Rua do Carmo 30, 1200-094', 'Lisboa', 'Portugal'),
+(12, 'Digital Hope Charity', 'hopecharity@example.com', '936121213', 'hopepass', 'Rua da Madalena 55, 1100-150', 'Lisboa', 'Portugal'),
+(13, 'Kindware', 'kindware@example.com', '918273645', 'kindpass', 'Rua do Ouro 78, 1100-063', 'Lisboa', 'Portugal'),
+(14, 'DonateTech', 'donatetech@example.com', '913243546', 'donatepass', 'Rua Rodrigues Sampaio 170, 1150-280', 'Lisboa', 'Portugal'),
+(15, 'Empower Electronics', 'empower@example.com', '919876543', 'empowerme', 'Rua Conde Redondo 145, 1150-104', 'Lisboa', 'Portugal'),
+(16, 'TechRevive', 'techrevive@example.com', '633345678', 'revivepass', 'Carrer de Pau Claris 101, 08010', 'Barcelona', 'Spain'),
+(17, 'Gadget Galaxy', 'gadgetgalaxy@example.com', '644556789', 'galaxypass', 'Carrer Gran de Gràcia 100, 08008', 'Barcelona', 'Spain'),
+(18, 'RebootZone', 'rebootzone@example.com', '661234567', 'rebootzonepass', 'Calle de Toledo 89, 28005', 'Madrid', 'Spain'),
+(19, 'El Mundo del Gadget', 'mundogadget@example.com', '612345678', 'gadget12345', 'Calle de Fuencarral 78, 28004', 'Madrid', 'Spain'),
+(20, 'Reciclaje Digital', 'reciclajedigital@example.com', '623456789', 'digitalrecycle', 'Carrer de València 150, 46005', 'Valencia', 'Spain'),
+(21, 'Segunda Mano Tech', 'segunda@example.com', '612345789', 'segundatechpass', 'Carrer de la Pau 15, 46003', 'Valencia', 'Spain'),
+(22, 'Gizmos España', 'gizmos@example.com', '625678901', 'gizmospass', 'Avenida de la Constitución 10, 41001', 'Sevilla', 'Spain'),
+(23, 'E-Tech Spain', 'etechspain@example.com', '635789012', 'etech1234', 'Calle del Carmen 34, 41003', 'Sevilla', 'Spain'),
+(24, 'ReparaTech', 'reparatech@example.com', '644321098', 'reparapass', 'Carrer de la Diputació 125, 08015', 'Barcelona', 'Spain'),
+(25, 'Tech & Co.', 'techco@example.com', '651234567', 'techcotech', 'Calle de San Bernardo 78, 28015', 'Madrid', 'Spain');
 
 INSERT INTO clients (id, name, email, phone_number, gender, password, dob, address, nif, nic) VALUES
 (26, 'John Doe', 'johndoe@example.com', '123456789', 'Male', 'password123', 
@@ -255,7 +255,7 @@ INSERT INTO entityHours VALUES
 (25, 'Sunday', '10:00-18:00'),
 (25, 'Christmas Day', 'Closed');
 
-INSERT INTO employees (id, store) VALUES (26, 1);
+INSERT INTO employees (id, store) VALUES (26, 112233445);
 
 INSERT INTO products (id, name, store_nipc, product_condition, 
 availability, description, category, brand, model_code, color, weight, 

@@ -760,6 +760,8 @@ router.get('/ttuser/store', (req, res) => {
                     password: row.password,
                     phone_number: row.phone_number,
                     address: row.address,
+                    city: row.city,
+                    country: row.country,
                     opening_hours: [{
                         day: row.day,
                         hours: row.hours
@@ -780,7 +782,7 @@ router.get('/ttuser/store/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.password, c.phone_number, c.address, eh.*
+        SELECT e.*, c.*, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
         LEFT JOIN entityHours eh ON eh.entity = e.id 
@@ -815,6 +817,8 @@ router.get('/ttuser/store/:id', (req, res) => {
                     password: row.password,
                     phone_number: row.phone_number,
                     address: row.address,
+                    city: row.city,
+                    country: row.country,
                     opening_hours: [{
                         day: row.day,
                         hours: row.hours
@@ -919,6 +923,8 @@ router.get('/ttuser/charity', (req, res) => {
                     password: row.password,
                     phone_number: row.phone_number,
                     address: row.address,
+                    city: row.city,
+                    country: row.country,
                     opening_hours: [{
                         day: row.day,
                         hours: row.hours
@@ -939,7 +945,7 @@ router.get('/ttuser/charity/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.password, c.phone_number, c.address, eh.*
+        SELECT e.*, c.*, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
         LEFT JOIN entityHours eh ON eh.entity = e.id 
@@ -975,6 +981,8 @@ router.get('/ttuser/charity/:id', (req, res) => {
                     password: row.password,
                     phone_number: row.phone_number,
                     address: row.address,
+                    city: row.city,
+                    country: row.country,
                     opening_hours: [{
                         day: row.day,
                         hours: row.hours

@@ -32,6 +32,8 @@ let currentIndex = 0;
  *
  * @param {string} storeName - The store's name.
  * @param {string} address - The store's address (can be coordinates).
+ * @param {string} city - The store's city.
+ * @param {string} country - The store's country.
  * @param {string} email - The store's contact email.
  * @param {string} phoneNumber - The store's phone number.
  * @param {Array<{day: string, hours: string}>} openingHours - The store's opening hours.
@@ -40,13 +42,14 @@ let currentIndex = 0;
  * @function
  * @name geocodeAddress
  */
-async function geocodeAddress(storeName, address, email, phoneNumber, openingHours, attempt = 1) {
+async function geocodeAddress(storeName, address, city, country, 
+    email, phoneNumber, openingHours, attempt = 1) {
 
     // Helper functions
 
     /**
      * Simplifies an address string by removing its middle parts if it contains at least two commas.
-     * @param {string} address - The full address string.
+     * @param {string} caddress - The full address string.
      * @returns {string} A simplified address string.
      * 
      * @function
@@ -54,15 +57,15 @@ async function geocodeAddress(storeName, address, email, phoneNumber, openingHou
      * @memberof geocodeAddress
      * @private
      */
-    function simplifyAddress(address) {
-        const firstCommaIndex = address.indexOf(',');
-        const lastCommaIndex = address.lastIndexOf(',');
+    function simplifyAddress(caddress) {
+        const firstCommaIndex = caddress.indexOf(',');
+        const lastCommaIndex = caddress.lastIndexOf(',');
 
         if (firstCommaIndex !== -1 && lastCommaIndex !== -1 && firstCommaIndex !== lastCommaIndex) {
-            return address.substring(0, firstCommaIndex) + ',' + address.substring(lastCommaIndex + 1).trim();
+            return caddress.substring(0, firstCommaIndex) + ', ' + caddress.substring(lastCommaIndex + 1).trim();
         }
 
-        return address; // Fallback if unable to simplify
+        return caddress; // Fallback if unable to simplify
     }
 
     /**
@@ -127,7 +130,18 @@ async function geocodeAddress(storeName, address, email, phoneNumber, openingHou
             });
     }
 
-    const queryAddress = attempt === 1 ? address : simplifyAddress(address);
+
+    /* Address could have been given as a coordinate, identify and if so
+    extract the coordinates to then convert to readable form */
+    const coord = isCoordinate(address) ? extractLatLon(address) : null;
+
+    let queryAddress;
+    if (!coord) {
+        queryAddress = attempt === 1 ? address + " " + city + " " + country : 
+            simplifyAddress(address + " " + city + " " + country);
+    } else {
+        queryAddress = address;
+    }
 
     try {
         const response = await fetch(`/geocode?q=${encodeURIComponent(queryAddress)}`);
@@ -147,10 +161,6 @@ async function geocodeAddress(storeName, address, email, phoneNumber, openingHou
             const daysOrder = [
                 "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
             ];
-
-            /* Address could have been given as a coordinate, identify and if so
-            extract the coordinates to then convert to readable form */
-            const coord = isCoordinate(address) ? extractLatLon(address) : null;
 
             if (coord) {
                 reverseGeocode(coord.lat, coord.lon, (realAddress) => {
@@ -179,7 +189,7 @@ async function geocodeAddress(storeName, address, email, phoneNumber, openingHou
                 L.marker([lat, lon]).addTo(map)
                     .bindPopup(`
                         <p><strong>${storeName}</strong></p>
-                        <p>Address: ${address}</p>
+                        <p>Address: ${address + " " + city + " " + country}</p>
                         <p>Phone Number: ${phoneNumber}</p>
                         <p>Email: ${email}</p>
                         <ul>
@@ -200,13 +210,15 @@ async function geocodeAddress(storeName, address, email, phoneNumber, openingHou
         } else {
             // Retry logic if no results
             if (attempt <= 5) {
-                retryQueue.push({ storeName, address, email, phoneNumber, openingHours, attempt: attempt + 1 });
+                retryQueue.push({ storeName, address, city, country, 
+                    email, phoneNumber, openingHours, attempt: attempt + 1 });
             }
         }
     } catch (error) {
         // Retry on error
         if (attempt <= 5) {
-            retryQueue.push({ storeName, address, email, phoneNumber, openingHours, attempt: attempt + 1 });
+            retryQueue.push({ storeName, address, city, country, 
+                email, phoneNumber, openingHours, attempt: attempt + 1 });
         }
     }
 }
@@ -238,15 +250,22 @@ function processQueue(queue) {
      * @private
      */
     function processNext() {
-        let item;
         // Process normal queue with 1 second delay between each
-        item = queue.shift();
+        let item = queue.shift();
+        let retryItem = retryQueue.shift();
         if (item != undefined) {
-            geocodeAddress(item.storeName, item.address, item.email,
+            geocodeAddress(item.storeName, item.address, item.city, item.country, item.email,
                 item.phoneNumber, item.openingHours,
                 item.attempt).finally(() => {
                     setTimeout(processNext, 1000); // 1 second between requests
                 });
+            if (retryItem != undefined) {
+                geocodeAddress(retryItem.storeName, retryItem.address, retryItem.city, retryItem.country, retryItem.email,
+                    retryItem.phoneNumber, retryItem.openingHours,
+                    retryItem.attempt).finally(() => {
+                        setTimeout(processNext, 1000); // 1 second between requests
+                    });
+            }
         } else {
             document.getElementById("loading-message").style.display = "none";
             isProcessing = false;
@@ -268,6 +287,8 @@ function loadAllStoreLocations(stores) {
     const queue = stores.map(store => ({
         storeName: store.name,
         address: store.address,
+        city: store.city,
+        country: store.country,
         email: store.email,
         phoneNumber: store.phone_number,
         openingHours: store.opening_hours,
