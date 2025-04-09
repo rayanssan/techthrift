@@ -111,6 +111,16 @@ app.get('/store', (req, res) => {
     });
 });
 
+// Partners
+app.get('/partners', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/partners.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving partners.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
 
 // Authentication
 app.get('/authentication', (req, res) => {

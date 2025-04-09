@@ -62,7 +62,7 @@
         <div class="container my-4">
             <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Homepage</a>
         </div>
-        <div class="row d-flex justify-content-center" id="product-list">
+        <div class="d-flex justify-content-center" id="product-list">
             <!-- Products will be injected here dynamically -->
         </div>
     </div>
@@ -147,7 +147,7 @@
     </section>
 
     <footer class="text-center text-lg-start text-muted" style="background-color: #f5f5f5;">
-        <!-- Footer Links  -->
+        <!-- Footer Links -->
         <section class="">
             <div class="container text-center text-md-start pt-4 pb-4">
                 <div class="row mt-3">
@@ -156,9 +156,6 @@
                         <a id="footer-brand" href="#">
                             <img alt="TechThrift's logo" src="../media/images/logo.png">
                         </a>
-                        <p class="mt-2 text-dark">
-                            © 2025 Copyright: TechThrift.
-                        </p>
                     </div>
                     <!-- Grid column -->
 
@@ -166,27 +163,11 @@
                     <div class="col-6 col-sm-4 col-lg-2">
                         <!-- Links -->
                         <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Store
+                            Services
                         </h6>
                         <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">About us</a></li>
-                            <li><a class="text-muted" href="#">Find store</a></li>
-                            <li><a class="text-muted" href="#">Categories</a></li>
-                            <li><a class="text-muted" href="#">Blogs</a></li>
-                        </ul>
-                    </div>
-                    <!-- Grid column -->
-
-                    <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
-                        <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Information
-                        </h6>
-                        <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">Help center</a></li>
-                            <li><a class="text-muted" href="#">Money refund</a></li>
-                            <li><a class="text-muted" href="#">Shipping info</a></li>
+                            <li><a class="text-muted" href="/stores">Find a store</a></li>
+                            <li><a class="text-muted" href="#">My orders</a></li>
                             <li><a class="text-muted" href="#">Refunds</a></li>
                         </ul>
                     </div>
@@ -200,32 +181,46 @@
                         </h6>
                         <ul class="list-unstyled mb-4">
                             <li><a class="text-muted" href="#">Help center</a></li>
-                            <li><a class="text-muted" href="#">Documents</a></li>
-                            <li><a class="text-muted" href="#">Account restore</a></li>
-                            <li><a class="text-muted" href="#">My orders</a></li>
+                            <li><a class="text-muted" href="#">Shipping</a></li>
+                            <li><a class="text-muted" href="#">Contact us</a></li>
                         </ul>
                     </div>
                     <!-- Grid column -->
 
                     <!-- Grid column -->
-                    <div class="col-12 col-sm-12 col-lg-3">
+                    <div class="col-6 col-sm-4 col-lg-2">
                         <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">Newsletter</h6>
-                        <p class="text-muted">Stay in touch with latest updates about our products and offers</p>
-                        <div class="input-group mb-3">
-                            <input type="email" class="form-control border" placeholder="Email" aria-label="Email"
-                                aria-describedby="button-addon2">
-                            <button class="btn btn-light border shadow-0" type="button" id="button-addon2"
-                                data-mdb-ripple-color="dark">
-                                Join
-                            </button>
-                        </div>
+                        <h6 class="text-uppercase text-dark fw-bold mb-2">
+                            Information
+                        </h6>
+                        <ul class="list-unstyled mb-4">
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="About TechThrift" 
+                                data-content="Electronic waste has become a major environmental issue in recent years.
+                                By choosing to buy used electronics with <strong>TechThrift</strong>, 
+                                you are not just saving money — you are helping protect the planet!">About us</a>
+                            </li>
+                            <li><a class="text-muted" href="#">Privacy policy</a></li>
+                            <li><a class="text-muted" href="#">Terms of service</a></li>
+                        </ul>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-6 col-sm-4 col-lg-2">
+                        <!-- Links -->
+                        <h6 class="text-uppercase text-primary fw-bold mb-2">
+                            Become a partner
+                        </h6>
+                        <ul class="list-unstyled mb-4">
+                            <li><a class="text-primary" href="/partners">Partners portal</a></li>
+                        </ul>
                     </div>
                     <!-- Grid column -->
                 </div>
             </div>
         </section>
-        <!-- Footer Links  -->
+        <!-- Footer Links -->
 
         <div class="">
             <div class="container">
@@ -236,6 +231,9 @@
                         <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
                         <i class="fab fa-lg fa-cc-paypal text-dark"></i>
                     </div>
+                    <p class="mb-0">
+                        © 2025 Copyright: TechThrift.
+                    </p>
                 </div>
             </div>
         </div>
@@ -244,6 +242,7 @@
 
     <!-- Scripts -->
     <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/footerLinks.js"></script>
     <!-- Scripts -->
 
 </body>

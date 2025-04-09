@@ -5,7 +5,6 @@ let currentPage = 1;
 const productsPerPage = 12;
 let products = [];
 
-
 /**
  * Renders the products dynamically, showing a maximum of 12 per page.
  * Uses pagination to display products correctly across multiple pages.
@@ -617,7 +616,7 @@ if (document.body.id === "homepage") {
 }
 
 if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
-document.getElementById("filtersContainer")) {
+    document.getElementById("filtersContainer")) {
     document.addEventListener("DOMContentLoaded", () => {
         const filterBrand = document.getElementById("filterBrand");
         const filterCondition = document.getElementById("filterCondition");
@@ -633,6 +632,15 @@ document.getElementById("filtersContainer")) {
         let filteredProducts = [];
         let filtersOffsetTop = filtersContainer.offsetTop;
 
+        /**
+         * Fetches product data and populates the filter dropdowns (brand, condition, color, year)
+         * based on the current page context (category page, search page, or general listing).
+         * Also sets the maximum price filter based on available products.
+         *
+         * @async
+         * @function populateFilterOptions
+         * @returns {Promise<void>}
+         */
         async function populateFilterOptions() {
             try {
                 let endpoint = '/tt';
@@ -692,6 +700,14 @@ document.getElementById("filtersContainer")) {
             }
         }
 
+        /**
+         * Populates a given select element with provided options and sets a default label.
+         *
+         * @function populateDropdown
+         * @param {HTMLSelectElement} selectElement - The dropdown to populate.
+         * @param {string[]} items - List of unique items to add as options.
+         * @param {string} defaultText - Text for the default (empty) option.
+         */
         function populateDropdown(selectElement, items, defaultText) {
             selectElement.innerHTML = `<option value="">${defaultText}</option>`;
             items.forEach(item => {
@@ -702,6 +718,15 @@ document.getElementById("filtersContainer")) {
             });
         }
 
+        /**
+         * Applies selected filter values (brand, condition, color, year, max price)
+         * to the list of all products and updates the filteredProducts and products arrays.
+         * Triggers sorting and re-renders products. 
+         * Shows a friendly message if no matches are found.
+         * Also handles pagination visibility.
+         *
+         * @function applyFilters
+         */
         function applyFilters() {
             try {
                 const brand = filterBrand.value;
@@ -710,22 +735,22 @@ document.getElementById("filtersContainer")) {
                 const year = filterYear.value;
                 const price = parseFloat(maxPrice.value);
                 const maxAllowedPrice = parseFloat(maxPrice.max);
-        
+
                 filteredProducts = allProducts.filter(product => {
                     const matchesBrand = !brand || product.brand === brand;
                     const matchesCondition = !condition || product.product_condition === condition;
                     const matchesColor = !color || product.color === color;
                     const matchesYear = !year || String(product.year) === year;
                     const matchesPrice = price >= maxAllowedPrice || product.price <= price;
-        
+
                     return matchesBrand && matchesCondition && matchesColor && matchesYear && matchesPrice;
                 });
-        
+
                 applySorting(false);
                 products = [...filteredProducts];
                 currentPage = 1;
                 renderProducts();
-        
+
                 if (products.length === 0) {
                     document.getElementById('product-list').innerHTML = `<div class="container my-4">
                     <p class="text-center fw-bold display-4">No products found.</p>
@@ -744,7 +769,18 @@ document.getElementById("filtersContainer")) {
                 console.error('Error fetching products:', error);
             }
         }
-        
+
+        /**
+         * Sorts the filteredProducts array based on the selected sort criteria:
+         * - "price-asc": ascending by price
+         * - "price-desc": descending by price
+         * - "condition": custom condition ranking
+         *
+         * Optionally re-renders products if `shouldRender` is true.
+         *
+         * @function applySorting
+         * @param {boolean} [shouldRender=true] - Whether to re-render products after sorting.
+         */
         function applySorting(shouldRender = true) {
             if (sortDropdown.value === "price-asc") {
                 filteredProducts.sort((a, b) => a.price - b.price);
@@ -752,8 +788,8 @@ document.getElementById("filtersContainer")) {
                 filteredProducts.sort((a, b) => b.price - a.price);
             } else if (sortDropdown.value === "condition") {
                 const conditionOrder = ["Like New", "Excellent", "Good", "Needs Repair"];
-                filteredProducts.sort((a, b) => 
-                    conditionOrder.indexOf(a.product_condition) - 
+                filteredProducts.sort((a, b) =>
+                    conditionOrder.indexOf(a.product_condition) -
                     conditionOrder.indexOf(b.product_condition)
                 );
             }

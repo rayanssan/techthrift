@@ -5,6 +5,8 @@
  * This function creates list items and links for predefined categories,
  * appending them to the element with ID "categories-nav".
  * If a category is present in the URL parameters, its text color is changed to navy blue.
+ * 
+ * @function loadCategories
  */
 function loadCategories() {
     const categories = [

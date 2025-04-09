@@ -3,9 +3,15 @@
 let stores = [];
 
 /**
- * TODO
+ * Renders a list of stores grouped by country and city.
+ * If the store address is in coordinate format, it uses reverse geocoding to 
+ * convert to a human-readable address.
+ * The rendered list is injected into the DOM under the element with ID `store-list`.
  *
+ * @async
  * @function renderStores
+ * @returns {Promise<void>}
+ * @throws {Error} Throws error if reverse geocoding fails or coordinate parsing fails.
  */
 async function renderStores() {
     const storesContainer = document.getElementById('store-list');
@@ -91,6 +97,13 @@ async function renderStores() {
     storesContainer.innerHTML = html;
 }
 
+/**
+ * Parses coordinate string into latitude and longitude.
+ *
+ * @function parseCoordinates
+ * @param {string} coordStr - A string containing latitude and longitude with directional suffixes.
+ * @returns {{lat: number, lon: number} | null} Object with `lat` and `lon`, or `null` if parsing fails.
+ */
 function parseCoordinates(coordStr) {
     try {
         const regex = /([-+]?[0-9]*\.?[0-9]+)[°\s]*([NSns])[, ]+([-+]?[0-9]*\.?[0-9]+)[°\s]*([EWew])/;
@@ -111,7 +124,8 @@ function parseCoordinates(coordStr) {
 
 if (document.body.id == "storesListPage") {
     /**
-     * TODO
+     * Fetches the list of all stores from the backend.
+     * Renders them using renderStores or displays appropriate messages if empty/error.
      *
      * @async
      * @function fetchStores
@@ -146,7 +160,8 @@ if (document.body.id == "storesListPage") {
     });
 } else if (document.body.id == "storePage") {
     /**
-     * TODO
+     * Fetches details of a single store based on the `is` URL parameter.
+     * Displays store details, reverse geocodes if needed, and renders a map using Leaflet.
      *
      * @async
      * @function fetchOneStore
@@ -203,6 +218,15 @@ if (document.body.id == "storesListPage") {
                 geoData = await geoRes.json();
 
                 if (!geoData.length) {
+                    /**
+                     * Simplifies a full address by reducing it to the first and last key parts.
+                     * This is helpful for improving geocoding accuracy when full detailed addresses
+                     * do not return results.
+                     * 
+                     * @function simplifyAddress
+                     * @param {string} address - The full address string, typically comma-separated.
+                     * @returns {string} A simplified version of the address.
+                     */
                     function simplifyAddress(address) {
                         // Split address into parts (separated by commas)
                         const parts = address.split(',');
