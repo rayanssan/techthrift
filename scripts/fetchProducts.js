@@ -30,7 +30,7 @@ function renderProducts() {
             <div class="card w-100 my-2 shadow h-100">
                 <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top">
                 <div class="card-body d-flex flex-column">
-                    <h6 class="card-title text-truncate">${product.name}</h6>
+                    <h6 class="card-title text-truncate">${product.name} <i class="fa fa-angle-right"></i></h6>
                     <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
                 product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
             }">${product.product_condition} </p>
@@ -75,7 +75,7 @@ if (document.body.id === "homepage") {
      * It then populates the product container with product cards.
      *
      * @async
-     * @function fetchProducts
+     * @function fetchSellingProducts
      * @returns {Promise<void>} Resolves when the products are successfully fetched and rendered.
      * @throws {Error} Logs an error to the console if the API request fails.
      */
@@ -151,7 +151,7 @@ if (document.body.id === "homepage") {
             const product = await response.json();
             const productContainer = document.getElementById('product-info');
 
-            // Technical Specifications: Only include non-null values
+            // Technical Specifications
             const specs = {
                 "Brand": product.brand,
                 "Year": product.year,
@@ -233,7 +233,9 @@ if (document.body.id === "homepage") {
                         
                         <!-- Right side: Product Info -->
                         <div class="col-lg-8 col-md-7 col-12">
-                            <h2>${product.name}</h2>
+                            <h2><a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                                <i class="fa fa-angle-left fs-3"></i>
+                            </a>${product.name}</h2>
                             <p class="fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                             <p>${product.description}</p>
                             <!-- Product condition -->
@@ -251,7 +253,7 @@ if (document.body.id === "homepage") {
                             </div>
                             ${technicalSpecsSection}
                             <!-- Store -->
-                            <p class="mb-2"><strong>Sold by:</strong> ${product.store}</p>
+                            <p class="mb-2"><strong>Sold by:</strong> <a href="/store?is=${product.store_nipc}">${product.store}</a></p>
                             <!-- Date added -->
                             <p><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
                         </div>
@@ -345,7 +347,7 @@ if (document.body.id === "homepage") {
      * It then populates the product container with product cards.
      *
      * @async
-     * @function fetchProducts
+     * @function fetchCategorySellingProducts
      * @returns {Promise<void>} Resolves when the products are successfully fetched and rendered.
      * @throws {Error} Logs an error to the console if the API request fails.
      */
@@ -431,7 +433,7 @@ if (document.body.id === "homepage") {
      * It then populates the product container with product cards.
      *
      * @async
-     * @function fetchProducts
+     * @function fetchSearchSellingProducts
      * @returns {Promise<void>} Resolves when the products are successfully fetched and rendered.
      * @throws {Error} Logs an error to the console if the API request fails.
      */
@@ -521,7 +523,7 @@ if (document.body.id === "homepage") {
      * In case of an error, an error message is shown.
      * 
      * @async
-     * @function
+     * @function fetchCartProducts
      * @throws {Error} If there is an issue with fetching product data.
      */
     async function fetchCartProducts() {
@@ -562,7 +564,7 @@ if (document.body.id === "homepage") {
      * This function also handles the removal of a product
      * from the cart and from `localStorage`.
      * 
-     * @function
+     * @function renderCartProducts
      */
     function renderCartProducts() {
         const productContainer = document.getElementById('product-list');

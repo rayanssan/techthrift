@@ -89,16 +89,28 @@ app.get('/cart', (req, res) => {
     });
 });
 
-// Stores Map
-app.get('/storesMap', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/storesMap.html');
+// Stores
+app.get('/stores', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/storesList.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving storesMap.html:', err);
+            console.error('Error serving storesList.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
 });
+
+// Store
+app.get('/store', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/store.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving store.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 
 // Authentication
 app.get('/authentication', (req, res) => {

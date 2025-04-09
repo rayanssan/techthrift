@@ -102,16 +102,27 @@ body {
   filter: brightness(0.8);
 }
 
-#search-form button[type=submit], #search-form-mobile button[type=submit] {
+#search-form button[type=submit],
+#search-form-mobile button[type=submit] {
   border-top-right-radius: var(--bs-border-radius);
   border-bottom-right-radius: var(--bs-border-radius);
 }
-#search-form #recent-searches-wrapper, #search-form #recent-searches-wrapper-mobile, #search-form-mobile #recent-searches-wrapper, #search-form-mobile #recent-searches-wrapper-mobile {
+#search-form #recent-searches-wrapper,
+#search-form #recent-searches-wrapper-mobile,
+#search-form-mobile #recent-searches-wrapper,
+#search-form-mobile #recent-searches-wrapper-mobile {
   position: relative;
   width: inherit;
   margin: 0;
 }
-#search-form #recent-searches-wrapper #recent-searches, #search-form #recent-searches-wrapper #recent-searches-mobile, #search-form #recent-searches-wrapper-mobile #recent-searches, #search-form #recent-searches-wrapper-mobile #recent-searches-mobile, #search-form-mobile #recent-searches-wrapper #recent-searches, #search-form-mobile #recent-searches-wrapper #recent-searches-mobile, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-mobile {
+#search-form #recent-searches-wrapper #recent-searches,
+#search-form #recent-searches-wrapper #recent-searches-mobile,
+#search-form #recent-searches-wrapper-mobile #recent-searches,
+#search-form #recent-searches-wrapper-mobile #recent-searches-mobile,
+#search-form-mobile #recent-searches-wrapper #recent-searches,
+#search-form-mobile #recent-searches-wrapper #recent-searches-mobile,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-mobile {
   position: absolute;
   width: inherit;
   background-color: white;
@@ -123,12 +134,26 @@ body {
   border-bottom-right-radius: var(--bs-border-radius);
   border-bottom-left-radius: var(--bs-border-radius);
 }
-#search-form #recent-searches-wrapper #recent-searches-list, #search-form #recent-searches-wrapper #recent-searches-list-mobile, #search-form #recent-searches-wrapper-mobile #recent-searches-list, #search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile, #search-form-mobile #recent-searches-wrapper #recent-searches-list, #search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile {
+#search-form #recent-searches-wrapper #recent-searches-list,
+#search-form #recent-searches-wrapper #recent-searches-list-mobile,
+#search-form #recent-searches-wrapper-mobile #recent-searches-list,
+#search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile,
+#search-form-mobile #recent-searches-wrapper #recent-searches-list,
+#search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
-#search-form #recent-searches-wrapper #recent-searches-list li a, #search-form #recent-searches-wrapper #recent-searches-list-mobile li a, #search-form #recent-searches-wrapper-mobile #recent-searches-list li a, #search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile li a, #search-form-mobile #recent-searches-wrapper #recent-searches-list li a, #search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile li a, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list li a, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile li a {
+#search-form #recent-searches-wrapper #recent-searches-list li a,
+#search-form #recent-searches-wrapper #recent-searches-list-mobile li a,
+#search-form #recent-searches-wrapper-mobile #recent-searches-list li a,
+#search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile li a,
+#search-form-mobile #recent-searches-wrapper #recent-searches-list li a,
+#search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile li a,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list li a,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile li a {
   overflow-x: hidden;
   text-overflow: ellipsis;
   padding: 8px 12px;
@@ -136,7 +161,14 @@ body {
   color: #333;
   display: block;
 }
-#search-form #recent-searches-wrapper #recent-searches-list li a:hover, #search-form #recent-searches-wrapper #recent-searches-list-mobile li a:hover, #search-form #recent-searches-wrapper-mobile #recent-searches-list li a:hover, #search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile li a:hover, #search-form-mobile #recent-searches-wrapper #recent-searches-list li a:hover, #search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile li a:hover, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list li a:hover, #search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile li a:hover {
+#search-form #recent-searches-wrapper #recent-searches-list li a:hover,
+#search-form #recent-searches-wrapper #recent-searches-list-mobile li a:hover,
+#search-form #recent-searches-wrapper-mobile #recent-searches-list li a:hover,
+#search-form #recent-searches-wrapper-mobile #recent-searches-list-mobile li a:hover,
+#search-form-mobile #recent-searches-wrapper #recent-searches-list li a:hover,
+#search-form-mobile #recent-searches-wrapper #recent-searches-list-mobile li a:hover,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list li a:hover,
+#search-form-mobile #recent-searches-wrapper-mobile #recent-searches-list-mobile li a:hover {
   cursor: pointer;
   background-color: #f1f1f1;
 }
@@ -187,7 +219,7 @@ body {
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 #filtersContainer select {
-  max-width: 130px;
+  max-width: 160px;
 }
 
 select {
@@ -218,7 +250,7 @@ input[type=range] {
   -webkit-appearance: none;
   -moz-appearance: none;
        appearance: none;
-  height: 16px;
+  height: 17px;
   background: white;
   border-radius: 10px;
   outline: none;
@@ -249,4 +281,40 @@ input[type=range]::-moz-range-thumb {
 
 #applyFilters {
   margin-left: 15px;
+}
+
+@keyframes dots {
+  0% {
+    content: "Loading.";
+  }
+  33% {
+    content: "Loading..";
+  }
+  66% {
+    content: "Loading...";
+  }
+  100% {
+    content: "Loading.";
+  }
+}
+.loading-dots::after {
+  content: "Loading.";
+  animation: dots 1.5s infinite;
+}
+
+.marker-icon {
+  background: none;
+  border: none;
+}
+.marker-icon i {
+  background: radial-gradient(white 50%, transparent 50%);
+  text-shadow: rgba(0, 0, 0, 0.7) 0px 0px 3px;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.7);
+}
+
+.leaflet-popup {
+  font-family: "Lucida Grande", sans-serif;
+}
+.leaflet-popup .leaflet-popup-close-button {
+  display: none;
 }/*# sourceMappingURL=stylesheet.css.map */

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TechThrift</title>
+    <title>TechThrift - Find a Store</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap -->
@@ -14,6 +14,9 @@
     <!-- Font Awesome -->
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
     <!-- Stylesheets -->
     <!-- Favicons -->
     <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
@@ -25,7 +28,7 @@
     <!-- Favicons -->
 </head>
 
-<body id="productPage">
+<body id="storesListPage">
 
     <!-- Header -->
     <header class="p-3 bg-white border-bottom">
@@ -137,11 +140,28 @@
     <!-- Navbar -->
     <!-- Header -->
 
-    <!-- Product information -->
-    <div id="product-info">
-        <!-- Product information will be injected here dynamically -->
+    <!-- Main banner -->
+    <div class="main-banner text-white shadow py-5">
+        <div class="container py-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>
+                        Find Partner Stores
+                    </h1>
+                    <p>TechThrift partners with a network of trusted stores to offer you a diverse selection of products. <br>
+                    See all the locations where you can pick up your purchases or thrift in person!</p>
+                </div>
+                <img id="main-banner-brand" alt="TechThrift's logo" src="../media/images/logo_white.png">
+            </div>
+        </div>
     </div>
-    <!-- Product information -->  
+    <!-- Main banner -->
+
+    <!-- Store list -->
+    <div id="store-list" class="container my-5">
+        <!-- The list of store will be injected here dynamically -->
+    </div>
+    <!-- Store list -->
 
     <!-- Footer -->
     <section class="mt-5" style="background-color: #f5f5f5;">
@@ -221,7 +241,7 @@
         </div>
     </section>
 
-    <footer class="text-center text-lg-start text-muted" style="background-color: #f5f5f5;">
+    <footer class="text-center text-lg-start text-muted shadow" style="background-color: #f5f5f5;">
         <!-- Footer Links  -->
         <section class="">
             <div class="container text-center text-md-start pt-4 pb-4">
@@ -321,6 +341,7 @@
     <script src="../scripts/search.js"></script>
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/fetchStores.js"></script>
     <!-- Scripts -->
 
 </body>
