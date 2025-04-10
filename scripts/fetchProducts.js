@@ -534,19 +534,34 @@ if (document.body.id === "homepage") {
             const productRequests = cartProductIds.map(id =>
                 fetch(`/tt/product/${id}`)
             );
-
             const responses = await Promise.all(productRequests);
             const data = await Promise.all(responses.map(response => response.json()));
             products = data;
 
+            // Fetch current shipping costs
+            const shippingPriceRequest = await fetch(`/tttransaction/shipping`);
+            const shippingPriceData = await shippingPriceRequest.json();
+            const shippingPrice = parseFloat(shippingPriceData.current_shipping_cost);
+
             if (products.length > 0) {
-                renderCartProducts();
+                const cartPrice = renderCartProducts();
+
+                document.getElementById('shipping-price').textContent = `Shipping: 
+                ${shippingPrice == 0 ? 'Free' : `€${shippingPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}`;
+                document.getElementById('total-price').innerHTML = `
+                    <strong>
+                        Total: €${(cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                    </strong>`;
             } else {
                 const productContainer = document.getElementById('product-list');
                 productContainer.innerHTML = `<div class="container my-4">
                 <p class="text-center fw-bold display-4">Nothing in the cart yet.</p>
-                <p class="text-center">Time to go thrifting!</p>
+                <p class="text-center">Time to go thrifting!<br><br>
+                        <a href="/homepage" class="btn btn-primary">Shop now</a>
+                </p>
                 </div>`;
+                document.getElementById('cart-section').parentElement.classList.add('justify-content-center');
+                document.getElementById('payment-section').remove();
             }
         } catch (error) {
             const productContainer = document.getElementById('product-list');
@@ -573,11 +588,14 @@ if (document.body.id === "homepage") {
         const end = start + productsPerPage;
         const paginatedProducts = products.slice(start, end);
 
+        let cartPrice = 0.0;
+
         paginatedProducts.forEach(product => {
             const productCard = `
-            <div id="productid-${product.id}" class="col-lg-3 col-md-6 col-sm-6 d-flex mb-auto product-link">
-                <div class="card w-100 my-2 shadow h-100">
-                    <img alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img-top">
+            <div id="productid-${product.id}" class="w-100 d-flex mb-auto product-link">
+                <div class="card w-100 my-2 shadow h-100 flex-row">
+                    <img alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img"
+                    style="width: 25%;">
                     <div class="card-body d-flex flex-column">
                         <h6 class="card-title text-truncate">${product.name}</h6>
                         <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
@@ -606,7 +624,9 @@ if (document.body.id === "homepage") {
                     productCard.remove();
                 });
             });
+            cartPrice += parseFloat(product.price);
         });
+        return cartPrice;
     }
 
     document.addEventListener('DOMContentLoaded', () => {

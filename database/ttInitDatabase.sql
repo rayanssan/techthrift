@@ -402,18 +402,19 @@ INSERT INTO saleProducts (id, price) VALUES
 (6, 599),
 (7, 899),
 (8, 350),
-(9, 399),
-(10, 999),
+(9, 999),
+(10, 399),
 (11, 199),
-(12, 249),
-(13, 799),
-(14, 599),
-(15, 1399),
-(16, 599),
-(17, 119),
-(18, 149);
+(12, 799),
+(13, 599),
+(14, 1399),
+(15, 449),
+(16, 149),
+(17, 599),
+(18, 119);
 
 INSERT INTO repairProducts (id, problems, client_nif) VALUES (2, 'Broken screen', 220349535);
 INSERT INTO donationProducts (id, charity_nipc, donor_nif) VALUES (2, 556677889, 220349535);
 INSERT INTO interests (interested_user, watched_product) VALUES (3, 1);
 INSERT INTO reports (report) VALUES ('15/02/2025 - 3 new users; 3 new products; 1 new interest');
+INSERT INTO shipping (current_shipping_cost) VALUES (4.99);

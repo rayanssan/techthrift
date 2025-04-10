@@ -1126,5 +1126,26 @@ router.post('/ttuser/reports/add', (req, res) => {
     });
 });
 
+// Get shipping costs
+router.get('/tttransaction/shipping', (req, res) => {
+    db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+        if (err) {
+            return res.status(500).send({ error: err.message });
+        }
+        res.json(rows[0]);
+    });
+});
+
+// Update shipping costs
+router.get('/tttransaction/shipping/update/:newCost', (req, res) => {
+    const shipping_cost = req.params.newCost;
+    db.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
+        if (err) {
+            return res.status(500).send({ error: err.message });
+        }
+        res.status(200).send('Shipping costs successfully updated');
+    });
+});
+
 // Export the API routes
 module.exports = router;

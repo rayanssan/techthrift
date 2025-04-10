@@ -317,4 +317,9 @@ input[type=range]::-moz-range-thumb {
 }
 .leaflet-popup .leaflet-popup-close-button {
   display: none;
+}
+
+#cartPage .form-control {
+  height: 40px;
+  align-content: center;
 }/*# sourceMappingURL=stylesheet.css.map */
