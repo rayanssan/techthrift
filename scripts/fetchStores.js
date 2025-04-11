@@ -186,8 +186,7 @@ if (document.body.id == "storesListPage") {
             document.getElementById('store-name').innerHTML = `
             <a onclick="window.history.back()" class="btn btn-link text-decoration-none">
                 <i class="fa fa-angle-left fs-3"></i> 
-            </a>
-            ${store.name}`;
+            </a>${store.name}`;
 
             const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -273,7 +272,7 @@ if (document.body.id == "storesListPage") {
                     .map(hour => `<li>${hour.day}: ${hour.hours}</li>`)
                     .join('')}
                 </ul>
-                <div id="store-map" style="height: 400px;" class="mt-4 rounded border"></div>
+                <div id="store-map" style="height: 400px;" class="mt-4 shadow rounded border"></div>
             `;
 
             // Render Leaflet map

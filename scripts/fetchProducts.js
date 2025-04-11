@@ -273,6 +273,7 @@ if (document.body.id === "homepage") {
 
                 this.textContent = "In your cart";
                 this.classList.replace("btn-primary", "btn-success");
+                this.classList.add("disabled");
                 window.location.href = "/cart";
             });
         } catch (error) {
@@ -512,6 +513,43 @@ if (document.body.id === "homepage") {
 
     });
 } else if (document.body.id === "cartPage") {
+
+    /**
+     * Calculates the total price of items in the cart, including shipping costs.
+     * Fetches the current shipping cost from the server, sums the prices of all products in the cart,
+     * and updates the UI with the shipping and total price.
+     *
+     * @async
+     * @function calculatePrices
+     * @returns {Promise<Object>} A promise that resolves to an object containing the formatted prices:
+     *    - shipping: A string representing the shipping cost, either 'Free' or a formatted price.
+     *    - cart: A string representing the total price of the products in the cart.
+     *    - total: A string representing the total price, including both products and shipping cost.
+     * 
+     */
+    async function calculatePrices() {
+        // Fetch current shipping costs
+        const shippingPriceRequest = await fetch(`/tttransaction/shipping`);
+        const shippingPriceData = await shippingPriceRequest.json();
+        const shippingPrice = parseFloat(shippingPriceData.current_shipping_cost);
+        let cartPrice = 0.0;
+        products.forEach(product => {
+            cartPrice += parseFloat(product.price);
+        });
+        const prices = {
+            'shipping': shippingPrice == 0 ? 'Free' : shippingPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+            'cart': cartPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+            'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        }
+        document.getElementById('shipping-price').textContent = `Shipping: 
+                €${prices.shipping}`;
+        document.getElementById('total-price').innerHTML = `
+                    <strong>
+                        Total: €${prices.total}
+                    </strong>`;
+        return prices;
+    }
+
     /**
      * Fetches the products added to the cart from the localStorage and 
      * displays them on the page.
@@ -538,20 +576,9 @@ if (document.body.id === "homepage") {
             const data = await Promise.all(responses.map(response => response.json()));
             products = data;
 
-            // Fetch current shipping costs
-            const shippingPriceRequest = await fetch(`/tttransaction/shipping`);
-            const shippingPriceData = await shippingPriceRequest.json();
-            const shippingPrice = parseFloat(shippingPriceData.current_shipping_cost);
-
             if (products.length > 0) {
-                const cartPrice = renderCartProducts();
-
-                document.getElementById('shipping-price').textContent = `Shipping: 
-                ${shippingPrice == 0 ? 'Free' : `€${shippingPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}`;
-                document.getElementById('total-price').innerHTML = `
-                    <strong>
-                        Total: €${(cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    </strong>`;
+                renderCartProducts();
+                await calculatePrices();
             } else {
                 const productContainer = document.getElementById('product-list');
                 productContainer.innerHTML = `<div class="container my-4">
@@ -588,22 +615,27 @@ if (document.body.id === "homepage") {
         const end = start + productsPerPage;
         const paginatedProducts = products.slice(start, end);
 
-        let cartPrice = 0.0;
-
         paginatedProducts.forEach(product => {
             const productCard = `
-            <div id="productid-${product.id}" class="w-100 d-flex mb-auto product-link">
-                <div class="card w-100 my-2 shadow h-100 flex-row">
-                    <img alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img"
-                    style="width: 25%;">
+            <div id="productid-${product.id}" class="w-100 d-flex mb-auto">
+                <div class="card border-0 w-100 my-2 shadow h-100 flex-row">
+                <!-- Button to remove product from cart -->
+                    <button class="btn-close p-2 btn-sm 
+                    position-absolute end-0 m-2 remove-product" 
+                    aria-label="Close" data-product-id="${product.id}"></button>
+                    <img onclick='location.href="/product?is=${product.id}"'
+                    alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img"
+                    style="width: 25%; aspect-ratio: 1;
+                    object-fit: contain;cursor: pointer;">
                     <div class="card-body d-flex flex-column">
-                        <h6 class="card-title text-truncate">${product.name}</h6>
+                        <a class="mb-2 text-truncate text-decoration-none link-opacity-75-hover fs-5"
+                        href="/product?is=${product.id}">${product.name} <i class="fa fa-angle-right" 
+                        style="vertical-align: text-bottom;"></i></a>
                         <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
                     product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
-                }">${product.product_condition} </p>
-                        <p class="card-text fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                        <!-- Button to remove product from cart -->
-                        <button class="btn btn-danger btn-sm remove-product" data-product-id="${product.id}">X</button>
+                    }" style="width: fit-content;font-size: small;">
+                    ${product.product_condition}</p> 
+                        <p class="card-text fw-bold fs-5">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     </div>
                 </div>
             </div>`;
@@ -611,22 +643,33 @@ if (document.body.id === "homepage") {
             productContainer.innerHTML += productCard;
             // Event listeners for button to remove products from the cart
             document.querySelectorAll('.remove-product').forEach(button => {
-                button.addEventListener('click', function (event) {
+                button.addEventListener('click', async function () {
                     const productId = button.getAttribute('data-product-id');
 
                     // Remove the product ID from the cart in localStorage
                     let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
                     cartProducts = cartProducts.filter(id => id != productId);
+                    products = products.filter(p => p.id != productId);
                     localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
 
                     // Remove the product card from the interface
                     const productCard = document.getElementById(`productid-${productId}`);
                     productCard.remove();
+                    await calculatePrices();
+                    if (JSON.parse(localStorage.getItem('cartProducts')).length == 0) {
+                        const productContainer = document.getElementById('product-list');
+                        productContainer.innerHTML = `<div class="container my-4">
+                <p class="text-center fw-bold display-4">Nothing in the cart yet.</p>
+                <p class="text-center">Time to go thrifting!<br><br>
+                        <a href="/homepage" class="btn btn-primary">Shop now</a>
+                </p>
+                </div>`;
+                        document.getElementById('cart-section').parentElement.classList.add('justify-content-center');
+                        document.getElementById('payment-section').remove();
+                    }
                 });
             });
-            cartPrice += parseFloat(product.price);
         });
-        return cartPrice;
     }
 
     document.addEventListener('DOMContentLoaded', () => {

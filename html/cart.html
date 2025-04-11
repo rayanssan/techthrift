@@ -52,7 +52,7 @@
             <!-- Cart Section (Left) -->
             <div id="cart-section" class="col-md-8 mb-4 d-flex flex-column">
                 <header class="text-start p-4 pb-2">
-                    <h3><a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                    <h3><a onclick="location.replace(document.referrer)" class="btn btn-link text-decoration-none ps-0">
                             <i class="fa fa-angle-left fs-3"></i>
                         </a>Your Cart</h3>
                 </header>
@@ -134,44 +134,47 @@
                         aria-label="Close"></button>
                     <div class="mb-3">
                         <form id="payment-form">
-                            <label for="cardholder" class="form-label">Cardholder</label>
-                            <input type="text" placeholder="e.g. Tom Thrifty" class="form-control" id="cardholder"
-                                name="cardholder" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Card Number</label>
-                        <div class="d-flex gap-1 position-relative">
-                            <div id="card-number-element" class="form-control w-100">
+                            <div class="mb-3">
+                                <label for="cardholder" class="form-label">Cardholder</label>
+                                <input type="text" placeholder="e.g. Tom Thrifty" class="form-control" id="cardholder"
+                                    name="cardholder" required>
                             </div>
-                            <div id="card-number-icons" class="position-absolute me-3
+                            <div class="mb-3">
+                                <label class="form-label">Card Number</label>
+                                <div class="d-flex gap-1 position-relative">
+                                    <div id="card-number-element" class="form-control w-100">
+                                    </div>
+                                    <div id="card-number-icons" class="position-absolute me-3
                                 end-0 d-flex gap-1 align-items-center bottom-50">
-                                <i class="fab fa-lg fa-cc-visa text-dark"></i>
-                                <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
-                                <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-visa text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label">Expiry Date</label>
+                                <div id="card-expiry-element" class="form-control"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CVV</label>
+                                <div id="card-cvc-element" class="form-control"></div>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 shadow"></button>
+                        </form>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Expiry Date</label>
-                        <div id="card-expiry-element" class="form-control"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">CVV</label>
-                        <div id="card-cvc-element" class="form-control"></div>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100 shadow">Pay</button>
-                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Cart & Payment Sidebar -->
+    <!-- Cart & Payment Sidebar -->
 
-        <!-- Scripts -->
-        <script src="../scripts/cart.js"></script>
-        <script src="../scripts/fetchProducts.js"></script>
-        <script src="../scripts/footerLinks.js"></script>
-        <!-- Scripts -->
+    <!-- Scripts -->
+    <script src="../scripts/cart.js"></script>
+    <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/footerLinks.js"></script>
+    <!-- Scripts -->
 
 </body>
 

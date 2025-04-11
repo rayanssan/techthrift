@@ -10,22 +10,26 @@ const connection = {
     database: 'tt_database',
     multipleStatements: true
 };
+const connectionReplica = {
+    host: '0.0.0.0',
+    user: 'root',
+    password: '',
+    database: 'tt_database_replica',
+    multipleStatements: true
+};
 
 let db;
+let dbR;
 
 const connectToDb = async () => {
     try {
         db = mysql.createConnection(connection);
+        dbR = mysql.createConnection(connectionReplica);
         await new Promise((resolve, reject) => {
-            db.connect((err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
+            db.connect((err) => (err ? reject(err) : resolve()));
+            dbR.connect((err) => (err ? reject(err) : resolve()));
         });
-        console.log('Connected to the TechThrift database.');
+        console.log('Connected to the TechThrift databases.');
         return true;
     } catch (err) {
         return false;
@@ -36,4 +40,4 @@ const connectToDb = async () => {
 const dbReady = connectToDb();
 
 // Export the database connection, router, and flag
-module.exports = { db, router, dbReady };
+module.exports = { db, dbR, router, dbReady };

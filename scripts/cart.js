@@ -1,6 +1,7 @@
 "use strict";
 
-// Initialize Stripe
+/* Stripe */
+
 const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLIC_KEY');
 const elements = stripe.elements();
 
@@ -20,12 +21,6 @@ cardNumber.mount('#card-number-element');
 cardExpiry.mount('#card-expiry-element');
 cardCvc.mount('#card-cvc-element');
 
-// Add icons manually after mounting the element
-const iconsContainer = document.getElementById('card-number-icons');
-
-// Create card icon and dynamically update it based on card type
-const cardIcon = document.getElementById('card-icon');
-
 // Handle the form submission
 const paymentForm = document.getElementById('payment-form');
 paymentForm.addEventListener('submit', async (e) => {
@@ -37,22 +32,14 @@ paymentForm.addEventListener('submit', async (e) => {
     if (error) {
         alert(error.message);
     } else {
-        // Send the token to your server for processing the payment
+        // Send the token to server for processing the payment
         console.log(token);
     }
 });
 
+/* Card payment modal */
+
 let cardPaymentModal = document.getElementById("card-payment-modal");
-cardPaymentModal.style.position = "fixed";
-cardPaymentModal.style.top = "0";
-cardPaymentModal.style.left = "0";
-cardPaymentModal.style.width = "100vw";
-cardPaymentModal.style.height = "100vh";
-cardPaymentModal.style.background = "rgba(0, 0, 0, 0.8)";
-cardPaymentModal.style.justifyContent = "center";
-cardPaymentModal.style.alignItems = "center";
-cardPaymentModal.style.zIndex = "9999";
-cardPaymentModal.style.display = "none";
 
 cardPaymentModal.querySelector(".btn-close").addEventListener("click", () => {
     cardPaymentModal.style.display = "none";
@@ -65,7 +52,9 @@ cardPaymentModal.addEventListener("click", (event) => {
 });
 
 document.getElementById("card-button").addEventListener("click", () => {
-    if (cardPaymentModal.style.display == "none") {
+    if (cardPaymentModal.style.display === "none" || cardPaymentModal.style.display === "") {
+        document.querySelector('#payment-form button[type="submit"]').textContent = `
+        Pay ${document.querySelector("#total-price").innerText.split(" ")[1]}`;
         cardPaymentModal.style.display = "flex";
     } else {
         cardPaymentModal.style.display = "none";
