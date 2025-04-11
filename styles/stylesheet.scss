@@ -84,19 +84,22 @@ body {
     }
 }
 
-#search-form, #search-form-mobile {
+#search-form,
+#search-form-mobile {
 
     button[type=submit] {
         border-top-right-radius: var(--bs-border-radius);
         border-bottom-right-radius: var(--bs-border-radius);
     }
 
-    #recent-searches-wrapper, #recent-searches-wrapper-mobile {
+    #recent-searches-wrapper,
+    #recent-searches-wrapper-mobile {
         position: relative;
         width: inherit;
         margin: 0;
 
-        #recent-searches, #recent-searches-mobile {
+        #recent-searches,
+        #recent-searches-mobile {
             position: absolute;
             width: inherit;
             background-color: white;
@@ -109,13 +112,15 @@ body {
             border-bottom-left-radius: var(--bs-border-radius);
         }
 
-        #recent-searches-list, #recent-searches-list-mobile {
+        #recent-searches-list,
+        #recent-searches-list-mobile {
             list-style-type: none;
             padding: 0;
             margin: 0;
         }
 
-        #recent-searches-list li a, #recent-searches-list-mobile li a {
+        #recent-searches-list li a,
+        #recent-searches-list-mobile li a {
             overflow-x: hidden;
             text-overflow: ellipsis;
             padding: 8px 12px;
@@ -124,7 +129,8 @@ body {
             display: block;
         }
 
-        #recent-searches-list li a:hover, #recent-searches-list-mobile li a:hover {
+        #recent-searches-list li a:hover,
+        #recent-searches-list-mobile li a:hover {
             cursor: pointer;
             background-color: #f1f1f1;
         }
@@ -149,15 +155,15 @@ body {
 .sidebar .nav-link {
     transition: box-shadow 0.02s ease-in-out, background-color 0.2s ease-in-out;
     border-radius: 5px;
-  }
-  
-  .sidebar .nav-link:hover,
-  .sidebar .nav-link.active {
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     background-color: rgba(0, 0, 0, 0.05);
-  }
-  
-  // General filter bar styling
+}
+
+// General filter bar styling
 #filtersContainer {
     display: flex;
     flex-wrap: wrap;
@@ -179,7 +185,7 @@ body {
     }
 
     select {
-        max-width: 130px;
+        max-width: 160px;
     }
 }
 
@@ -213,7 +219,7 @@ select {
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
-    height: 16px;
+    height: 17px;
     background: white;
     border-radius: 10px;
     outline: none;
@@ -243,9 +249,74 @@ input[type="range"] {
 #maxPriceValue {
     min-width: 50px;
     text-align: center;
-    
+
 }
 
 #applyFilters {
     margin-left: 15px;
+}
+
+@keyframes dots {
+    0% {
+        content: 'Loading.';
+    }
+
+    33% {
+        content: 'Loading..';
+    }
+
+    66% {
+        content: 'Loading...';
+    }
+
+    100% {
+        content: 'Loading.';
+    }
+}
+
+.loading-dots::after {
+    content: 'Loading.';
+    animation: dots 1.5s infinite;
+}
+
+.marker-icon {
+    background: none;
+    border: none;
+
+    i {
+        background: radial-gradient(white 50%, transparent 50%);
+        text-shadow: rgba(0, 0, 0, .7) 0px 0px 3px;
+        -webkit-text-stroke: 1px rgba(0, 0, 0, .7);
+    }
+}
+
+.leaflet-popup {
+    font-family: "Lucida Grande", sans-serif;
+
+    .leaflet-popup-close-button {
+        display: none;
+    }
+}
+
+#cartPage {
+    .form-control {
+        height: 40px;
+    }
+
+    .StripeElement.form-control {
+        align-content: center;
+    }
+
+    #card-payment-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        display: none; 
+    }
 }

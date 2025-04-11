@@ -14,6 +14,9 @@
     <!-- Font Awesome -->
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
     <!-- Stylesheets -->
     <!-- Favicons -->
     <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
@@ -25,7 +28,7 @@
     <!-- Favicons -->
 </head>
 
-<body id="productPage">
+<body id="storePage">
 
     <!-- Header -->
     <header class="p-3 bg-white border-bottom">
@@ -136,12 +139,19 @@
     </nav>
     <!-- Navbar -->
     <!-- Header -->
-
-    <!-- Product information -->
-    <div id="product-info">
-        <!-- Product information will be injected here dynamically -->
-    </div>
-    <!-- Product information -->  
+     
+    <!-- Store information -->
+    <section>
+        <div class="container my-5">
+            <header class="mb-4">
+                <h3 id="store-name"></h3>
+            </header>
+            <div id="store-info">
+                <!-- Store information will be injected here dynamically -->
+            </div>
+        </div>
+    </section>
+    <!-- Store information -->
 
     <!-- Footer -->
     <section class="mt-5" style="background-color: #f5f5f5;">
@@ -320,6 +330,10 @@
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
     <script src="../scripts/footerLinks.js"></script>
+    <script src="../scripts/fetchStores.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet JS -->
     <!-- Scripts -->
 
 </body>

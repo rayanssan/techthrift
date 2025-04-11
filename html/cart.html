@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
     <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
     <!-- Font Awesome -->
+    <!-- Stripe API -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <!-- Stripe API -->
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <!-- Stylesheets -->
@@ -41,209 +44,136 @@
             </div>
         </div>
     </header>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white">
-        <!-- Container wrapper -->
-        <div class="container justify-content-center justify-content-md-between">
-            <ul id="categories-nav" class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <span class="nav-link fs-4 text-dark">Your Cart</span>
-                </li>
-            </ul>
-        </div>
-        <!-- Container wrapper -->
-    </nav>
-    <!-- Navbar -->
     <!-- Header -->
 
-    <!-- Cart -->
-    <div>
-        <div class="container my-4">
-            <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Homepage</a>
+    <!-- Cart & Payment Sidebar -->
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- Cart Section (Left) -->
+            <div id="cart-section" class="col-md-8 mb-4 d-flex flex-column">
+                <header class="text-start p-4 pb-2">
+                    <h3><a onclick="location.replace(document.referrer)" class="btn btn-link text-decoration-none ps-0">
+                            <i class="fa fa-angle-left fs-3"></i>
+                        </a>Your Cart</h3>
+                </header>
+                <div id="product-list">
+                    <!-- Cart products will be injected here dynamically -->
+                </div>
+            </div>
+            <!-- Cart Section (Left) -->
+
+            <!-- Payment Sidebar Section (Right) -->
+            <div id="payment-section" class="col-md-4 bg-white d-flex flex-column justify-content-start p-3 shadow">
+                <div class="card shadow-sm p-4 mb-4">
+                    <h5 class="mb-3">Price</h5>
+                    <!-- Price Summary -->
+                    <p id="shipping-price">
+                        <!-- Shipping price will be calculated and injected here dynamically -->
+                    </p>
+                    <h5 id="total-price" class="mb-1">
+                        <!-- Total price will be calculated and injected here dynamically -->
+                    </h5>
+                </div>
+                <!-- Price Summary -->
+                <!-- Shipping Info -->
+                <div class="card shadow-sm p-4 mb-4">
+                    <h5 class="mb-3">Shipping Information</h5>
+                    <form id="shipping-form">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" placeholder="e.g. 42 Thrift Avenue, Apt. 2" class="form-control"
+                                id="address" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postal-code" class="form-label">Postal Code</label>
+                            <input type="text" placeholder="e.g. 1111-11" class="form-control" id="postal-code"
+                                name="postal-code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" placeholder="e.g. Lisbon" class="form-control" id="city" name="city"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="country" class="form-label">Country</label>
+                            <input type="text" placeholder="e.g. Portugal" class="form-control" id="country"
+                                name="country" required>
+                        </div>
+                    </form>
+                </div>
+                <!-- Shipping Info -->
+
+                <!-- Payment Info -->
+                <div class="card shadow-sm p-4">
+                    <h5 class="mb-3">Payment</h5>
+                    <!-- Apple Pay and PayPal buttons -->
+                    <div class="mb-3 d-flex flex-column gap-2">
+                        <button id="apple-pay-button" class="btn btn-dark w-100 shadow" style="height: 40px;">
+                            <i class="fa-brands fa-apple-pay fa-2xl"></i></button>
+                        <button id="paypal-button" class="btn btn-light w-100 shadow" style="height: 40px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="paypal"
+                                style="height: 90%;"></button>
+                        <button id="card-button" class="btn btn-success w-100 shadow">Pay with card</button>
+                    </div>
+                    <!-- Apple Pay and PayPal buttons -->
+                </div>
+                <!-- Payment Info -->
+                <!-- Payment Sidebar Section (Right) -->
+            </div>
         </div>
-        <div class="row d-flex justify-content-center" id="product-list">
-            <!-- Products will be injected here dynamically -->
+
+        <div id="card-payment-modal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded " style="background: white;
+                width: 90vw;
+                max-width: 500px;
+                padding: 20px;">
+                    <h5 class="mb-3 mt-0">Payment with card</h5>
+                    <button type="button" class="btn-close 
+                                    position-absolute top-0 end-0 pt-4 pb-2" style="padding-right: 25px; margin: 5px;"
+                        aria-label="Close"></button>
+                    <div class="mb-3">
+                        <form id="payment-form">
+                            <div class="mb-3">
+                                <label for="cardholder" class="form-label">Cardholder</label>
+                                <input type="text" placeholder="e.g. Tom Thrifty" class="form-control" id="cardholder"
+                                    name="cardholder" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Card Number</label>
+                                <div class="d-flex gap-1 position-relative">
+                                    <div id="card-number-element" class="form-control w-100">
+                                    </div>
+                                    <div id="card-number-icons" class="position-absolute me-3
+                                end-0 d-flex gap-1 align-items-center bottom-50">
+                                        <i class="fab fa-lg fa-cc-visa text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Expiry Date</label>
+                                <div id="card-expiry-element" class="form-control"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CVV</label>
+                                <div id="card-cvc-element" class="form-control"></div>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 shadow"></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- Cart -->  
 
-    <!-- Footer -->
-    <section class="mt-5" style="background-color: #f5f5f5;">
-        <div class="container text-dark pt-3">
-            <header class="pt-4 pb-3">
-                <h3>Why choose us</h3>
-            </header>
-
-            <div class="row">
-                <div class="col-lg-4 col-md-6">
-                    <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
-                            <i class="fas fa-camera-retro fa-2x fa-fw text-primary floating"></i>
-                        </span>
-                        <figcaption class="info">
-                            <h6 class="title">Reasonable prices</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
-                            <i class="fas fa-star fa-2x fa-fw text-primary floating"></i>
-                        </span>
-                        <figcaption class="info">
-                            <h6 class="title">Best quality</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
-                            <i class="fas fa-plane fa-2x fa-fw text-primary floating"></i>
-                        </span>
-                        <figcaption class="info">
-                            <h6 class="title">Worldwide shipping</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
-                            <i class="fas fa-users fa-2x fa-fw text-primary floating"></i>
-                        </span>
-                        <figcaption class="info">
-                            <h6 class="title">Customer satisfaction</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
-                            <i class="fas fa-thumbs-up fa-2x fa-fw text-primary floating"></i>
-                        </span>
-                        <figcaption class="info">
-                            <h6 class="title">Happy customers</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
-                            <i class="fas fa-box fa-2x fa-fw text-primary floating"></i>
-                        </span>
-                        <figcaption class="info">
-                            <h6 class="title">Thousand items</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
-                        </figcaption>
-                    </figure>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="text-center text-lg-start text-muted" style="background-color: #f5f5f5;">
-        <!-- Footer Links  -->
-        <section class="">
-            <div class="container text-center text-md-start pt-4 pb-4">
-                <div class="row mt-3">
-                    <!-- Grid column -->
-                    <div class="col-12 col-lg-3 col-sm-12 mb-2">
-                        <a id="footer-brand" href="#">
-                            <img alt="TechThrift's logo" src="../media/images/logo.png">
-                        </a>
-                        <p class="mt-2 text-dark">
-                            © 2025 Copyright: TechThrift.
-                        </p>
-                    </div>
-                    <!-- Grid column -->
-
-                    <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
-                        <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Store
-                        </h6>
-                        <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">About us</a></li>
-                            <li><a class="text-muted" href="#">Find store</a></li>
-                            <li><a class="text-muted" href="#">Categories</a></li>
-                            <li><a class="text-muted" href="#">Blogs</a></li>
-                        </ul>
-                    </div>
-                    <!-- Grid column -->
-
-                    <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
-                        <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Information
-                        </h6>
-                        <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">Help center</a></li>
-                            <li><a class="text-muted" href="#">Money refund</a></li>
-                            <li><a class="text-muted" href="#">Shipping info</a></li>
-                            <li><a class="text-muted" href="#">Refunds</a></li>
-                        </ul>
-                    </div>
-                    <!-- Grid column -->
-
-                    <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
-                        <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Support
-                        </h6>
-                        <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">Help center</a></li>
-                            <li><a class="text-muted" href="#">Documents</a></li>
-                            <li><a class="text-muted" href="#">Account restore</a></li>
-                            <li><a class="text-muted" href="#">My orders</a></li>
-                        </ul>
-                    </div>
-                    <!-- Grid column -->
-
-                    <!-- Grid column -->
-                    <div class="col-12 col-sm-12 col-lg-3">
-                        <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">Newsletter</h6>
-                        <p class="text-muted">Stay in touch with latest updates about our products and offers</p>
-                        <div class="input-group mb-3">
-                            <input type="email" class="form-control border" placeholder="Email" aria-label="Email"
-                                aria-describedby="button-addon2">
-                            <button class="btn btn-light border shadow-0" type="button" id="button-addon2"
-                                data-mdb-ripple-color="dark">
-                                Join
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Grid column -->
-                </div>
-            </div>
-        </section>
-        <!-- Footer Links  -->
-
-        <div class="">
-            <div class="container">
-                <div class="d-flex justify-content-between py-4 border-top">
-                    <div>
-                        <i class="fab fa-lg fa-cc-visa text-dark"></i>
-                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
-                        <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
-                        <i class="fab fa-lg fa-cc-paypal text-dark"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-    <!-- Footer -->
+    <!-- Cart & Payment Sidebar -->
 
     <!-- Scripts -->
+    <script src="../scripts/cart.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/footerLinks.js"></script>
     <!-- Scripts -->
 
 </body>

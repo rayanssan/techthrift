@@ -2,14 +2,37 @@
 
 const express = require('express');
 const path = require('path');
-const os = require('os');
+const { exec } = require('child_process');
 const app = express();
 const PORT = 3000;
 const dbConnection = require('./resources/dbConnection.js');
 const ttApi = require('./resources/ttApi.js'); // Import ttApi.js
-app.use(dbConnection.router);
-app.use(ttApi);
-app.use(express.static(__dirname));
+
+dbConnection.dbReady.then((isConnected) => {
+    if (isConnected) {
+        app.use(dbConnection.router);
+        app.use(ttApi);
+        app.use(express.static(__dirname));
+
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server is running on http://0.0.0.0:${PORT}`);
+        });
+    } else {
+        exec('node resources/dbCreate.js', (err, stdout, stderr) => {
+            if (err) {
+                console.error(`Error creating database: ${stderr}`);
+                return;
+            }
+            console.log(stdout);
+            console.log('Connected to the TechThrift database.');
+            console.log(`Server is running on http://0.0.0.0:${PORT}`);
+            // Restart the techthrift.js script after dbCreate.js is executed
+            exec('node techthrift.js', () => {
+                process.exit(0); // Exit the current process after restarting    
+            });
+        })
+    }
+});
 
 // Homepage, entry point
 app.get(['/homepage', '/'], (req, res) => {
@@ -66,12 +89,34 @@ app.get('/cart', (req, res) => {
     });
 });
 
-// Stores Map
-app.get('/storesMap', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/storesMap.html');
+// Stores
+app.get('/stores', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/storesList.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving storesMap.html:', err);
+            console.error('Error serving storesList.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Store
+app.get('/store', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/store.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving store.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Partners
+app.get('/partners', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/partners.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving partners.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -142,8 +187,4 @@ app.get("/geocode", async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: "Error contacting Nominatim API" });
     }
-});
-
-app.listen(PORT,'0.0.0.0', () => {
-    console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });

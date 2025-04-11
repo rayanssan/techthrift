@@ -11,6 +11,7 @@ let recentSearches = JSON.parse(localStorage.getItem("recentSearches")) ||
  * Adds clickable links that redirect the user to the search page for that term,
  * while also updating the recent searches list in localStorage.
  * 
+ * @function populateRecentSearches
  * @param {HTMLElement} listElement - The <ul> element where the 
  * list of searches will be inserted.
  * @param {HTMLElement} container - The container element that 
@@ -48,6 +49,7 @@ function populateRecentSearches(listElement, container) {
  * 
  * This function is designed to be reusable for both desktop and mobile search forms.
  *
+ * @function setupSearchForm
  * @param {Object} config - Configuration object with form element IDs.
  * @param {string} config.formId - The ID of the form element.
  * @param {string} config.inputId - The ID of the input element inside the form.

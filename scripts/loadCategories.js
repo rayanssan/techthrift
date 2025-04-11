@@ -5,10 +5,12 @@
  * This function creates list items and links for predefined categories,
  * appending them to the element with ID "categories-nav".
  * If a category is present in the URL parameters, its text color is changed to navy blue.
+ * 
+ * @function loadCategories
  */
 function loadCategories() {
     const categories = [
-        "Smartphones", "Laptops & PCs", "Gaming", "TVs", 
+        "Home", "Smartphones", "Laptops & PCs", "Gaming", "TVs", 
         "Audio", "Tablets", "Cameras", "Smartwatches", 
         "Accessories", "Home Appliances", "More"
     ];
@@ -26,11 +28,18 @@ function loadCategories() {
         
         const link = document.createElement("a");
         link.className = "nav-link";
-        link.href = `/category?is=${encodeURIComponent(category)}`;
-        link.textContent = category;
+        if (category == "Home") {
+            link.href = `/homepage`;
+            link.innerHTML = `<i class="fa-solid fa-house"></i>`;
+        } else {
+            link.href = `/category?is=${encodeURIComponent(category)}`;
+            link.textContent = category;
+        }
         
         // Change text color if category is selected
-        if (category === selectedCategory) {
+        if (category === selectedCategory ||
+            (document.body.id === "homepage" && category == "Home")
+        ) {
             link.style.color = "navy";
             link.style.fontWeight = "bolder";
         }
@@ -44,10 +53,17 @@ function loadCategories() {
 
         const sidebarLink = document.createElement("a");
         sidebarLink.className = "nav-link border-top border-bottom p-3";
-        sidebarLink.href = `/category?is=${encodeURIComponent(category)}`;
-        sidebarLink.textContent = category;
+        if (category == "Home") {
+            sidebarLink.href = `/homepage`;
+            sidebarLink.innerHTML = `<i class="fa-solid fa-house"></i> Home`;
+        } else {
+            sidebarLink.href = `/category?is=${encodeURIComponent(category)}`;
+            sidebarLink.textContent = category;
+        }
 
-        if (category === selectedCategory) {
+        if (category === selectedCategory ||
+            (document.body.id === "homepage" && category == "Home")
+        ) {
             sidebarLink.style.color = "navy";
             sidebarLink.style.fontWeight = "bolder";
         }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TechThrift</title>
+    <title>TechThrift - Partners</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap -->
@@ -14,6 +14,9 @@
     <!-- Font Awesome -->
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
     <!-- Stylesheets -->
     <!-- Favicons -->
     <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
@@ -25,7 +28,7 @@
     <!-- Favicons -->
 </head>
 
-<body id="productPage">
+<body id="partnersPage">
 
     <!-- Header -->
     <header class="p-3 bg-white border-bottom">
@@ -36,118 +39,55 @@
                     <a id="header-brand" href="/homepage">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
-                    <form id="search-form" class="input-group flex-grow-1">
-                        <input id="search-input" type="text" class="form-control"
-                            placeholder="Search for electronics..." aria-label="Search">
-                        <button class="btn btn-dark" type="submit">Search</button>
-                        <!-- Recent Searches -->
-                        <div id="recent-searches-wrapper">
-                            <div id="recent-searches" style="display: none;">
-                                <ul id="recent-searches-list">
-                                    <!-- Recent searches will be injected here -->
-                                </ul>
-                            </div>
-                        </div>
-                        <!-- Recent Searches -->
-                    </form>
                     <div class="d-flex flex-wrap justify-content-center 
                     align-items-center gap-1 ms-auto">
                         <a href="/authentication" class="border 
                         rounded py-1 px-3 nav-link d-flex 
                             align-items-center">
                             <i class="fas fa-user-alt m-1 me-md-2"></i>
-                            <p class="d-none d-md-block mb-0">Sign in</p>
-                        </a>
-                        <a href="/stores" class="border 
-                        rounded py-1 px-3 nav-link d-flex 
-                        align-items-center">
-                            <i class="fas fa-store m-1 me-md-2"></i>
-                            <p class="d-none d-md-block mb-0">Stores</p>
-                        </a>
-                        <a href="#" class="border rounded 
-                        py-1 px-3 nav-link d-flex align-items-center">
-                            <i class="fas fa-heart m-1 me-md-2"></i>
-                            <p class="d-none d-md-block mb-0">Wishlist</p>
-                        </a>
-                        <a href="/cart" class="border rounded 
-                        py-1 px-3 nav-link d-flex align-items-center">
-                            <i class="fas fa-shopping-cart m-1 me-md-2"></i>
-                            <p class="d-none d-md-block mb-0">Cart</p>
+                            <p class="d-none d-md-block mb-0">Sign in as a partner</p>
                         </a>
                     </div>
                 </div>
-
-                <form id="search-form-mobile" class="input-group flex-grow-1">
-                    <input id="search-input-mobile" type="text" class="form-control"
-                        placeholder="Search for electronics..." aria-label="Search">
-                    <button class="btn btn-dark" type="submit">Search</button>
-                    <!-- Recent Searches -->
-                    <div id="recent-searches-wrapper-mobile">
-                        <div id="recent-searches-mobile" style="display: none;">
-                            <ul id="recent-searches-list-mobile">
-                                <!-- Recent searches will be injected here -->
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- Recent Searches -->
-                </form>
                 <!-- Header Elements -->
             </div>
         </div>
     </header>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white">
-        <!-- Container wrapper -->
-        <div class="container justify-content-center justify-content-md-between">
-            <!-- Sidebar navigation for narrow displays  -->
-            <!-- Toggle button -->
-            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark w-100" 
-            type="button"
-                data-mdb-toggle="collapse" data-mdb-target="#navbarLeftAlignExample"
-                aria-controls="navbarLeftAlignExample" aria-expanded="false" 
-                aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
-            </button>
-            <!-- Toggle button -->
-            <div id="categories-sidebar" class="offcanvas offcanvas-start 
-            navbar-nav collapse w-100" 
-            tabindex="-1">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title">Categories</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" 
-                    aria-label="Close"></button>
-                </div>
-                <!-- Links for category pages will be injected here -->
-            </div>
-            <!-- Sidebar navigation for narrow displays  -->
-
-            <!-- Navigation for wide displays-->
-            <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
-                <!-- Links -->
-                <ul id="categories-nav" class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <!-- Links for category pages will be injected here -->
-                </ul>
-                <!-- Links -->
-            </div>
-            <!-- Navigation for wide displays -->
-        </div>
-        <!-- Container wrapper -->
-    </nav>
-    <!-- Navbar -->
     <!-- Header -->
 
-    <!-- Product information -->
-    <div id="product-info">
-        <!-- Product information will be injected here dynamically -->
+    <!-- Main banner -->
+    <div class="main-banner text-white shadow py-5">
+        <div class="container py-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>
+                        TechThrift Partners
+                    </h1>
+                    <p>
+                        TechThrift proudly collaborates with used electronics stores, repair shops,<br>
+                        and nonprofit organizations to extend the life cycle of valuable tech.<br>
+                        <br>
+                        By partnering with us, you gain access to a broader customer base,<br>
+                        benefit from sustainable business practices, and help reduce electronic waste.<br>
+                        <br>
+                        Whether you're a store looking to increase sales or a charity<br>
+                        seeking impactful collaboration, TechThrift offers a platform that aligns profit with purpose.
+                    </p>
+                    <button type="button" class="btn btn-light shadow-0 text-primary pt-2 border border-white">
+                        <a href="/authentication" class="pt-1 text-decoration-none">Sign In or Register as a Partner</a>
+                    </button>
+                </div>
+                <img id="main-banner-brand" alt="TechThrift's logo" src="../media/images/logo_white.png">
+            </div>
+        </div>
     </div>
-    <!-- Product information -->  
+    <!-- Main banner -->
 
     <!-- Footer -->
-    <section class="mt-5" style="background-color: #f5f5f5;">
+    <section style="background-color: #f5f5f5;">
         <div class="container text-dark pt-3">
             <header class="pt-4 pb-3">
-                <h3>Why choose us</h3>
+                <h3>Why work with us</h3>
             </header>
 
             <div class="row">
@@ -223,72 +163,44 @@
 
     <footer class="text-center text-lg-start text-muted" style="background-color: #f5f5f5;">
         <!-- Footer Links -->
-        <section class="">
+        <section>
             <div class="container text-center text-md-start pt-4 pb-4">
-                <div class="row mt-3">
+                <div class="d-flex gap-5" style="justify-content: center;">
                     <!-- Grid column -->
-                    <div class="col-12 col-lg-3 col-sm-12 mb-2">
-                        <a id="footer-brand" href="#">
-                            <img alt="TechThrift's logo" src="../media/images/logo.png">
-                        </a>
-                    </div>
-                    <!-- Grid column -->
-
-                    <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
-                        <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Services
-                        </h6>
+                    <div>
                         <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="/stores">Find a store</a></li>
-                            <li><a class="text-muted" href="#">My orders</a></li>
-                            <li><a class="text-muted" href="#">Refunds</a></li>
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="About TechThrift" data-content="Electronic waste has become a major environmental issue in recent years.
+                                By choosing to buy used electronics with <strong>TechThrift</strong>, 
+                                you are not just saving money — you are helping protect the planet!">About us</a>
+                            </li>
                         </ul>
                     </div>
                     <!-- Grid column -->
 
                     <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
+                    <div>
                         <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Support
-                        </h6>
                         <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">Help center</a></li>
-                            <li><a class="text-muted" href="#">Shipping</a></li>
                             <li><a class="text-muted" href="#">Contact us</a></li>
                         </ul>
                     </div>
                     <!-- Grid column -->
 
                     <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
+                    <div>
                         <!-- Links -->
-                        <h6 class="text-uppercase text-dark fw-bold mb-2">
-                            Information
-                        </h6>
                         <ul class="list-unstyled mb-4">
-                            <li>
-                                <a class="text-muted footer-modal-link" href="#" data-title="About TechThrift" 
-                                data-content="Electronic waste has become a major environmental issue in recent years.
-                                By choosing to buy used electronics with <strong>TechThrift</strong>, 
-                                you are not just saving money — you are helping protect the planet!">About us</a>
-                            </li>
                             <li><a class="text-muted" href="#">Privacy policy</a></li>
-                            <li><a class="text-muted" href="#">Terms of service</a></li>
                         </ul>
                     </div>
                     <!-- Grid column -->
 
                     <!-- Grid column -->
-                    <div class="col-6 col-sm-4 col-lg-2">
+                    <div>
                         <!-- Links -->
-                        <h6 class="text-uppercase text-primary fw-bold mb-2">
-                            Become a partner
-                        </h6>
                         <ul class="list-unstyled mb-4">
-                            <li><a class="text-primary" href="/partners">Partners portal</a></li>
+                            <li><a class="text-muted" href="#">Terms of service</a></li>
                         </ul>
                     </div>
                     <!-- Grid column -->
@@ -300,12 +212,6 @@
         <div class="">
             <div class="container">
                 <div class="d-flex justify-content-between py-4 border-top">
-                    <div>
-                        <i class="fab fa-lg fa-cc-visa text-dark"></i>
-                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
-                        <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
-                        <i class="fab fa-lg fa-cc-paypal text-dark"></i>
-                    </div>
                     <p class="mb-0">
                         © 2025 Copyright: TechThrift.
                     </p>
@@ -316,9 +222,6 @@
     <!-- Footer -->
 
     <!-- Scripts -->
-    <script src="../scripts/search.js"></script>
-    <script src="../scripts/loadCategories.js"></script>
-    <script src="../scripts/fetchProducts.js"></script>
     <script src="../scripts/footerLinks.js"></script>
     <!-- Scripts -->
 
