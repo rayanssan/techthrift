@@ -7,7 +7,7 @@ const mysql = require('mysql2');
 // Function to create database and its replica
 const createDatabaseIfNotExists = async () => {
     const connection = mysql.createConnection({
-        host: 'localhost',
+        host: '0.0.0.0',
         user: 'root',
         password: ''
     });
@@ -20,7 +20,7 @@ const createDatabaseIfNotExists = async () => {
 
         // Connect to the database after it is created
         const db = mysql.createConnection({
-            host: 'localhost',
+            host: '0.0.0.0',
             user: 'root',
             password: '',
             database: 'tt_database',
@@ -37,7 +37,6 @@ const createDatabaseIfNotExists = async () => {
 
         console.log('Database tt_database created and populated successfully.');
         db.end();
-
     } else {
         console.log('Database already exists.');
     }

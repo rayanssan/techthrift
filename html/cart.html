@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TechThrift - Your Cart</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+    <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <!-- Stripe API -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <!-- Stripe API -->
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles/stylesheet.css">
+    <!-- Stylesheets -->
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../media/images/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="../media/images/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../media/images/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="TechThrift" />
+    <link rel="manifest" href="../media/images/favicon/site.webmanifest" />
+    <!-- Favicons -->
+</head>
+
+<body id="cartPage">
+
+    <!-- Header -->
+    <header class="p-3 bg-white border-bottom">
+        <div class="container">
+            <div class="row align-items-center gap-3">
+                <!-- Left elements -->
+                <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
+                    <a id="header-brand" href="/homepage">
+                        <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
+                    </a>
+                </div>
+                <!-- Left elements -->
+            </div>
+        </div>
+    </header>
+    <!-- Header -->
+
+    <!-- Cart & Payment Sidebar -->
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- Cart Section (Left) -->
+            <div id="cart-section" class="col-md-8 mb-4 d-flex flex-column">
+                <header class="text-start p-4 pb-2">
+                    <h3><a onclick="location.replace(document.referrer)" class="btn btn-link text-decoration-none ps-0">
+                            <i class="fa fa-angle-left fs-3"></i>
+                        </a>Your Cart</h3>
+                </header>
+                <div id="product-list">
+                    <!-- Cart products will be injected here dynamically -->
+                </div>
+            </div>
+            <!-- Cart Section (Left) -->
+
+            <!-- Payment Sidebar Section (Right) -->
+            <div id="payment-section" class="col-md-4 bg-white d-flex flex-column justify-content-start p-3 shadow">
+                <div class="card shadow-sm p-4 mb-4">
+                    <h5 class="mb-3">Price</h5>
+                    <!-- Price Summary -->
+                    <p id="shipping-price">
+                        <!-- Shipping price will be calculated and injected here dynamically -->
+                    </p>
+                    <h5 id="total-price" class="mb-1">
+                        <!-- Total price will be calculated and injected here dynamically -->
+                    </h5>
+                </div>
+                <!-- Price Summary -->
+                <!-- Shipping Info -->
+                <div class="card shadow-sm p-4 mb-4">
+                    <h5 class="mb-3">Shipping Information</h5>
+                    <form id="shipping-form">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" placeholder="e.g. 42 Thrift Avenue, Apt. 2" class="form-control"
+                                id="address" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postal-code" class="form-label">Postal Code</label>
+                            <input type="text" placeholder="e.g. 1111-11" class="form-control" id="postal-code"
+                                name="postal-code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" placeholder="e.g. Lisbon" class="form-control" id="city" name="city"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="country" class="form-label">Country</label>
+                            <input type="text" placeholder="e.g. Portugal" class="form-control" id="country"
+                                name="country" required>
+                        </div>
+                    </form>
+                </div>
+                <!-- Shipping Info -->
+
+                <!-- Payment Info -->
+                <div class="card shadow-sm p-4">
+                    <h5 class="mb-3">Payment</h5>
+                    <!-- Apple Pay and PayPal buttons -->
+                    <div class="mb-3 d-flex flex-column gap-2">
+                        <button id="apple-pay-button" class="btn btn-dark w-100 shadow" style="height: 40px;">
+                            <i class="fa-brands fa-apple-pay fa-2xl"></i></button>
+                        <button id="paypal-button" class="btn btn-light w-100 shadow" style="height: 40px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="paypal"
+                                style="height: 90%;"></button>
+                        <button id="card-button" class="btn btn-success w-100 shadow">Pay with card</button>
+                    </div>
+                    <!-- Apple Pay and PayPal buttons -->
+                </div>
+                <!-- Payment Info -->
+                <!-- Payment Sidebar Section (Right) -->
+            </div>
+        </div>
+
+        <div id="card-payment-modal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded " style="background: white;
+                width: 90vw;
+                max-width: 500px;
+                padding: 20px;">
+                    <h5 class="mb-3 mt-0">Payment with card</h5>
+                    <button type="button" class="btn-close 
+                                    position-absolute top-0 end-0 pt-4 pb-2" style="padding-right: 25px; margin: 5px;"
+                        aria-label="Close"></button>
+                    <div class="mb-3">
+                        <form id="payment-form">
+                            <div class="mb-3">
+                                <label for="cardholder" class="form-label">Cardholder</label>
+                                <input type="text" placeholder="e.g. Tom Thrifty" class="form-control" id="cardholder"
+                                    name="cardholder" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Card Number</label>
+                                <div class="d-flex gap-1 position-relative">
+                                    <div id="card-number-element" class="form-control w-100">
+                                    </div>
+                                    <div id="card-number-icons" class="position-absolute me-3
+                                end-0 d-flex gap-1 align-items-center bottom-50">
+                                        <i class="fab fa-lg fa-cc-visa text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
+                                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Expiry Date</label>
+                                <div id="card-expiry-element" class="form-control"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CVV</label>
+                                <div id="card-cvc-element" class="form-control"></div>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 shadow"></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart & Payment Sidebar -->
+
+    <!-- Scripts -->
+    <script src="../scripts/cart.js"></script>
+    <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/footerLinks.js"></script>
+    <!-- Scripts -->
+
+</body>
+
+</html>

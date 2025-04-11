@@ -25,7 +25,7 @@
     <!-- Favicons -->
 </head>
 
-<body id="productPage">
+<body id="categoryPage">
 
     <!-- Header -->
     <header class="p-3 bg-white border-bottom">
@@ -137,11 +137,91 @@
     <!-- Navbar -->
     <!-- Header -->
 
-    <!-- Product information -->
-    <div id="product-info">
-        <!-- Product information will be injected here dynamically -->
-    </div>
-    <!-- Product information -->  
+    <!-- Products -->
+    <section>
+        <div class="container my-5">
+            <header>
+                <h3 id="category-indicator"></h3>
+            </header>
+
+            <!-- Filters and Sorting -->
+            <div id="filtersContainer" class="container-fluid">
+                <div class="row g-2 align-items-center w-100">
+                    <!-- Toggle button for filters in narrow displays -->
+                    <div class="col-12 d-lg-none text-end">
+                        <div class="d-inline-block">
+                            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+                                <i class="bi bi-filter me-1"></i> Filters
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Toggle button for filters in narrow displays -->
+                    <!-- Filters -->
+                    <div id="filtersCollapse"
+                        class="collapse d-md-flex flex-wrap justify-content-center w-100 gap-2 mt-3 show">
+                        <!-- Brand -->
+                        <select id="filterBrand" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Brand</option>
+                            <!-- Options dynamically added -->
+                        </select>
+                        <!-- Brand -->
+                        <!-- Condition -->
+                        <select id="filterCondition" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Condition</option>
+                            <option value="Like New">Like New</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Needs Repair">Needs Repair</option>
+                        </select>
+                        <!-- Condition -->
+                        <!-- Color -->
+                        <select id="filterColor" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Color</option>
+                            <!-- Options dynamically added -->
+                        </select>
+                        <!-- Color -->
+                        <!-- Year -->
+                        <select id="filterYear" class="form-select w-100 w-md-auto mb-2">
+                            <option value="">Year</option>
+                            <!-- Options dynamically added -->
+                        </select>
+                        <!-- Year -->
+                        <!-- Price Range -->
+                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <label for="maxPrice" class="me-2">Max Price</label>
+                            <input type="range" id="maxPrice" class="mb-0 border">
+                            <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
+                        </div>
+                        <!-- Price Range -->
+                        <!-- Sorting -->
+                        <div class="col-12 col-md-auto mb-2">
+                            <select id="sortDropdown" class="form-select">
+                                <option value="">Sort By</option>
+                                <option value="price-asc">Price: Low to High</option>
+                                <option value="price-desc">Price: High to Low</option>
+                                <option value="condition">Condition</option>
+                            </select>
+                        </div>
+                        <!-- Sorting -->
+                    </div>
+                </div>
+            </div>
+            <!-- Filters and Sorting -->
+
+            <div class="row" id="product-list">
+                <!-- Products will be injected here dynamically -->
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="d-flex justify-content-center mt-4">
+                <button id="paginationPrevPage" class="btn btn-secondary me-2" disabled>Previous</button>
+                <span id="paginationPageIndicator" class="align-self-center">Page 1</span>
+                <button id="paginationNextPage" class="btn btn-secondary ms-2">Next</button>
+            </div>
+        </div>
+    </section>
+    <!-- Products -->
 
     <!-- Footer -->
     <section class="mt-5" style="background-color: #f5f5f5;">

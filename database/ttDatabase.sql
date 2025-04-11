@@ -4,30 +4,80 @@ CREATE TABLE IF NOT EXISTS clients (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(20) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    nif INT UNIQUE,
-    nic INT UNIQUE,
+    nif CHAR(9) UNIQUE,
+    nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
-    address VARCHAR(255)
-
+    address VARCHAR(255),
+    city VARCHAR(255),
+    country VARCHAR(255)
 ); 
 
 CREATE TABLE IF NOT EXISTS entities (
     id INT PRIMARY KEY,
-    nipc INT(9) UNIQUE NOT NULL,
+    nipc CHAR(9) UNIQUE NOT NULL,
     entity_type ENUM('store', 'charity') NOT NULL,
 
     FOREIGN KEY (id) REFERENCES clients(id)
 );
 
+CREATE TRIGGER check_entity_client_fields
+BEFORE INSERT ON entities
+FOR EACH ROW
+BEGIN
+    DECLARE address_ VARCHAR(255);
+    DECLARE city_ VARCHAR(255);
+    DECLARE country_ VARCHAR(255);
+    DECLARE nic_ CHAR(9);
+    DECLARE nif_ CHAR(9);
+    DECLARE dob_ DATE;
+    DECLARE gender_ ENUM('Male', 'Female', 'Other');
+
+    -- Get relevant fields from clients
+    SELECT address, city, country, nic, nif, dob, gender
+    INTO address_, city_, country_, nic_, nif_, dob_, gender_
+    FROM clients
+    WHERE id = NEW.id;
+
+    -- Check required fields are NOT NULL
+    IF address_ IS NULL OR city_ IS NULL OR country_ IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Entities must have address, city, and country NOT NULL';
+    END IF;
+
+    -- Check forbidden fields are NULL
+    IF nic_ IS NOT NULL OR nif_ IS NOT NULL OR dob_ IS NOT NULL OR gender_ IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Entities must NOT have NIC, NIF, DOB, or gender set';
+    END IF;
+END;
+
 CREATE TABLE IF NOT EXISTS employees (
     id INT PRIMARY KEY,
-    store INT NOT NULL,
+    store CHAR(9) NOT NULL,
     internal_number INT UNIQUE,
 
     FOREIGN KEY (id) REFERENCES clients(id),
-    FOREIGN KEY (store) REFERENCES entities(id)
+    FOREIGN KEY (store) REFERENCES entities(nipc)
 );
+
+CREATE TRIGGER ensure_store_entity_type
+BEFORE INSERT ON employees
+FOR EACH ROW
+BEGIN
+    DECLARE etype VARCHAR(10);
+
+    -- Get the entity_type as a string
+    SELECT CAST(entity_type AS CHAR) INTO etype
+    FROM entities
+    WHERE nipc = NEW.store;
+
+    -- If the entity_type is not 'store', raise an error
+    IF etype IS NULL OR etype != 'store' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Employees can only be linked to entities of type "store"';
+    END IF;
+END;
 
 CREATE TABLE IF NOT EXISTS entityHours (
     entity INT,
@@ -49,23 +99,25 @@ CREATE TABLE IF NOT EXISTS charityProjects (
     FOREIGN KEY (organizer) REFERENCES clients(id)
 );
 
-CREATE TABLE IF NOT EXISTS space (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    area INT,
-    store INT NOT NULL,
-    charityProject INT NOT NULL,
-    
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
-);
-
 CREATE TABLE IF NOT EXISTS categories (
     category VARCHAR(255) PRIMARY KEY NOT NULL
 );
+INSERT INTO categories (category) VALUES 
+("Smartphones"),
+("Laptops & PCs"),
+("Smartwatches"),
+('Gaming'),
+('TVs & Monitors'),
+('Audio'),
+('Tablets'),
+('Cameras'),
+('Accessories'),
+('Home Appliances'),
+('Other');
 
 CREATE TABLE IF NOT EXISTS products (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    store_nipc INT NOT NULL,
+    store_nipc CHAR(9) NOT NULL,
     name VARCHAR(255) NOT NULL,
     product_condition ENUM('Like New', 'Excellent', 'Good', 'Needs Repair') NOT NULL,
     availability BOOLEAN NOT NULL,
@@ -93,11 +145,11 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE TABLE IF NOT EXISTS productImages (
-    id INT PRIMARY KEY AUTO_INCREMENT,
     product INT NOT NULL,
     image_path VARCHAR(255) NOT NULL,
     image_order INT NOT NULL,
 
+    PRIMARY KEY (product, image_order),
     FOREIGN KEY (product) REFERENCES products(id),
     CHECK (image_order >= 1 AND image_order <= 5)
 );
@@ -112,8 +164,8 @@ CREATE TABLE IF NOT EXISTS saleProducts (
 CREATE TABLE IF NOT EXISTS repairProducts (
     id INT PRIMARY KEY,
     problems VARCHAR(255),
-    client_nif INT(9),
-    client_nic INT(9),
+    client_nif CHAR(9),
+    client_nic CHAR(9),
 
     FOREIGN KEY (id) REFERENCES products(id),
     FOREIGN KEY (client_nif) REFERENCES clients(nif),
@@ -122,10 +174,10 @@ CREATE TABLE IF NOT EXISTS repairProducts (
 
 CREATE TABLE IF NOT EXISTS donationProducts (
     id INT PRIMARY KEY,
-    charity_nipc INT(9) NOT NULL,
-    donor_nif INT(9),
-    donor_nic INT(9),
-    donor_nipc INT(9),
+    charity_nipc CHAR(9) NOT NULL,
+    donor_nif CHAR(9),
+    donor_nic CHAR(9),
+    donor_nipc CHAR(9),
   
     FOREIGN KEY (id) REFERENCES products(id),
     FOREIGN KEY (charity_nipc) REFERENCES entities(nipc),
@@ -232,4 +284,9 @@ CREATE TABLE IF NOT EXISTS interests (
 CREATE TABLE IF NOT EXISTS reports (
     id INT PRIMARY KEY AUTO_INCREMENT,
     report VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS shipping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    current_shipping_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00
 );

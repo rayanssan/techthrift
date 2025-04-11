@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 // Import the db connection from dbConnection.js
-const { db } = require('./dbConnection');
+const { db, dbR } = require('./dbConnection');
 
 // Get all products up for sale
 router.get('/tt', (req, res) => {
@@ -21,55 +21,62 @@ router.get('/tt', (req, res) => {
     let params = [];
 
     if (name) {
-        query += ` AND name RLIKE ?`;
+        query += ` AND p.name LIKE ?`;
         params.push(`%${name}%`);
     }
     if (condition) {
-        query += ` AND product_condition = ?`;
+        query += ` AND p.product_condition = ?`;
         params.push(condition);
     }
     if (category) {
-        query += ` AND category RLIKE ?`;
-        params.push(category);
+        query += ` AND p.category LIKE ?`;
+        params.push(`%${category}%`);
     }
     if (brand) {
-        query += ` AND brand RLIKE ?`;
-        params.push(brand);
+        query += ` AND p.brand LIKE ?`;
+        params.push(`%${brand}%`);
     }
     if (color) {
-        query += ` AND color = ?`;
-        params.push(color);
+        query += ` AND p.color LIKE ?`;
+        params.push(`%${color}%`);
     }
     if (processor) {
-        query += ` AND processor = ?`;
-        params.push(processor);
+        query += ` AND p.processor LIKE ?`;
+        params.push(`%${processor}%`);
     }
     if (storage) {
-        query += ` AND storage = ?`;
-        params.push(storage);
+        query += ` AND p.storage LIKE ?`;
+        params.push(`%${storage}%`);
     }
     if (os) {
-        query += ` AND os = ?`;
-        params.push(os);
+        query += ` AND p.os LIKE ?`;
+        params.push(`%${os}%`);
     }
     if (year) {
-        query += ` AND year = ?`;
+        query += ` AND p.year = ?`;
         params.push(year);
     }
     if (maxPrice) {
-        query += ` AND price <= ?`;
+        query += ` AND sp.price <= ?`;
         params.push(maxPrice);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
     }
 
     db.query(query, params, (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query(query, params, (replicaErr, replicaRows) => {
+                if (replicaErr) {
+                    return res.status(500).json({ error: replicaErr.message });
+                }
+                res.json(replicaRows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -86,55 +93,62 @@ router.get('/tt/product', (req, res) => {
 
     // Apply filters dynamically
     if (name) {
-        query += ' AND name RLIKE ?';
-        params.push(`%${req.query.name}%`);
+        query += ' AND p.name LIKE ?';
+        params.push(`%${name}%`);
     }
     if (condition) {
-        query += ' AND product_condition = ?';
-        params.push(req.query.product_condition);
+        query += ' AND p.product_condition = ?';
+        params.push(condition);
     }
     if (category) {
-        query += ' AND category RLIKE ?';
-        params.push(req.query.category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (brand) {
-        query += ' AND brand RLIKE ?';
-        params.push(req.query.brand);
+        query += ' AND p.brand LIKE ?';
+        params.push(`%${brand}%`);
     }
     if (color) {
-        query += ' AND color = ?';
-        params.push(req.query.color);
+        query += ' AND p.color LIKE ?';
+        params.push(`%${color}%`);
     }
     if (processor) {
-        query += ' AND processor = ?';
-        params.push(req.query.processor);
+        query += ' AND p.processor LIKE ?';
+        params.push(`%${processor}%`);
     }
     if (storage) {
-        query += ' AND storage = ?';
-        params.push(req.query.storage);
+        query += ' AND p.storage LIKE ?';
+        params.push(`%${storage}%`);
     }
     if (os) {
-        query += ' AND os = ?';
-        params.push(req.query.os);
+        query += ' AND p.os LIKE ?';
+        params.push(`%${os}%`);
     }
     if (year) {
-        query += ' AND year = ?';
-        params.push(req.query.year);
+        query += ' AND p.year = ?';
+        params.push(year);
     }
     if (availability) {
-        query += ' AND availability = ?';
+        query += ' AND p.availability = ?';
         params.push((availability === 'true' || availability === "1") ? 1 : 0);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
     }
 
     db.query(query, params, (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query(query, params, (replicaErr, replicaRows) => {
+                if (replicaErr) {
+                    return res.status(500).json({ error: replicaErr.message });
+                }
+                res.json(replicaRows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -150,49 +164,98 @@ router.get('/tt/product/:id', (req, res) => {
 
     db.query(checkSaleQuery, [id], (err, result) => {
         if (err) {
-            return res.status(500).send('Database error');
-        }
+            // Fallback to replica DB
+            dbR.query(checkSaleQuery, [id], (err, result) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                // If the product is found in the saleProducts table, set isSaleProduct to true
+                isSaleProduct = result.length > 0;
 
-        // If the product is found in the saleProducts table, set isSaleProduct to true
-        isSaleProduct = result.length > 0;
-
-        // Based on whether it's a sale product, modify the main query
-        let query = `SELECT * FROM products, productImages JOIN productImages ON 
+                // Based on whether it's a sale product, modify the main query
+                let query = `SELECT * FROM products, productImages JOIN productImages ON 
                     products.id = productImages.product WHERE id = ?`;
-        let params = [id];
+                let params = [id];
 
-        if (isSaleProduct) {
-            query = `
-                SELECT products.*, saleProducts.*, productImages.*
+                if (isSaleProduct) {
+                    query = `
+                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
                 FROM products
                 JOIN saleProducts ON products.id = saleProducts.id
                 JOIN productImages ON products.id = productImages.product
+                JOIN entities ON products.store_nipc = entities.nipc
+                JOIN clients ON entities.id = clients.id
                 WHERE products.id = ?;
             `;
-        }
+                }
 
-        // Execute the final query
-        db.query(query, params, (err, rows) => {
-            if (err || rows.length === 0) {
-                return res.status(404).send('Product not found');
-            }
-            // Create images object with keys as image_order and values as image_path
-            const product = rows[0];
-            const images = {};
+                // Execute the final query
+                dbR.query(query, params, (err, rows) => {
+                    if (err || rows.length === 0) {
+                        return res.status(404).send('Product not found');
+                    }
+                    // Create images object with keys as image_order and values as image_path
+                    const product = rows[0];
+                    const images = {};
 
-            rows.forEach(row => {
-                // Assign the image path to the key being the image_order
-                images[row.image_order] = row.image_path;
+                    rows.forEach(row => {
+                        // Assign the image path to the key being the image_order
+                        images[row.image_order] = row.image_path;
+                    });
+
+                    // Build the response object
+                    const response = {
+                        ...product, // product info
+                        images: images // image info
+                    };
+
+                    res.json(response);
+                });
             });
+        } else {
+            // If the product is found in the saleProducts table, set isSaleProduct to true
+            isSaleProduct = result.length > 0;
 
-            // Build the response object
-            const response = {
-                ...product, // product info
-                images: images // image info
-            };
+            // Based on whether it's a sale product, modify the main query
+            let query = `SELECT * FROM products, productImages JOIN productImages ON 
+                    products.id = productImages.product WHERE id = ?`;
+            let params = [id];
 
-            res.json(response);
-        });
+            if (isSaleProduct) {
+                query = `
+                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
+                FROM products
+                JOIN saleProducts ON products.id = saleProducts.id
+                JOIN productImages ON products.id = productImages.product
+                JOIN entities ON products.store_nipc = entities.nipc
+                JOIN clients ON entities.id = clients.id
+                WHERE products.id = ?;
+            `;
+            }
+
+            // Execute the final query
+            db.query(query, params, (err, rows) => {
+                if (err || rows.length === 0) {
+                    return res.status(404).send('Product not found');
+                }
+                // Create images object with keys as image_order and values as image_path
+                const product = rows[0];
+                const images = {};
+
+                rows.forEach(row => {
+                    // Assign the image path to the key being the image_order
+                    images[row.image_order] = row.image_path;
+                });
+
+                // Build the response object
+                const response = {
+                    ...product, // product info
+                    images: images // image info
+                };
+
+                res.json(response);
+            });
+        }
     });
 });
 
@@ -211,8 +274,20 @@ router.post('/tt/add', (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
-
-            newProduct.id = this.lastID;
+            // Update replica 
+            dbR.execute(`INSERT INTO products 
+                (name, store_nipc, condition, availability, description, category) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`, [
+                newProduct.name,
+                newProduct.store_nipc,
+                newProduct.condition,
+                newProduct.availability,
+                newProduct.description,
+                newProduct.category], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                });
             res.status(201).json(newProduct); // Send back the newly added product
         });
 });
@@ -226,6 +301,15 @@ router.delete('/tt/remove/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).send('Product not found');
         }
+        // Update replica
+        dbR.execute('DELETE FROM products WHERE id = ?', [req.params.id], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Product not found');
+            }
+        });
         res.status(200).send('Product successfully removed');
     });
 });
@@ -247,6 +331,22 @@ router.post('/tt/sale/add', (req, res) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
+                // Update replica
+                dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row) {
+                        return res.status(404).send('Product not found');
+                    }
+                    // Insert the product into the saleProducts table
+                    dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
+                        [newSaleProduct.id, newSaleProduct.price], function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                });
                 res.status(201).json({ message: 'Product set for sale', product: row });
             });
     });
@@ -267,6 +367,21 @@ router.put('/tt/sale/remove/:id', (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
+            // Update replica
+            dbR.query('SELECT * FROM saleProducts WHERE id = ?', [req.params.id], (err, row) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                if (!row) {
+                    return res.status(404).send('Product not found on sale');
+                }
+                // Remove the product from the saleProducts table
+                dbR.execute('DELETE FROM saleProducts WHERE id = ?', [req.params.id], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                });
+            });
             res.status(200).json({ message: 'Product removed from sale', productId });
         });
     });
@@ -292,8 +407,8 @@ router.get('/tt/repair', (req, res) => {
         params.push(`%${name}%`);
     }
     if (category) {
-        query += ' AND p.category = ?';
-        params.push(category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
@@ -324,16 +439,23 @@ router.get('/tt/repair', (req, res) => {
         params.push(year);
     }
     if (store) {
-        query += ' AND c.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
     }
 
     // Execute the query
     db.query(query, params, (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query(query, params, (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -342,12 +464,22 @@ router.get('/tt/repair/:id', (req, res) => {
     db.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?',
         [req.params.id], (err, rows) => {
             if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            if (rows.length === 0) {
+                // Fallback to replica DB
+                dbR.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?',
+                    [req.params.id], (err, rows) => {
+                        if (err) {
+                            return res.status(500).json({ error: err.message });
+                        }
+                        if (rows.length === 0) {
+                            return res.status(404).send('Product not found');
+                        }
+                        res.json(rows[0]);
+                    });
+            } else if (rows.length === 0) {
                 return res.status(404).send('Product not found');
+            } else {
+                res.json(rows[0]);
             }
-            res.json(rows[0]);
         });
 });
 
@@ -367,6 +499,21 @@ router.post('/tt/repair/add', (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
+            // Update replica
+            dbR.query('SELECT * FROM products WHERE id = ?', [newRepairProduct.id], (err, row) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                if (!row) {
+                    return res.status(404).send('Product not found');
+                }
+                // Insert the product into the repairProducts table
+                dbR.execute('INSERT INTO repairProducts (id) VALUES (?)', [newRepairProduct.id], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                });
+            });
             res.status(201).json({ message: 'Product set for repair', product: row });
         });
     });
@@ -387,6 +534,21 @@ router.put('/tt/repair/remove/:id', (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
+            // Update replica
+            dbR.query('SELECT * FROM repairProducts WHERE id = ?', [req.params.id], (err, row) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                if (!row) {
+                    return res.status(404).send('Product not found on repair');
+                }
+                // Remove the product from the repairProducts table
+                dbR.execute('DELETE FROM repairProducts WHERE id = ?', [req.params.id], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                });
+            });
             res.status(200).json({ message: 'Product removed from repair', productId });
         });
     });
@@ -418,8 +580,8 @@ router.get('/tt/donation', (req, res) => {
         params.push(`%${name}%`);
     }
     if (category) {
-        query += ' AND p.category = ?';
-        params.push(category);
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
     }
     if (condition) {
         query += ' AND p.product_condition = ?';
@@ -450,20 +612,27 @@ router.get('/tt/donation', (req, res) => {
         params.push(year);
     }
     if (store) {
-        query += ' AND c1.name RLIKE ?';
-        params.push(req.query.store);
+        query += ' AND c1.name LIKE ?';
+        params.push(`%${store}%`);
     }
     if (charity) {
-        query += ' AND c2.name RLIKE ?';
-        params.push(req.query.charity);
+        query += ' AND c2.name LIKE ?';
+        params.push(`%${charity}%`);
     }
 
     // Execute the query
     db.query(query, params, (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query(query, params, (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -472,12 +641,23 @@ router.get('/tt/donation/:id', (req, res) => {
     db.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?',
         [req.params.id], (err, rows) => {
             if (err) {
-                return res.status(500).json({ error: err.message });
+                // Fallback to replica DB
+                dbR.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?',
+                    [req.params.id], (err, rows) => {
+                        if (err) {
+                            return res.status(500).json({ error: err.message });
+                        }
+                        if (rows.length === 0) {
+                            return res.status(404).send('Product not found');
+                        }
+                        res.json(rows[0]);
+                    });
             }
-            if (rows.length === 0) {
+            else if (rows.length === 0) {
                 return res.status(404).send('Product not found');
+            } else {
+                res.json(rows[0]);
             }
-            res.json(rows[0]);
         });
 });
 
@@ -498,6 +678,22 @@ router.post('/tt/donation/add', (req, res) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
+                // Update replica
+                dbR.query('SELECT * FROM products WHERE id = ?', [newDonationProduct.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row) {
+                        return res.status(404).send('Product not found');
+                    }
+                    // Insert the product into the donationProducts table
+                    dbR.execute('INSERT INTO donationProducts (id, charity) VALUES (?)',
+                        [newDonationProduct.id, newDonationProduct.charity], function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                });
                 res.status(201).json({ message: 'Product set for donation', product: row });
             });
     });
@@ -518,7 +714,24 @@ router.put('/tt/donation/remove/:id', (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
-            res.status(200).json({ message: 'Product removed from donation', productId });
+
+            // Update replica
+            dbR.query('SELECT * FROM donationProducts WHERE id = ?', [req.params.id], (err, row) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                if (!row) {
+                    return res.status(404).send('Product not found on donation');
+                }
+                // Remove the product from the donationProducts table
+                dbR.execute('DELETE FROM donationProducts WHERE id = ?', [req.params.id], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                });
+            });
+
+            res.status(200).json({ message: 'Product removed from donation', product: row });
         });
     });
 });
@@ -527,9 +740,16 @@ router.put('/tt/donation/remove/:id', (req, res) => {
 router.get('/ttuser/client', (req, res) => {
     db.query('SELECT * FROM clients', [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query('SELECT * FROM clients', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -547,15 +767,25 @@ router.get('/ttuser/client/:id', (req, res) => {
     // Use the `id` parameter for all possible search options
     db.query(query, [id, id, id, id, id], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+            // Fallback to replica DB
+            dbR.query(query, [id, id, id, id, id], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
 
-        if (rows.length === 0) {
+                if (rows.length === 0) {
+                    return res.status(404).send('Client not found');
+                }
+
+                // Send the client details in the response
+                res.json(rows[0]);
+            });
+        } else if (rows.length === 0) {
             return res.status(404).send('Client not found');
+        } else {
+            // Send the client details in the response
+            res.json(rows[0]);
         }
-
-        // Send the client details in the response
-        res.json(rows[0]);
     });
 });
 
@@ -563,9 +793,16 @@ router.get('/ttuser/client/:id', (req, res) => {
 router.get('/ttuser', (req, res) => {
     db.query('SELECT * FROM clients', [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query('SELECT * FROM clients', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -585,6 +822,14 @@ router.post('/ttuser/client/add', (req, res) => {
         if (err) {
             return res.status(500).send({ error: err.message });
         }
+
+        // Update replica
+        dbR.execute(query, values, function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+        });
+
         res.status(201).send('Client successfully added');
     });
 });
@@ -613,6 +858,17 @@ router.put('/ttuser/client/edit', (req, res) => {
             return res.status(404).send('Client not found');
         }
 
+        // Update replica
+        dbR.execute(query, values, function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).send('Client not found');
+            }
+        });
+
         res.send('Client successfully updated');
     });
 });
@@ -628,6 +884,17 @@ router.delete('/ttuser/client/remove/:id', (req, res) => {
             return res.status(404).send('Client not found');
         }
 
+        // Update replica
+        dbR.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).send('Client not found');
+            }
+        });
+
         res.send('Client successfully removed');
     });
 });
@@ -636,9 +903,16 @@ router.delete('/ttuser/client/remove/:id', (req, res) => {
 router.get('/ttuser/employee', (req, res) => {
     db.query('SELECT * FROM employees e INNER JOIN clients c WHERE c.id = e.id', [], (err, rows) => {
         if (err) {
-            return res.status(404).send('Employee not found');
+            // Fallback to replica DB
+            dbR.query('SELECT * FROM employees e INNER JOIN clients c WHERE c.id = e.id', [], (err, rows) => {
+                if (err) {
+                    return res.status(404).send('No registered employees');
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -657,15 +931,25 @@ router.get('/ttuser/employee/:id', (req, res) => {
     // Use the `id` parameter for all possible search options
     db.query(query, [id, id, id, id, id], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+            // Fallback to replica DB
+            dbR.query(query, [id, id, id, id, id], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
 
-        if (rows.length === 0) {
+                if (rows.length === 0) {
+                    return res.status(404).send('Employee not found');
+                }
+
+                // Send the employee details in the response
+                res.json(rows[0]);
+            });
+        } else if (rows.length === 0) {
             return res.status(404).send('Employee not found');
+        } else {
+            // Send the employee details in the response
+            res.json(rows[0]);
         }
-
-        // Send the employee details in the response
-        res.json(rows[0]);
     });
 });
 
@@ -686,6 +970,22 @@ router.post('/ttuser/employee/add', (req, res) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
+                // Update rplica
+                dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row) {
+                        return res.status(404).send('Client not found');
+                    }
+                    // Insert the user into the employees table
+                    dbR.execute('INSERT INTO employees (id) VALUES (?)',
+                        [newEmployee.id], function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                });
                 res.status(201).json({ message: 'Employee successfully added', product: row });
             });
     });
@@ -712,6 +1012,15 @@ router.put('/ttuser/employee/edit', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).send('Employee not found');
         }
+        // Update replica
+        dbR.execute(query, values, function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Employee not found');
+            }
+        });
         res.send('Employee successfully updated');
     });
 });
@@ -725,18 +1034,103 @@ router.delete('/ttuser/employee/remove/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).send('Employee not found');
         }
+        // Update replica
+        dbR.execute('DELETE FROM employees WHERE id = ?', [req.params.id], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Employee not found');
+            }
+        });
         res.send('Employee successfully removed');
     });
 });
 
 // Get all stores
 router.get('/ttuser/store', (req, res) => {
-    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id 
-        AND e.entity_type = "store"`, [], (err, rows) => {
+    db.query(`SELECT * FROM entities e
+        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "store"
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
+        `, [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query(`SELECT * FROM entities e
+                INNER JOIN clients c ON c.id = e.id AND e.entity_type = "store"
+                LEFT JOIN entityHours eh ON eh.entity = e.id 
+                `, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                // Process the rows
+                const result = rows.reduce((acc, row) => {
+                    const existingStore = acc.find(store => store.name === row.name);
+
+                    if (existingStore) {
+                        // Push the opening hours to the existing store object
+                        existingStore.opening_hours.push({
+                            day: row.day,
+                            hours: row.hours
+                        });
+                    } else {
+                        // Push organized data into the accumulator
+                        acc.push({
+                            id: row.id,
+                            nipc: row.nipc,
+                            name: row.name,
+                            email: row.email,
+                            password: row.password,
+                            phone_number: row.phone_number,
+                            address: row.address,
+                            city: row.city,
+                            country: row.country,
+                            opening_hours: [{
+                                day: row.day,
+                                hours: row.hours
+                            }]
+                        });
+                    }
+
+                    return acc;
+                }, []);
+
+                res.json(result);
+            });
+        } else {
+            // Process the rows
+            const result = rows.reduce((acc, row) => {
+                const existingStore = acc.find(store => store.name === row.name);
+
+                if (existingStore) {
+                    // Push the opening hours to the existing store object
+                    existingStore.opening_hours.push({
+                        day: row.day,
+                        hours: row.hours
+                    });
+                } else {
+                    // Push organized data into the accumulator
+                    acc.push({
+                        id: row.id,
+                        nipc: row.nipc,
+                        name: row.name,
+                        email: row.email,
+                        password: row.password,
+                        phone_number: row.phone_number,
+                        address: row.address,
+                        city: row.city,
+                        country: row.country,
+                        opening_hours: [{
+                            day: row.day,
+                            hours: row.hours
+                        }]
+                    });
+                }
+
+                return acc;
+            }, []);
+
+            res.json(result);
         }
-        res.json(rows[0]);
     });
 });
 
@@ -746,21 +1140,95 @@ router.get('/ttuser/store/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.phone_number 
+        SELECT e.*, c.*, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
         WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
         AND e.entity_type = "store"
     `;
 
     db.query(query, [id, id, id, id], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (rows.length === 0) {
+            // Fallback to replica DB
+            dbR.query(query, [id, id, id, id], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                if (rows.length === 0) {
+                    return res.status(404).send('Store not found');
+                }
+                // Process the rows
+                const result = rows.reduce((acc, row) => {
+                    const existingStore = acc.find(store => store.name === row.name);
+
+                    if (existingStore) {
+                        // Push the opening hours to the existing store object
+                        existingStore.opening_hours.push({
+                            day: row.day,
+                            hours: row.hours
+                        });
+                    } else {
+                        // Push organized data into the accumulator
+                        acc.push({
+                            id: row.id,
+                            nipc: row.nipc,
+                            name: row.name,
+                            email: row.email,
+                            password: row.password,
+                            phone_number: row.phone_number,
+                            address: row.address,
+                            city: row.city,
+                            country: row.country,
+                            opening_hours: [{
+                                day: row.day,
+                                hours: row.hours
+                            }]
+                        });
+                    }
+
+                    return acc;
+                }, []);
+
+                res.json(result[0]);
+            });
+        } else if (rows.length === 0) {
             return res.status(404).send('Store not found');
+        } else {
+            // Process the rows
+            const result = rows.reduce((acc, row) => {
+                const existingStore = acc.find(store => store.name === row.name);
+
+                if (existingStore) {
+                    // Push the opening hours to the existing store object
+                    existingStore.opening_hours.push({
+                        day: row.day,
+                        hours: row.hours
+                    });
+                } else {
+                    // Push organized data into the accumulator
+                    acc.push({
+                        id: row.id,
+                        nipc: row.nipc,
+                        name: row.name,
+                        email: row.email,
+                        password: row.password,
+                        phone_number: row.phone_number,
+                        address: row.address,
+                        city: row.city,
+                        country: row.country,
+                        opening_hours: [{
+                            day: row.day,
+                            hours: row.hours
+                        }]
+                    });
+                }
+
+                return acc;
+            }, []);
+
+            res.json(result[0]);
         }
-        res.json(rows[0]);
     });
 });
 
@@ -781,6 +1249,22 @@ router.post('/ttuser/store/add', (req, res) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
+                // Update replica
+                dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row) {
+                        return res.status(404).send('Client not found');
+                    }
+                    // Insert the store into the entities table
+                    dbR.execute('INSERT INTO entities (id, nipc, entity_type) VALUES (?, ?, "store")',
+                        [newStore.id, newStore.nipc], function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                });
                 res.status(201).json({ message: 'Store successfully added', product: row });
             });
     });
@@ -808,6 +1292,15 @@ router.put('/ttuser/store/edit', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).send('Store not found');
         }
+        // Update replica
+        dbR.execute(query, values, function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Store not found');
+            }
+        });
         res.send('Store successfully updated');
     });
 });
@@ -822,18 +1315,102 @@ router.delete('/ttuser/store/remove/:id', (req, res) => {
             if (this.changes === 0) {
                 return res.status(404).send('Store not found');
             }
+            // Update replica
+            dbR.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "store"',
+                [req.params.id], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (this.changes === 0) {
+                        return res.status(404).send('Store not found');
+                    }
+                });
             res.send('Store successfully removed');
         });
 });
 
 // Get all charities
 router.get('/ttuser/charity', (req, res) => {
-    db.query(`SELECT * FROM entities e INNER JOIN clients c WHERE c.id = e.id
-         AND e.entity_type = "charity"`, [], (err, rows) => {
+    db.query(`SELECT * FROM entities e 
+        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "charity"
+        LEFT JOIN entityHours eh ON eh.entity = e.id `, [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            // Fallback to replica DB
+            dbR.query(`SELECT * FROM entities e 
+                INNER JOIN clients c ON c.id = e.id AND e.entity_type = "charity"
+                LEFT JOIN entityHours eh ON eh.entity = e.id `, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                // Process the rows
+                const result = rows.reduce((acc, row) => {
+                    const existingCharity = acc.find(charity => charity.name === row.name);
+
+                    if (existingCharity) {
+                        // Push the opening hours to the existing charity object
+                        existingCharity.opening_hours.push({
+                            day: row.day,
+                            hours: row.hours
+                        });
+                    } else {
+                        // Push organized data into the accumulator
+                        acc.push({
+                            id: row.id,
+                            nipc: row.nipc,
+                            name: row.name,
+                            email: row.email,
+                            password: row.password,
+                            phone_number: row.phone_number,
+                            address: row.address,
+                            city: row.city,
+                            country: row.country,
+                            opening_hours: [{
+                                day: row.day,
+                                hours: row.hours
+                            }]
+                        });
+                    }
+
+                    return acc;
+                }, []);
+
+                res.json(result);
+            });
+        } else {
+            // Process the rows
+            const result = rows.reduce((acc, row) => {
+                const existingCharity = acc.find(charity => charity.name === row.name);
+
+                if (existingCharity) {
+                    // Push the opening hours to the existing charity object
+                    existingCharity.opening_hours.push({
+                        day: row.day,
+                        hours: row.hours
+                    });
+                } else {
+                    // Push organized data into the accumulator
+                    acc.push({
+                        id: row.id,
+                        nipc: row.nipc,
+                        name: row.name,
+                        email: row.email,
+                        password: row.password,
+                        phone_number: row.phone_number,
+                        address: row.address,
+                        city: row.city,
+                        country: row.country,
+                        opening_hours: [{
+                            day: row.day,
+                            hours: row.hours
+                        }]
+                    });
+                }
+
+                return acc;
+            }, []);
+
+            res.json(result);
         }
-        res.json(rows);
     });
 });
 
@@ -843,21 +1420,97 @@ router.get('/ttuser/charity/:id', (req, res) => {
 
     // Check all possibilities (id, nipc, email, phone_number)
     let query = `
-        SELECT e.*, c.name, c.email, c.phone_number 
+        SELECT e.*, c.*, eh.*
         FROM entities e 
         INNER JOIN clients c ON c.id = e.id 
+        LEFT JOIN entityHours eh ON eh.entity = e.id 
         WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
         AND e.entity_type = "charity"
     `;
 
     db.query(query, [id, id, id, id], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (rows.length === 0) {
+            // Fallback to replica DB
+            dbR.query(query, [id, id, id, id], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                if (rows.length === 0) {
+                    return res.status(404).send('Charity not found');
+                }
+                // Process the rows
+                const result = rows.reduce((acc, row) => {
+                    // Check if the charity already exists in the accumulator
+                    const existingCharity = acc.find(charity => charity.name === row.name);
+
+                    if (existingCharity) {
+                        // Push the opening hours to the existing charity object
+                        existingCharity.opening_hours.push({
+                            day: row.day,
+                            hours: row.hours
+                        });
+                    } else {
+                        // Push organized data into the accumulator
+                        acc.push({
+                            id: row.id,
+                            nipc: row.nipc,
+                            name: row.name,
+                            email: row.email,
+                            password: row.password,
+                            phone_number: row.phone_number,
+                            address: row.address,
+                            city: row.city,
+                            country: row.country,
+                            opening_hours: [{
+                                day: row.day,
+                                hours: row.hours
+                            }]
+                        });
+                    }
+
+                    return acc;
+                }, []);
+
+                res.json(result[0]);
+            });
+        } else if (rows.length === 0) {
             return res.status(404).send('Charity not found');
+        } else {
+            // Process the rows
+            const result = rows.reduce((acc, row) => {
+                // Check if the charity already exists in the accumulator
+                const existingCharity = acc.find(charity => charity.name === row.name);
+
+                if (existingCharity) {
+                    // Push the opening hours to the existing charity object
+                    existingCharity.opening_hours.push({
+                        day: row.day,
+                        hours: row.hours
+                    });
+                } else {
+                    // Push organized data into the accumulator
+                    acc.push({
+                        id: row.id,
+                        nipc: row.nipc,
+                        name: row.name,
+                        email: row.email,
+                        password: row.password,
+                        phone_number: row.phone_number,
+                        address: row.address,
+                        city: row.city,
+                        country: row.country,
+                        opening_hours: [{
+                            day: row.day,
+                            hours: row.hours
+                        }]
+                    });
+                }
+
+                return acc;
+            }, []);
+
+            res.json(result[0]);
         }
-        res.json(rows[0]);
     });
 });
 
@@ -878,6 +1531,22 @@ router.post('/ttuser/charity/add', (req, res) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
+                // Update replica
+                dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row) {
+                        return res.status(404).send('Client not found');
+                    }
+                    // Insert the charity into the entities table
+                    dbR.execute('INSERT INTO entities (id, nipc, entity_type) VALUES (?, ?, "charity")',
+                        [newCharity.id, newCharity.nipc], function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                });
                 res.status(201).json({ message: 'Charity successfully added', product: row });
             });
     });
@@ -905,6 +1574,15 @@ router.put('/ttuser/charity/edit', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).send('Charity not found');
         }
+        // Update replica
+        dbR.execute(query, values, function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).send('Charity not found');
+            }
+        });
         res.send('Charity successfully updated');
     });
 });
@@ -919,6 +1597,16 @@ router.delete('/ttuser/charity/remove/:id', (req, res) => {
             if (this.changes === 0) {
                 return res.status(404).send('Charity not found');
             }
+            // Update replica
+            dbR.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "charity"',
+                [req.params.id], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (this.changes === 0) {
+                        return res.status(404).send('Charity not found');
+                    }
+                });
             res.send('Charity successfully removed');
         });
 });
@@ -932,6 +1620,13 @@ router.post('/ttuser/interest', (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
+            // Update replica
+            dbR.execute('INSERT INTO interests (interestedUser, watchedProduct) VALUES (?, ?)',
+                [interestedUser, watchedProduct], function (err) {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                });
             res.status(201).send('Interest successfully added');
         });
 });
@@ -947,12 +1642,21 @@ router.get('/ttuser/notifications/:id', (req, res) => {
 
     db.query(query, [req.params.id], (err, rows) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (rows.length === 0) {
+            // Fallback to replica DB
+            dbR.query(query, [req.params.id], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                if (rows.length === 0) {
+                    return res.status(404).send('No product interests set for this client');
+                }
+                res.json(rows);
+            });
+        } else if (rows.length === 0) {
             return res.status(404).send('No product interests set for this client');
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -960,9 +1664,16 @@ router.get('/ttuser/notifications/:id', (req, res) => {
 router.get('/ttuser/reports', (req, res) => {
     db.query('SELECT * FROM reports', [], (err, rows) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            // Fallback to replica DB
+            dbR.query('SELECT * FROM reports', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
         }
-        res.json(rows);
     });
 });
 
@@ -970,12 +1681,21 @@ router.get('/ttuser/reports', (req, res) => {
 router.get('/ttuser/reports/:id', (req, res) => {
     db.query('SELECT * FROM reports WHERE id = ?', [req.params.id], (err, rows) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!rows) {
+            // Fallback to replica DB
+            dbR.query('SELECT * FROM reports WHERE id = ?', [req.params.id], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                if (!rows) {
+                    return res.status(404).send('Report not found');
+                }
+                res.json(rows[0]);
+            });
+        } else if (!rows) {
             return res.status(404).send('Report not found');
+        } else {
+            res.json(rows[0]);
         }
-        res.json(rows[0]);
     });
 });
 
@@ -986,7 +1706,47 @@ router.post('/ttuser/reports/add', (req, res) => {
         if (err) {
             return res.status(500).send({ error: err.message });
         }
+        // Update replica
+        dbR.execute('INSERT INTO reports (report) VALUES (?)', [report], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+        });
         res.status(201).send('Report successfully added');
+    });
+});
+
+// Get shipping costs
+router.get('/tttransaction/shipping', (req, res) => {
+    db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows[0]);
+            });
+        } else {
+            res.json(rows[0]);
+        }
+    });
+});
+
+// Update shipping costs
+router.get('/tttransaction/shipping/update/:newCost', (req, res) => {
+    const shipping_cost = req.params.newCost;
+    db.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
+        if (err) {
+            return res.status(500).send({ error: err.message });
+        }
+        // Update replica
+        dbR.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+        });
+        res.status(200).send('Shipping costs successfully updated');
     });
 });
 
