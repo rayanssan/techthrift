@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 import { exec } from 'child_process';
 import { router as dbConnection, dbReady } from './resources/dbConnection.mjs';
 import { router as ttApi } from './resources/ttApi.mjs';
+const app = express();
 
 dbReady.then((isConnected) => {
     if (isConnected) {
