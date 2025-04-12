@@ -1,86 +1,76 @@
-let auth0Client = null;
+const domain = "dev-l8ytlq131pzoy67u.us.auth0.com";
+const clientId = "L1fWb50rJ2E6mPWVuJsynrqskjQ7454Q";
+const redirectUri = window.location.origin + "/authentication";
 
-const fetchAuthConfig = () => fetch("/auth_config.json");
+function login() {
+  const url = `https://${domain}/authorize?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid profile email`;
+  window.location.href = url;
+}
 
-const configureClient = async ()  => {
-    const response = await fetchAuthConfig();
-    const config = await response.json();
+function logout() {
+  localStorage.removeItem("access_token");
+  const url = `https://${domain}/v2/logout?client_id=${clientId}&returnTo=${redirectUri}`;
+  window.location.href = url;
+}
 
-    auth0Client = await auth0.createAuth0Client({
-        domain: config.domain,
-        clientId: config.clientId
+function getAccessTokenFromUrl() {
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.slice(1));
+  return params.get("access_token");
+}
+
+async function getUserProfile(token) {
+  try {
+    const response = await fetch(`https://${domain}/userinfo`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
-};
 
-window.onload = async () => {
-    await configureClient();
+    if (!response.ok) throw new Error(await response.text());
 
-    const query = window.location.search;
+    const user = await response.json();
+    console.log("Utilizador:", user);
 
-    // Se vieste do Auth0 com "code" e "state", trata isso primeiro
-    if (query.includes("code=") && query.includes("state=")) {
-        try {
-            await auth0Client.handleRedirectCallback();
-            // Limpa a URL (sem query params)
-            window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (err) {
-            console.error("Erro ao tratar callback:", err);
-        }
-    }
+    const nameEl = document.getElementById("user-name");
+    const picEl = document.getElementById("user-pic");
+    const infoEl = document.getElementById("user-info");
 
-    // Agora verifica autenticação real e atualiza UI
-    try {
-        await updateUI();
-    } catch (err) {
-        console.warn("updateUI falhou (elementos podem não existir nesta página)", err);
-    }
-};
-
-
-const updateUI = async () => {
-
-    const isAuthenticated = await auth0Client.isAuthenticated();
+    if (nameEl) nameEl.textContent = user.name || user.nickname;
+    if (picEl) picEl.src = user.picture;
+    if (infoEl) infoEl.classList.remove("d-none");
 
     const loginBtn = document.getElementById("btn-login");
     const logoutBtn = document.getElementById("btn-logout");
-    
-    const gatedContent = document.getElementById("gated-content");
-    const tokenOutput = document.getElementById("ipt-access-token");
-    const userOutput = document.getElementById("ipt-user-profile");
+    if (loginBtn) loginBtn.classList.add("d-none");
+    if (logoutBtn) logoutBtn.classList.remove("d-none");
+  } catch (err) {
+    console.error("Erro a obter perfil:", err);
+    logout();
+  }
+}
 
-    
-    if (isAuthenticated){
-        loginBtn.disabled = true;
-        logoutBtn.disabled = false;
-    }else{
-        loginBtn.disabled = false;
-        logoutBtn.disabled = true;
-    }
-    
+window.onload = () => {
+  let token = getAccessTokenFromUrl();
 
-    if (gatedContent) {
-        if (isAuthenticated) {
-            gatedContent.classList.remove("hidden");
-        } else {
-            gatedContent.classList.add("hidden");
-        }
-    }
+  if (token) {
+    localStorage.setItem("access_token", token);
+    // Corrigido: não força caminho fixo
+    window.history.replaceState(null, "", window.location.pathname);
+  } else {
+    token = localStorage.getItem("access_token");
+  }
 
-    if (isAuthenticated && tokenOutput && userOutput) {
-        const token = await auth0Client.getTokenSilently();
-        const user = await auth0Client.getUser();
-        tokenOutput.innerHTML = token;
-        userOutput.textContent = JSON.stringify(user, null, 2);
-    }
+  if (token) {
+    getUserProfile(token);
+  } else {
+    // Garantir que os botões existem antes de mexer neles
+    const loginBtn = document.getElementById("btn-login");
+    const logoutBtn = document.getElementById("btn-logout");
+    const infoEl = document.getElementById("user-info");
+
+    if (loginBtn) loginBtn.classList.remove("d-none");
+    if (logoutBtn) logoutBtn.classList.add("d-none");
+    if (infoEl) infoEl.classList.add("d-none");
+  }
 };
-
-
-const login = async() => {
-    
-    await auth0Client.loginWithRedirect({
-        authorizationParams:{
-            redirect_uri: "http://localhost:3000/authentication"
-        }
-    });
-};
-
