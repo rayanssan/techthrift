@@ -290,48 +290,35 @@ if (document.body.id === "homepage") {
         fetchOneSellingProduct().then(() => {
             this.querySelectorAll(".carousel-item").forEach(item => {
                 item.addEventListener("click", () => {
-                    let modal = document.getElementById("image-popup");
                     const imageSrc = item.querySelector("img").src;
-
-                    // Create modal if it doesn’t exist
-                    if (!modal) {
-                        modal = document.createElement("div");
-                        modal.id = "image-popup";
-                        modal.style.position = "fixed";
-                        modal.style.top = "0";
-                        modal.style.left = "0";
-                        modal.style.width = "100vw";
-                        modal.style.height = "100vh";
-                        modal.style.background = "rgba(0, 0, 0, 0.8)";
-                        modal.style.display = "flex";
-                        modal.style.justifyContent = "center";
-                        modal.style.alignItems = "center";
-                        modal.style.zIndex = "9999";
-                        modal.innerHTML = `
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content border-0 text-center rounded" style="background: white;">
-                                    <button type="button" class="btn-close 
-                                    position-absolute top-0 end-0 pt-4 pb-2" style="padding-right: 25px;"
-                                    aria-label="Close"></button>
-                                    <img src="${imageSrc}" class="img-fluid 
-                                    p-3 mt-5 border-top shadow-lg" style="max-width: 80vw; max-height: 80vh;" />
-                                </div>
-                            </div>
-                        `;
-
-                        document.body.appendChild(modal);
-
-                        modal.querySelector(".btn-close").addEventListener("click", () => {
-                            modal.remove();
-                        });
-                        // Close modal when clicking outside the image
-                        modal.addEventListener("click", (event) => {
-                            if (event.target === modal) {
-                                modal.remove();
-                            }
-                        });
+                    let modalEl = document.getElementById("image-popup");
+                
+                    // If modal doesn't exist, create it once
+                    if (!modalEl) {
+                      modalEl = document.createElement("div");
+                      modalEl.className = "modal fade";
+                      modalEl.id = "image-popup";
+                      modalEl.tabIndex = -1;
+                      modalEl.innerHTML = `
+                        <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
+                          <div class="modal-content border-0 text-center rounded bg-white m-auto">
+                            <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
+                            data-bs-dismiss="modal" aria-label="Close"></button>
+                            <img class="img-fluid p-3 border-top shadow-lg" 
+                            style="margin-top: 3.5rem;">
+                          </div>
+                        </div>
+                      `;
+                      document.body.appendChild(modalEl);
                     }
-                });
+                
+                    // Set image src dynamically
+                    modalEl.querySelector("img").src = imageSrc;
+                
+                    // Show modal via Bootstrap's API
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                  });
             });
         });
     });
@@ -633,7 +620,7 @@ if (document.body.id === "homepage") {
                         style="vertical-align: text-bottom;"></i></a>
                         <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
                     product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
-                    }" style="width: fit-content;font-size: small;">
+                }" style="width: fit-content;font-size: small;">
                     ${product.product_condition}</p> 
                         <p class="card-text fw-bold fs-5">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     </div>
@@ -879,12 +866,14 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
         });
 
         window.addEventListener("scroll", () => {
-            if (window.scrollY > filtersOffsetTop) {
-                filtersContainer.classList.add("fixed-top", "bg-white", "shadow-sm", "p-3");
-                document.body.classList.add("pt-5");
-            } else {
-                filtersContainer.classList.remove("fixed-top", "bg-white", "shadow-sm", "p-3");
-                document.body.classList.remove("pt-5");
+            if (window.innerWidth > 768) {
+                if (window.scrollY > filtersOffsetTop) {
+                    filtersContainer.classList.add("fixed-top", "bg-white", "shadow-sm", "p-3");
+                    document.body.classList.add("pt-5");
+                } else {
+                    filtersContainer.classList.remove("fixed-top", "bg-white", "shadow-sm", "p-3");
+                    document.body.classList.remove("pt-5");
+                }
             }
         });
 

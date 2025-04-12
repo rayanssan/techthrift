@@ -1,3 +1,5 @@
+"use strict";
+
 const domain = "dev-l8ytlq131pzoy67u.us.auth0.com";
 const clientId = "L1fWb50rJ2E6mPWVuJsynrqskjQ7454Q";
 const redirectUri = window.location.origin + "/authentication";
@@ -44,9 +46,17 @@ async function getUserProfile(token) {
     const logoutBtn = document.getElementById("btn-logout");
     if (loginBtn) loginBtn.classList.add("d-none");
     if (logoutBtn) logoutBtn.classList.remove("d-none");
+    if (document.getElementById('username')) {
+      document.querySelector('#username').innerHTML = `
+      <img alt="User Picture" src=${user.picture} alt="User Picture" 
+      class="rounded-circle me-md-2" style="scale:1.1;" width="22" height="22">
+      <p class="d-none d-md-block mb-0">${user.nickname}</p>`;
+    }
   } catch (err) {
-    console.error("Erro a obter perfil:", err);
-    logout();
+    console.error("Error while trying to obtain profile:", err);
+    setTimeout(() => {
+      location.reload();
+    }, 3000);
   }
 }
 
@@ -72,5 +82,9 @@ window.onload = () => {
     if (loginBtn) loginBtn.classList.remove("d-none");
     if (logoutBtn) logoutBtn.classList.add("d-none");
     if (infoEl) infoEl.classList.add("d-none");
+
+    if (document.getElementById('username')) {
+      document.querySelector('#username p').textContent = "Sign in";
+    }
   }
 };

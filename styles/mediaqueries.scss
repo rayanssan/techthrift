@@ -1,9 +1,8 @@
-
 @media (max-width: 1200px) {
     #search-form {
         display: none !important;
     }
-    
+
     #search-form-mobile {
         display: flex !important;
     }
@@ -17,12 +16,22 @@
     }
 
     #filtersContainer {
+        button[data-bs-target="#filtersCollapse"] {
+            display: unset !important;
+        }
+
+        #filtersCollapse.collapse:not(.show) {
+            display: none;
+        }
+
         &.fixed-top {
             position: relative !important;
         }
+
         select {
             max-width: 100% !important;
         }
+
         div {
             flex-direction: column;
 
