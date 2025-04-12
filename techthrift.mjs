@@ -3,6 +3,7 @@
 import express from 'express';
 import path from 'path';
 import fetch from 'node-fetch';
+import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { router as dbConnection, dbReady } from './resources/dbConnection.mjs';
 import { router as ttApi } from './resources/ttApi.mjs';
@@ -12,7 +13,7 @@ dbReady.then((isConnected) => {
     if (isConnected) {
         app.use(dbConnection);
         app.use(ttApi);
-        app.use(express.static(__dirname));
+        app.use(express.static(path.dirname(fileURLToPath(import.meta.url))));
 
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
