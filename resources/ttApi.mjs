@@ -1752,4 +1752,4 @@ router.get('/tttransaction/shipping/update/:newCost', (req, res) => {
 });
 
 // Export the API routes
-export default router;
+export { router };

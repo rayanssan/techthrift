@@ -40,4 +40,4 @@ const connectToDb = async () => {
 const dbReady = connectToDb();
 
 // Export the database connection, router, and flag
-export default { db, dbR, router, dbReady };
+export { db, dbR, router, dbReady };
