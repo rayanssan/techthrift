@@ -1615,13 +1615,13 @@ router.delete('/ttuser/charity/remove/:id', (req, res) => {
 router.post('/ttuser/interest', (req, res) => {
     const { interestedUser, watchedProduct } = req.body;
 
-    db.execute('INSERT INTO interests (interestedUser, watchedProduct) VALUES (?, ?)',
+    db.execute('INSERT INTO interests (interested_user, watched_product) VALUES (?, ?)',
         [interestedUser, watchedProduct], function (err) {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
             // Update replica
-            dbR.execute('INSERT INTO interests (interestedUser, watchedProduct) VALUES (?, ?)',
+            dbR.execute('INSERT INTO interests (interested_user, watched_product) VALUES (?, ?)',
                 [interestedUser, watchedProduct], function (err) {
                     if (err) {
                         return res.status(500).send({ error: err.message });
@@ -1635,10 +1635,11 @@ router.post('/ttuser/interest', (req, res) => {
 router.get('/ttuser/notifications/:id', (req, res) => {
 
     const query = `
-        SELECT p.* 
+        SELECT p.*, c.*
         FROM interests i
-        JOIN products p ON i.watchedProduct = p.id
-        WHERE i.interestedUser = ?`;
+        JOIN products p ON i.watched_product = p.id
+        JOIN clients c ON i.interested_user = c.id
+        WHERE i.interested_user = ?`;
 
     db.query(query, [req.params.id], (err, rows) => {
         if (err) {
