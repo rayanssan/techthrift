@@ -1,8 +1,8 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
-const mysql = require('mysql2');
+import { Router } from 'express';
+const router = Router();
+import { createConnection } from 'mysql2';
 const connection = {
     host: '0.0.0.0',
     user: 'root',
@@ -23,8 +23,8 @@ let dbR;
 
 const connectToDb = async () => {
     try {
-        db = mysql.createConnection(connection);
-        dbR = mysql.createConnection(connectionReplica);
+        db = createConnection(connection);
+        dbR = createConnection(connectionReplica);
         await new Promise((resolve, reject) => {
             db.connect((err) => (err ? reject(err) : resolve()));
             dbR.connect((err) => (err ? reject(err) : resolve()));
@@ -40,4 +40,4 @@ const connectToDb = async () => {
 const dbReady = connectToDb();
 
 // Export the database connection, router, and flag
-module.exports = { db, dbR, router, dbReady };
+export default { db, dbR, router, dbReady };

@@ -4,8 +4,8 @@ import express from 'express';
 import path from 'path';
 import fetch from 'node-fetch';
 import { exec } from 'child_process';
-import dbConnection from './resources/dbConnection.js';
-import ttApi from './resources/ttApi.js';
+import dbConnection from './resources/dbConnection.mjs';
+import ttApi from './resources/ttApi.mjs';
 
 dbConnection.dbReady.then((isConnected) => {
     if (isConnected) {
