@@ -21,7 +21,7 @@ dbReady.then((isConnected) => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
     } else {
-        exec('node resources/dbCreate.js', (err, stdout, stderr) => {
+        exec('node resources/dbCreate.mjs', (err, stdout, stderr) => {
             if (err) {
                 console.error(`Error creating database: ${stderr}`);
                 return;
