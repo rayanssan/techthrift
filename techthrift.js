@@ -1,13 +1,11 @@
 "use strict";
 
-const express = require('express');
-const path = require('path');
-const fetch = require('node-fetch');
-const { exec } = require('child_process');
-const app = express();
-const PORT = 3000;
-const dbConnection = require('./resources/dbConnection.js');
-const ttApi = require('./resources/ttApi.js'); // Import ttApi.js
+import express from 'express';
+import path from 'path';
+import fetch from 'node-fetch';
+import { exec } from 'child_process';
+import dbConnection from './resources/dbConnection.js';
+import ttApi from './resources/ttApi.js';
 
 dbConnection.dbReady.then((isConnected) => {
     if (isConnected) {
@@ -186,6 +184,7 @@ app.get("/geocode", async (req, res) => {
         const data = await response.json();
         res.json(data);
     } catch (err) {
-		res.status(500).json({ error: "Error contacting Nominatim API" });
+        console.log(err);
+		res.status(500).send(err.message);
     }
 });

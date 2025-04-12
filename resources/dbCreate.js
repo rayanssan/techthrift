@@ -1,12 +1,12 @@
 "use strict";
 
-const path = require('path');
-const fs = require('fs');
-const mysql = require('mysql2');
+import { join } from 'path';
+import { readFileSync } from 'fs';
+import { createConnection } from 'mysql2';
 
 // Function to create database and its replica
 const createDatabaseIfNotExists = async () => {
-    const connection = mysql.createConnection({
+    const connection = createConnection({
         host: '0.0.0.0',
         user: 'root',
         password: ''
@@ -19,7 +19,7 @@ const createDatabaseIfNotExists = async () => {
         await connection.promise().query('CREATE DATABASE tt_database');
 
         // Connect to the database after it is created
-        const db = mysql.createConnection({
+        const db = createConnection({
             host: '0.0.0.0',
             user: 'root',
             password: '',
@@ -28,11 +28,11 @@ const createDatabaseIfNotExists = async () => {
         });
 
         // Initialize tables
-        const initSql = fs.readFileSync(path.join(__dirname, '../database/ttDatabase.sql'), 'utf8');
+        const initSql = readFileSync(join(__dirname, '../database/ttDatabase.sql'), 'utf8');
         await db.promise().query(initSql);
 
         // Populate tables
-        const insertSql = fs.readFileSync(path.join(__dirname, '../database/ttInitDatabase.sql'), 'utf8');
+        const insertSql = readFileSync(join(__dirname, '../database/ttInitDatabase.sql'), 'utf8');
         await db.promise().query(insertSql);
 
         console.log('Database tt_database created and populated successfully.');

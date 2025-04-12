@@ -1,9 +1,9 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 // Import the db connection from dbConnection.js
-const { db, dbR } = require('./dbConnection');
+import { db, dbR } from './dbConnection';
 
 // Get all products up for sale
 router.get('/tt', (req, res) => {
@@ -1752,4 +1752,4 @@ router.get('/tttransaction/shipping/update/:newCost', (req, res) => {
 });
 
 // Export the API routes
-module.exports = router;
+export default router;
