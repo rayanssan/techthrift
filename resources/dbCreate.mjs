@@ -3,6 +3,8 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { createConnection } from 'mysql2';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Function to create database and its replica
 const createDatabaseIfNotExists = async () => {
