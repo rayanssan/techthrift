@@ -10,6 +10,12 @@
   .main-banner #main-banner-brand {
     display: none;
   }
+  #filtersContainer button[data-bs-target="#filtersCollapse"] {
+    display: unset !important;
+  }
+  #filtersContainer #filtersCollapse.collapse:not(.show) {
+    display: none;
+  }
   #filtersContainer.fixed-top {
     position: relative !important;
   }
