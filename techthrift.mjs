@@ -4,12 +4,12 @@ import express from 'express';
 import path from 'path';
 import fetch from 'node-fetch';
 import { exec } from 'child_process';
-import { db, dbR, dbConnection, dbReady } from './resources/dbConnection.mjs';
-import { ttApi } from './resources/ttApi.mjs';
+import { router as dbConnection, dbReady } from './resources/dbConnection.mjs';
+import { router as ttApi } from './resources/ttApi.mjs';
 
 dbReady.then((isConnected) => {
     if (isConnected) {
-        app.use(dbConnection.router);
+        app.use(dbConnection);
         app.use(ttApi);
         app.use(express.static(__dirname));
 
