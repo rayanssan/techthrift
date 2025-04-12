@@ -29,8 +29,8 @@ dbReady.then((isConnected) => {
             console.log(stdout);
             console.log('Connected to the TechThrift database.');
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
-            // Restart the techthrift.js script after dbCreate.js is executed
-            exec('node techthrift.js', () => {
+            // Restart the techthrift.js script after dbCreate.mjs is executed
+            exec('node techthrift.mjs', () => {
                 process.exit(0); // Exit the current process after restarting    
             });
         })

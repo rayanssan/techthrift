@@ -1,6 +1,6 @@
 "use strict";
 
-import { join } from 'path';
+import path from 'path';
 import { readFileSync } from 'fs';
 import { createConnection } from 'mysql2';
 import { fileURLToPath } from 'url';
@@ -30,11 +30,11 @@ const createDatabaseIfNotExists = async () => {
         });
 
         // Initialize tables
-        const initSql = readFileSync(join(__dirname, '../database/ttDatabase.sql'), 'utf8');
+        const initSql = readFileSync(path.join(__dirname, '../database/ttDatabase.sql'), 'utf8');
         await db.promise().query(initSql);
 
         // Populate tables
-        const insertSql = readFileSync(join(__dirname, '../database/ttInitDatabase.sql'), 'utf8');
+        const insertSql = readFileSync(path.join(__dirname, '../database/ttInitDatabase.sql'), 'utf8');
         await db.promise().query(insertSql);
 
         console.log('Database tt_database created and populated successfully.');
