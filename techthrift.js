@@ -2,6 +2,7 @@
 
 const express = require('express');
 const path = require('path');
+const fetch = require('node-fetch');
 const { exec } = require('child_process');
 const app = express();
 const PORT = 3000;
@@ -185,6 +186,6 @@ app.get("/geocode", async (req, res) => {
         const data = await response.json();
         res.json(data);
     } catch (err) {
-        res.status(500).json({ error: "Error contacting Nominatim API" });
+		res.status(500).json({ error: "Error contacting Nominatim API" });
     }
 });
