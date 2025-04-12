@@ -160,6 +160,7 @@ CREATE TABLE IF NOT EXISTS saleProducts (
     id INT PRIMARY KEY,
     price DECIMAL(10,2) NOT NULL,
 
+    CONSTRAINT ck_saleProducts_price check (price >= 0),
     FOREIGN KEY (id) REFERENCES products(id)
 );
 
@@ -218,6 +219,7 @@ CREATE TABLE IF NOT EXISTS sales (
     deliveryCost DECIMAL(10,2) NOT NULL,
 
     PRIMARY KEY (store, numSeq),
+    CONSTRAINT ck_sales_value check (value >= 0),
     FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq)
 );
 
@@ -257,6 +259,7 @@ CREATE TABLE IF NOT EXISTS repairs_parts (
 
     PRIMARY KEY (repair, part),
 
+    CONSTRAINT ck_repairs_parts_value check (value >= 0),
     FOREIGN KEY (store, repair) REFERENCES repairs(store, numSeq),
     FOREIGN KEY (part) REFERENCES parts(id)
 );
@@ -268,6 +271,7 @@ CREATE TABLE IF NOT EXISTS repairCosts (
 
     PRIMARY KEY (part, product),
 
+    CONSTRAINT ck_repairCosts_value check (value >= 0),
     FOREIGN KEY (part) REFERENCES parts(id),
     FOREIGN KEY (product) REFERENCES products(id)
 );
@@ -303,9 +307,12 @@ CREATE TABLE IF NOT EXISTS interests (
     watched_product INT,
     minPrice DECIMAL(10,2),
     maxPrice DECIMAL(10,2),
-    minYear DECIMAL(10,2),
-    maxYear DECIMAL(10,2),
+    minYear YEAR,
+    maxYear YEAR,
 
+    CONSTRAINT ck_interests_pricePositive check (minPrice >= 0),
+    CONSTRAINT ck_interests_price check (minPrice <= maxPrice),
+    CONSTRAINT ck_interests_year check (minYear <= maxYear),
     FOREIGN KEY (interested_user) REFERENCES clients(id),
     FOREIGN KEY (watched_product) REFERENCES products(id)
 );
@@ -318,4 +325,6 @@ CREATE TABLE IF NOT EXISTS reports (
 CREATE TABLE IF NOT EXISTS shipping (
     id INT AUTO_INCREMENT PRIMARY KEY,
     current_shipping_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00
+
+    CONSTRAINT ck_shipping_cost check (current_shipping_cost >= 0)
 );
