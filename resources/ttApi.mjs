@@ -2,8 +2,8 @@
 
 import { Router } from 'express';
 const router = Router();
-// Import the db connection from dbConnection.js
-import { db, dbR } from './dbConnection';
+// Import the db connection from dbConnection.mjs
+import { db, dbR } from './dbConnection.mjs';
 
 // Get all products up for sale
 router.get('/tt', (req, res) => {
