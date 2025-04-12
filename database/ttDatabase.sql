@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE TABLE IF NOT EXISTS sales (
     store INT,
     numSeq INT,
-    value DECIMAL(10,2) NOT NULL, --talvez seja redundante 
+    value DECIMAL(10,2) NOT NULL, -- talvez seja redundante 
     deliveryCost DECIMAL(10,2) NOT NULL,
 
     PRIMARY KEY (store, numSeq),
