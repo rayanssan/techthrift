@@ -20,6 +20,17 @@ body {
     }
 }
 
+figure {
+    span {
+        width: 70px;
+        height: 70px;
+
+        i {
+            align-self: center;
+        }
+    }
+}
+
 #footer-brand {
     padding-right: 10px;
 
@@ -32,7 +43,9 @@ body {
 
 .main-banner {
     background-color: navy;
-
+    p {
+        max-width: 450px;
+    }
     #main-banner-brand {
         position: absolute;
         right: 0;
@@ -143,6 +156,10 @@ body {
 
 #search-form-mobile {
     display: none;
+}
+
+#filtersCollapse {
+    display: flex;
 }
 
 .footer {
@@ -296,6 +313,10 @@ input[type="range"] {
     .leaflet-popup-close-button {
         display: none;
     }
+}
+
+button[data-bs-target="#filtersCollapse"] {
+    display: none;
 }
 
 #cartPage {

@@ -7,6 +7,8 @@
     <title>TechThrift</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Bootstrap -->
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
@@ -52,11 +54,11 @@
                     </form>
                     <div class="d-flex flex-wrap justify-content-center 
                     align-items-center gap-1 ms-auto">
-                        <a href="/authentication" class="border 
-                        rounded py-1 px-3 nav-link d-flex 
-                            align-items-center">
+                        <a href="/authentication" id="username" class="border 
+                    rounded py-1 px-3 nav-link d-flex 
+                        align-items-center">
                             <i class="fas fa-user-alt m-1 me-md-2"></i>
-                            <p class="d-none d-md-block mb-0">Sign in</p>
+                            <p class="d-none d-md-block mb-0">···</p>
                         </a>
                         <a href="/stores" class="border 
                         rounded py-1 px-3 nav-link d-flex 
@@ -64,7 +66,7 @@
                             <i class="fas fa-store m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Stores</p>
                         </a>
-                        <a href="#" class="border rounded 
+                        <a href="#" id="wishlist" class="border rounded 
                         py-1 px-3 nav-link d-flex align-items-center">
                             <i class="fas fa-heart m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Wishlist</p>
@@ -102,21 +104,17 @@
         <div class="container justify-content-center justify-content-md-between">
             <!-- Sidebar navigation for narrow displays  -->
             <!-- Toggle button -->
-            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark w-100" 
-            type="button"
+            <button id="sidebar-toggle" class="navbar-toggler border py-2 text-dark w-100" type="button"
                 data-mdb-toggle="collapse" data-mdb-target="#navbarLeftAlignExample"
-                aria-controls="navbarLeftAlignExample" aria-expanded="false" 
-                aria-label="Toggle navigation">
+                aria-controls="navbarLeftAlignExample" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
             <!-- Toggle button -->
             <div id="categories-sidebar" class="offcanvas offcanvas-start 
-            navbar-nav collapse w-100" 
-            tabindex="-1">
+            navbar-nav collapse w-100" tabindex="-1">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title">Categories</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" 
-                    aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <!-- Links for category pages will be injected here -->
             </div>
@@ -146,20 +144,15 @@
 
             <!-- Filters and Sorting -->
             <div id="filtersContainer" class="container-fluid">
-                <div class="row g-2 mt-3 align-items-center w-100">
+                <div class="row g-2 align-items-center w-100">
                     <!-- Toggle button for filters in narrow displays -->
-                    <div class="col-12 d-lg-none text-end">
-                        <div class="d-inline-block">
-                            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
-                                <i class="bi bi-filter me-1"></i> Filters
-                            </button>
-                        </div>
-                    </div>
+                    <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+                        <i class="bi bi-filter me-1"></i> Filters
+                    </button>
                     <!-- Toggle button for filters in narrow displays -->
                     <!-- Filters -->
-                    <div id="filtersCollapse"
-                        class="collapse d-md-flex flex-wrap justify-content-center w-100 gap-2 show">
+                    <div id="filtersCollapse" class="collapse flex-wrap justify-content-center w-100 gap-2 mt-3 show">
                         <!-- Brand -->
                         <select id="filterBrand" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Brand</option>
@@ -233,67 +226,67 @@
             <div class="row">
                 <div class="col-lg-4 col-md-6">
                     <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-3">
                             <i class="fas fa-camera-retro fa-2x fa-fw text-primary floating"></i>
                         </span>
                         <figcaption class="info">
                             <h6 class="title">Reasonable prices</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                            <p>Enjoy quality electronics at affordable prices that fit every budget.</p>
                         </figcaption>
                     </figure>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-3">
                             <i class="fas fa-star fa-2x fa-fw text-primary floating"></i>
                         </span>
                         <figcaption class="info">
                             <h6 class="title">Best quality</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                            <p>Each item is tested and verified to ensure top-tier performance.</p>
                         </figcaption>
                     </figure>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-3">
                             <i class="fas fa-plane fa-2x fa-fw text-primary floating"></i>
                         </span>
                         <figcaption class="info">
                             <h6 class="title">Worldwide shipping</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                            <p>We deliver to customers across the globe with reliable carriers.</p>
                         </figcaption>
                     </figure>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-3">
                             <i class="fas fa-users fa-2x fa-fw text-primary floating"></i>
                         </span>
                         <figcaption class="info">
                             <h6 class="title">Customer satisfaction</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                            <p>Our team is dedicated to ensuring every customer has a great experience.</p>
                         </figcaption>
                     </figure>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-3">
                             <i class="fas fa-thumbs-up fa-2x fa-fw text-primary floating"></i>
                         </span>
                         <figcaption class="info">
                             <h6 class="title">Happy customers</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                            <p>Users trust TechThrift for their tech needs.</p>
                         </figcaption>
                     </figure>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <figure class="d-flex align-items-center mb-4">
-                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-2">
+                        <span class="rounded-circle bg-white p-3 d-flex me-2 mb-3">
                             <i class="fas fa-box fa-2x fa-fw text-primary floating"></i>
                         </span>
                         <figcaption class="info">
-                            <h6 class="title">Thousand items</h6>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit sed do eiusmor</p>
+                            <h6 class="title">Many items</h6>
+                            <p>Browse a wide range of used electronics, ready for a new life with you.</p>
                         </figcaption>
                     </figure>
                 </div>
@@ -335,10 +328,29 @@
                             Support
                         </h6>
                         <ul class="list-unstyled mb-4">
-                            <li><a class="text-muted" href="#">Help center</a></li>
-                            <li><a class="text-muted" href="#">Shipping</a></li>
-                            <li><a class="text-muted" href="#">Contact us</a></li>
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="Help Center" data-content="Need assistance? Our <strong>Help Center</strong> has answers to common questions about orders, accounts, and troubleshooting. 
+                                   You can also reach out to us directly for more support.">
+                                    Help center
+                                </a>
+                            </li>
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="Shipping Information"
+                                    data-content="<strong>TechThrift</strong> offers standard and expedited shipping options. 
+                                   Shipping times vary based on your location and the seller. 
+                                   Once your order is placed, you’ll receive tracking details via email.">
+                                    Shipping
+                                </a>
+                            </li>
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="Contact Us" data-content="Have questions, feedback, or an issue? 
+                                   Reach out to our team at <a href='mailto:support@techthrift.com'>support@techthrift.com</a> or through the contact form on our website. 
+                                   We're here to help!">
+                                    Contact us
+                                </a>
+                            </li>
                         </ul>
+
                     </div>
                     <!-- Grid column -->
 
@@ -350,14 +362,42 @@
                         </h6>
                         <ul class="list-unstyled mb-4">
                             <li>
-                                <a class="text-muted footer-modal-link" href="#" data-title="About TechThrift" 
-                                data-content="Electronic waste has become a major environmental issue in recent years.
-                                By choosing to buy used electronics with <strong>TechThrift</strong>, 
-                                you are not just saving money — you are helping protect the planet!">About us</a>
+                                <a class="text-muted footer-modal-link" href="#" data-title="About TechThrift"
+                                    data-content="Electronic waste has become a major environmental issue in recent years.
+                                   By choosing to buy used electronics with <strong>TechThrift</strong>, 
+                                   you are not just saving money — you are helping protect the planet!">
+                                    About us
+                                </a>
                             </li>
-                            <li><a class="text-muted" href="#">Privacy policy</a></li>
-                            <li><a class="text-muted" href="#">Terms of service</a></li>
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="Privacy Policy"
+                                    data-content="At <strong>TechThrift</strong>, your privacy is important to us. 
+                                   We are committed to protecting your personal information and using it only in accordance 
+                                   with our privacy practices.">
+                                    Privacy policy
+                                </a>
+                            </li>
+                            <li>
+                                <a class="text-muted footer-modal-link" href="#" data-title="Terms of Service"
+                                    data-content="
+                                   <strong>Welcome to TechThrift!</strong><br><br>
+                                   These Terms of Service govern your use of our platform.<br><br>
+                                   <strong>1. Accounts:</strong> You are responsible for your account and activity.<br>
+                                   <strong>2. Buying:</strong> Products are used and sold 'as-is'.<br>
+                                   <strong>3. Selling:</strong> Be honest about the item’s condition. We may reject inappropriate listings.<br>
+                                   <strong>4. Repairs/Donations:</strong> Quoted individually, and donations are subject to approval.<br>
+                                   <strong>5. Fees:</strong> Payments processed securely. Refunds follow our return policy.<br>
+                                   <strong>6. Prohibited Use:</strong> No scams, stolen items, or platform abuse.<br>
+                                   <strong>7. Liability:</strong> TechThrift is not liable for user disputes or platform issues.<br>
+                                   <strong>8. Termination:</strong> We can suspend accounts that break the rules.<br>
+                                   <strong>9. Updates:</strong> Continued use means you accept future changes.<br><br>
+                                   Questions? Contact us at <a href='mailto:support@techthrift.com'>support@techthrift.com</a>.
+                                   ">
+                                    Terms of service
+                                </a>
+                            </li>
                         </ul>
+
                     </div>
                     <!-- Grid column -->
 
@@ -396,9 +436,11 @@
     <!-- Footer -->
 
     <!-- Scripts -->
+    <script src="../scripts/auth.js"></script>
     <script src="../scripts/search.js"></script>
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/wishlist.js"></script>
     <script src="../scripts/footerLinks.js"></script>
     <!-- Scripts -->
 

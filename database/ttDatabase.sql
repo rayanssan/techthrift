@@ -88,17 +88,6 @@ CREATE TABLE IF NOT EXISTS entityHours (
     FOREIGN KEY (entity) REFERENCES entities(id)
 );
 
-CREATE TABLE IF NOT EXISTS charityProjects (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    amountNeeded INT,
-    endDate DATE,
-    store INT NOT NULL,
-    organizer INT NOT NULL,
-
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (organizer) REFERENCES clients(id)
-);
-
 CREATE TABLE IF NOT EXISTS categories (
     category VARCHAR(255) PRIMARY KEY NOT NULL
 );
@@ -114,6 +103,19 @@ INSERT INTO categories (category) VALUES
 ('Accessories'),
 ('Home Appliances'),
 ('Other');
+
+CREATE TABLE IF NOT EXISTS charityProjects (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    amountNeeded INT,
+    endDate DATE,
+    store INT NOT NULL,
+    organizer INT NOT NULL,
+    category VARCHAR(255),
+
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (category) REFERENCES categories(category),
+    FOREIGN KEY (organizer) REFERENCES clients(id)
+);
 
 CREATE TABLE IF NOT EXISTS products (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -158,6 +160,7 @@ CREATE TABLE IF NOT EXISTS saleProducts (
     id INT PRIMARY KEY,
     price DECIMAL(10,2) NOT NULL,
 
+    CONSTRAINT ck_saleProducts_price check (price >= 0),
     FOREIGN KEY (id) REFERENCES products(id)
 );
 
@@ -198,24 +201,48 @@ CREATE TABLE IF NOT EXISTS charityProjects_products (
 
 CREATE TABLE IF NOT EXISTS transactions (
     store INT,
-    numSeq INT UNIQUE AUTO_INCREMENT,
+    numSeq INT,
     date DATE,
     client INT NOT NULL,
     employee INT NOT NULL,
-    value DECIMAL(10,2),
+
+    PRIMARY KEY (store, numSeq),
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (client) REFERENCES clients(id),
+    FOREIGN KEY (employee) REFERENCES employees(id)
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+    store INT,
+    numSeq INT,
+    value DECIMAL(10,2) NOT NULL, -- talvez seja redundante 
     deliveryCost DECIMAL(10,2) NOT NULL,
 
     PRIMARY KEY (store, numSeq),
-    FOREIGN KEY (client) REFERENCES clients(id),
-    FOREIGN KEY (employee) REFERENCES employees(id),
-    FOREIGN KEY (store) REFERENCES entities(id)
+    CONSTRAINT ck_sales_value check (value >= 0),
+    FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq)
+);
+
+-- um cliente pode comprar vários dispositivos de uma vez
+CREATE TABLE IF NOT EXISTS sales_products (
+    store INT,
+    sale INT,
+    product INT,
+
+    PRIMARY KEY (sale, product),
+
+    FOREIGN KEY (store, sale) REFERENCES sales(store, numSeq),
+    FOREIGN KEY (product) REFERENCES saleProducts(id)
 );
 
 CREATE TABLE IF NOT EXISTS repairs (
-    id INT PRIMARY KEY,
+    store INT,
+    numSeq INT,
     description VARCHAR(255),
     repairProduct INT NOT NULL,
 
+    PRIMARY KEY (store, numSeq),
+    FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq),
     FOREIGN KEY (repairProduct) REFERENCES repairProducts(id)
 );
 
@@ -225,13 +252,15 @@ CREATE TABLE IF NOT EXISTS parts (
 );
 
 CREATE TABLE IF NOT EXISTS repairs_parts (
+    store INT,
     repair INT,
     part INT,
-    value DECIMAL(10,2),
+    value DECIMAL(10,2), -- já existe no repairCosts, está aqui também por conveniencia
 
     PRIMARY KEY (repair, part),
 
-    FOREIGN KEY (repair) REFERENCES repairs(id),
+    CONSTRAINT ck_repairs_parts_value check (value >= 0),
+    FOREIGN KEY (store, repair) REFERENCES repairs(store, numSeq),
     FOREIGN KEY (part) REFERENCES parts(id)
 );
 
@@ -242,32 +271,32 @@ CREATE TABLE IF NOT EXISTS repairCosts (
 
     PRIMARY KEY (part, product),
 
-
+    CONSTRAINT ck_repairCosts_value check (value >= 0),
     FOREIGN KEY (part) REFERENCES parts(id),
     FOREIGN KEY (product) REFERENCES products(id)
 );
 
 CREATE TABLE IF NOT EXISTS diagnosed (
-    employee INT NOT NULL,
-    repair INT NOT NULL,
+    employee INT,
+    store INT,
+    repair INT,
 
     PRIMARY KEY (employee, repair),
 
     FOREIGN KEY (employee) REFERENCES employees(id),
-    FOREIGN KEY (repair) REFERENCES repairs(id)
+    FOREIGN KEY (store, repair) REFERENCES repairs(store, numSeq)
 );
 
 
 CREATE TABLE IF NOT EXISTS donations (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    store INT,
+    numSeq INT,
     date DATE NOT NULL,
     donationProduct INT NOT NULL,
-    employee INT NOT NULL,
-    donator INT NOT NULL,
     charityProject INT NOT NULL,
 
-    FOREIGN KEY (employee) REFERENCES employees(id),
-    FOREIGN KEY (donator) REFERENCES clients(id),
+    PRIMARY KEY (store, numSeq),
+    FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq),
     FOREIGN KEY (donationProduct) REFERENCES donationProducts(id),
     FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
 );
@@ -276,7 +305,14 @@ CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     interested_user INT,
     watched_product INT,
+    minPrice DECIMAL(10,2),
+    maxPrice DECIMAL(10,2),
+    minYear YEAR,
+    maxYear YEAR,
 
+    CONSTRAINT ck_interests_pricePositive check (minPrice >= 0),
+    CONSTRAINT ck_interests_price check (minPrice <= maxPrice),
+    CONSTRAINT ck_interests_year check (minYear <= maxYear),
     FOREIGN KEY (interested_user) REFERENCES clients(id),
     FOREIGN KEY (watched_product) REFERENCES products(id)
 );
@@ -289,4 +325,6 @@ CREATE TABLE IF NOT EXISTS reports (
 CREATE TABLE IF NOT EXISTS shipping (
     id INT AUTO_INCREMENT PRIMARY KEY,
     current_shipping_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00
+
+    CONSTRAINT ck_shipping_cost check (current_shipping_cost >= 0)
 );
