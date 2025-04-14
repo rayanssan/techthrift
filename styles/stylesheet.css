@@ -49,6 +49,11 @@ body {
      object-fit: cover;
 }
 
+#categories-nav {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 figure span {
   width: 70px;
   height: 70px;

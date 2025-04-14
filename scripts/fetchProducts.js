@@ -674,7 +674,6 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
         const filterYear = document.getElementById("filterYear");
         const maxPrice = document.getElementById("maxPrice");
         const maxPriceValue = document.getElementById("maxPriceValue");
-        const applyFiltersButton = document.getElementById("applyFilters");
         const sortDropdown = document.getElementById("sortDropdown");
         const filtersContainer = document.getElementById("filtersContainer");
 
