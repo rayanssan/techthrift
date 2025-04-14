@@ -20,6 +20,11 @@ body {
     }
 }
 
+#categories-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 figure {
     span {
         width: 70px;
@@ -43,9 +48,11 @@ figure {
 
 .main-banner {
     background-color: navy;
+
     p {
         max-width: 450px;
     }
+
     #main-banner-brand {
         position: absolute;
         right: 0;
@@ -338,6 +345,6 @@ button[data-bs-target="#filtersCollapse"] {
         justify-content: center;
         align-items: center;
         z-index: 9999;
-        display: none; 
+        display: none;
     }
 }

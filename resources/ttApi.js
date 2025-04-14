@@ -2,8 +2,8 @@
 
 import { Router } from 'express';
 const router = Router();
-// Import the db connection from dbConnection.mjs
-import { db, dbR } from './dbConnection.mjs';
+// Import the db connection from dbConnection.js
+import { db, dbR } from './dbConnection.js';
 
 // Get all products up for sale
 router.get('/tt', (req, res) => {
@@ -733,6 +733,23 @@ router.put('/tt/donation/remove/:id', (req, res) => {
 
             res.status(200).json({ message: 'Product removed from donation', product: row });
         });
+    });
+});
+
+// Get all categories
+router.get('/tt/categories', (req, res) => {
+    db.query('SELECT * FROM categories', [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query('SELECT * FROM categories', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
+        }
     });
 });
 

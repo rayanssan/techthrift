@@ -5,8 +5,8 @@ import path from 'path';
 import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
-import { router as dbConnection, dbReady } from './resources/dbConnection.mjs';
-import { router as ttApi } from './resources/ttApi.mjs';
+import { router as dbConnection, dbReady } from './resources/dbConnection.js';
+import { router as ttApi } from './resources/ttApi.js';
 const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -21,7 +21,7 @@ dbReady.then((isConnected) => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
     } else {
-        exec('node resources/dbCreate.mjs', (err, stdout, stderr) => {
+        exec('node resources/dbCreate.js', (err, stdout, stderr) => {
             if (err) {
                 console.error(`Error creating database: ${stderr}`);
                 return;
@@ -29,8 +29,8 @@ dbReady.then((isConnected) => {
             console.log(stdout);
             console.log('Connected to the TechThrift database.');
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
-            // Restart the techthrift.js script after dbCreate.mjs is executed
-            exec('node techthrift.mjs', () => {
+            // Restart the techthrift.js script after dbCreate.js is executed
+            exec('node techthrift.js', () => {
                 process.exit(0); // Exit the current process after restarting    
             });
         })
