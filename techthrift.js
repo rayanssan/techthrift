@@ -10,12 +10,12 @@ import { router as ttApi } from './resources/ttApi.js';
 const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(__dirname));
 
 dbReady.then((isConnected) => {
     if (isConnected) {
         app.use(dbConnection);
         app.use(ttApi);
-        app.use(express.static(__dirname));
 
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
