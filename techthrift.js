@@ -11,6 +11,7 @@ const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
+app.use(express.json());
 
 dbReady.then((isConnected) => {
     if (isConnected) {

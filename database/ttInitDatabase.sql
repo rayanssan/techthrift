@@ -267,15 +267,15 @@ dimensions, processor, screen, ram_memory, graphics_card, storage, keyboard, os,
 '512GB SSD', 'RGB Backlit (US Layout)', 'Windows 11', 2023),
 
 (2, 'iPhone 16 Pro', 112233445, 'Needs Repair', 0, 'Latest model smartphone', 
-"Smartphones", 'Apple', 'A3101', 'Graphite', 0.2, '146.7 x 71.5 x 7.8 mm', NULL, 
+"Smartphones", 'Apple', 'A3101', 'Graphite', 0.2, '146.7 x 71.5 x 7.8 mm', 'A18 Pro Chip', 
 '6.1-inch OLED (2532x1170) 120Hz', '8GB', NULL, '512GB', NULL, 'iOS 17', 2024),
 
 (3, 'Apple Watch Series 10', 112233445, 'Excellent', 1, 'Latest model Apple Watch', 
-"Smartwatches", 'Apple', 'S10', 'Silver', 0.032, '45 x 38 x 10.7 mm', NULL, 
+"Smartwatches", 'Apple', 'S10', 'Silver', 0.032, '45 x 38 x 10.7 mm', 'S10 Chip', 
 '1.9-inch Retina (324x394)', '2GB', NULL, '32GB', NULL, 'watchOS 11', 2024),
 
 (4, 'Samsung Galaxy S24', 112233445, 'Like New', 1, 'Latest flagship smartphone from Samsung', 
-'Smartphones', 'Samsung', 'SM-S921B', 'Phantom Black', 0.196, '147 x 70.6 x 7.6 mm', NULL, 
+'Smartphones', 'Samsung', 'SM-S921B', 'Phantom Black', 0.196, '147 x 70.6 x 7.6 mm', 'Exynos 2400', 
 '6.2-inch AMOLED (2340x1080) 120Hz', '12GB', NULL, '256GB', NULL, 'Android 14', 2024),
 
 (5, 'Sony PlayStation 5', 112233445, 'Like New', 1, 'Next-gen gaming console with 4K capabilities', 
@@ -350,7 +350,38 @@ NULL, '3.2-inch LCD (1024x768)', NULL, NULL, 'Dual CFexpress & SD', NULL, NULL, 
 (18, 'Apple AirPods Pro', 112233445, 'Like New', 1, 
 'True wireless noise-canceling earphones', 'Audio', 
 'Apple', 'AirPods Pro 2nd Gen', 'White', 0.0054, '30.9 x 21.8 x 24 mm', 
-NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2022);
+NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2022),
+
+(19, 'Lenovo Legion 5 Pro', 101112131, 'Like New', 1, 'Powerful gaming laptop with high refresh rate', 'Laptops & PCs', 'Lenovo', '82JQ00L1US', 'Carbon Black', 2.45, '356 x 264 x 26.85 mm', 'AMD Ryzen 7 5800H', '16-inch QHD (2560x1600) 165Hz', '16GB', 'NVIDIA RTX 3070', '1TB SSD', '4-Zone RGB (US Layout)', 'Windows 11', 2022),
+(20, 'Asus ROG Phone 7', 778899001, 'Excellent', 1, 'Gaming smartphone with high refresh display', 'Smartphones', 'Asus', 'ZS600KL', 'Storm White', 0.239, '173 x 77 x 10.3 mm', 'Snapdragon 8 Gen 2', '6.78-inch AMOLED (2448x1080) 165Hz', '16GB', 'Adreno 740', '512GB', NULL, 'Android 13', 2023),
+(21, 'Samsung Galaxy Tab S9 Ultra', 112233445, 'Like New', 1, 'Large AMOLED tablet with S-Pen support', 'Tablets', 'Samsung', 'SM-X910', 'Graphite', 0.732, '326.4 x 208.6 x 5.5 mm', 'Snapdragon 8 Gen 2', '14.6-inch Super AMOLED (2960x1848) 120Hz', '12GB', NULL, '512GB', NULL, 'Android 13', 2023),
+(22, 'DJI Mini 3 Pro Drone', 667788990, 'Good', 1, 'Compact drone with 4K video and obstacle avoidance', 'Other', 'DJI', 'Mini 3 Pro', 'Grey', 0.249, '145 x 90 x 62 mm', NULL, 'Controller Display', NULL, NULL, 'microSD', NULL, NULL, 2022),
+(23, 'Dell UltraSharp U2723QE', 778899001, 'Like New', 1, '27-inch 4K professional monitor with USB-C hub', 'TVs & Monitors', 'Dell', 'U2723QE', 'Black/Silver', 6.6, '612 x 185 x 410 mm', NULL, '27-inch IPS 4K (3840x2160)', NULL, NULL, NULL, NULL, NULL, 2022),
+(24, 'JBL Charge 5 Bluetooth Speaker', 223344556, 'Excellent', 1, 'Portable waterproof speaker with powerful sound', 'Audio', 'JBL', 'Charge 5', 'Camo', 0.96, '223 x 96.5 x 94 mm', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2021),
+(25, 'Logitech G Pro Wireless Mouse', 101112131, 'Like New', 1, 'High-performance wireless gaming mouse', 'Accessories', 'Logitech', 'G Pro Wireless', 'Black', 0.08, '125 x 63.5 x 40 mm', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2019),
+(26, 'Samsung T7 Portable SSD 1TB', 112233445, 'Excellent', 1, 'Compact external SSD with USB 3.2', 'Accessories', 'Samsung', 'MU-PC1T0T', 'Blue', 0.058, '85 x 57 x 8 mm', NULL, NULL, NULL, NULL, '1TB SSD', NULL, NULL, 2021),
+(27, 'LG Gram 17', 990011223, 'Good', 1, 'Ultralight 17-inch laptop with long battery life', 'Laptops & PCs', 'LG', '17Z90Q', 'Dark Silver', 1.35, '381 x 261 x 17.8 mm', 'Intel Core i7', '17-inch WQXGA (2560x1600)', '16GB', 'Intel Iris Xe', '1TB SSD', 'Backlit (US Layout)', 'Windows 11', 2022),
+(28, 'iPhone 11 Pro Max', 112233445, 'Excellent', 0, 'An economic and still very powerful phone', "Smartphones", 'Apple', 'A2218', 'Space Gray', 0.2, '158.0 x 77.8 x 8.1 mm', 'A13 Bionic chip',  '6.5-inch OLED (2688x1242) 60Hz', '4GB', NULL, '256GB', NULL, 'iOS 17', 2020),
+(29, 'Sony WH-1000XM5', 778899001, 'Excellent', 1, 'Industry-leading noise cancelling headphones', 'Audio', 'Sony', 'WH-1000XM5', 'Silver', 0.25, '223 x 185 x 76 mm', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2022),
+(30, 'Garmin Forerunner 955', 112233445, 'Good', 1, 'Multisport GPS smartwatch with training metrics', 'Smartwatches', 'Garmin', 'Forerunner 955', 'Black', 0.053, '46.5 x 46.5 x 14.4 mm', NULL, '1.3-inch MIP (260x260)', NULL, NULL, '32GB', NULL, 'Garmin OS', 2022),
+(31, 'Canon PowerShot G7 X Mark III', 101112131, 'Like New', 1, 'Compact camera with 4K video and live streaming', 'Cameras', 'Canon', 'G7 X III', 'Black', 0.304, '105.5 x 60.9 x 41.4 mm', NULL, '3.0-inch LCD (1040k dots)', NULL, NULL, 'SD Card', NULL, NULL, 2019),
+(32, 'Razer BlackWidow V4 Pro', 223344556, 'Excellent', 1, 'Mechanical gaming keyboard with RGB', 'Accessories', 'Razer', 'BlackWidow V4 Pro', 'Black', 1.42, '464 x 152.4 x 40 mm', NULL, NULL, NULL, NULL, NULL, 'Mechanical (US Layout)', NULL, 2023),
+(33, 'Alienware AW3423DW Monitor', 778899001, 'Like New', 1, '34-inch QD-OLED ultrawide gaming monitor', 'TVs & Monitors', 'Alienware', 'AW3423DW', 'Black/White', 6.92, '815 x 293 x 408 mm', NULL, '34-inch QD-OLED (3440x1440) 175Hz', NULL, NULL, NULL, NULL, NULL, 2022),
+(34, 'Google Pixel 8 Pro', 112233445, 'Excellent', 1, 'Google’s flagship with Tensor chip and advanced camera', 'Smartphones', 'Google', 'GA04794-US', 'Obsidian', 0.213, '162.6 x 76.5 x 8.8 mm', 'Google Tensor G3', '6.7-inch LTPO OLED (3120x1440) 120Hz', '12GB', NULL, '256GB', NULL, 'Android 14', 2024),
+(35, 'SteelSeries Arctis Nova Pro Wireless', 990011223, 'Like New', 1, 'Premium wireless gaming headset', 'Audio', 'SteelSeries', 'Arctis Nova Pro', 'Black', 0.337, '170 x 190 x 90 mm', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2022),
+(36, 'iPhone 13', 112233445, 'Excellent', 1, 'A powerful and efficient phone with improved battery life and camera system.', 
+ 'Smartphones', 'Apple', 'A2633', 'Blue', 0.174, '146.7 x 71.5 x 7.7 mm', 
+ 'A15 Bionic chip', '6.1-inch OLED (2532x1170) 60Hz', '4GB', NULL, '128GB', NULL, 'iOS 17', 2021),
+(37, 'MSI GeForce RTX 4070 Ventus GPU', 101112131, 'Like New', 1, 'Powerful GPU for 1440p and 4K gaming', 'Other', 'MSI', 'RTX 4070 VENTUS 3X', 'Black', 0.9, '308 x 120 x 42 mm', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2023),
+(38, 'Anker 737 Power Bank', 667788990, 'Excellent', 1, 'High-capacity portable charger with fast charging', 'Accessories', 'Anker', 'PowerCore 24K', 'Black', 0.49, '155 x 54 x 49 mm', NULL, NULL, NULL, NULL, '24000mAh', NULL, NULL, 2022),
+(39, 'Samsung Family Hub Fridge RS6HA8891SL', 101112131, 'Like New', 1,
+ 'A 4-door smart refrigerator with Family Hub touchscreen, internal cameras, and voice assistant integration.', 
+ 'Home Appliances', 'Samsung', 'RS6HA8891SL', 'Stainless Steel', 160.0, '35.75 x 71.875 x 36.5 in', 
+ NULL, NULL, NULL, NULL, NULL, NULL, 'Tizen', 2023),
+(40, 'Revolution R180 Connect Smart Toaster', 101112131, 'Like New', 1, 
+ 'Smart toaster with touch screen display and personalized toasting settings.', 
+ 'Home Appliances', 'Revolution Cooking', 'R180', 'Silver', 2.9, '11.6 x 6.1 x 8.4 in', 
+ NULL, NULL, NULL, NULL, NULL, NULL, 'Embedded', 2023);
 
 INSERT INTO productImages (product, image_path, image_order) VALUES
 -- Dell Laptop example
@@ -392,7 +423,57 @@ INSERT INTO productImages (product, image_path, image_order) VALUES
 -- Xiaomi Mi 11 example
 (17, "ex_xiaomiphone_1.jpg", 1),
 -- Apple AirPods Pro example
-(18, "ex_airpodspro_1.png", 1);
+(18, "ex_airpodspro_1.png", 1),
+-- Lenovo Legion 5 Pro example
+(19, "ex_lenovolegion.avif", 1),
+-- Asus ROG Phone 7 example
+(20, "ex_asusrog_1.png", 1),
+-- Samsung Galaxy Tab S9 Ultra example
+(21, "ex_galaxytabultra_1.webp", 1),
+-- DJI Mini 3 Pro Drone example
+(22, "ex_drone_1.jpg", 1),
+(22, "ex_drone_2.webp", 2),
+(22, "ex_drone_3.jpg", 3),
+(22, "ex_drone_4.jpg", 4),
+-- Dell UltraSharp U2723QE example
+(23, "ex_dellultrasharp_1.jpeg", 1),
+(23, "ex_dellultrasharp_2.webp", 2),
+-- JBL Charge 5 Bluetooth Speaker example
+(24, "ex_jbl_1.webp", 1),
+-- Logitech G Pro Wireless Mouse example
+(25, "ex_logitechmouse_1.webp", 1),
+-- Samsung T7 Portable SSD 1TB example
+(26, "ex_samsungssd_1.webp", 1),
+-- LG Gram 17 example
+(27, 'ex_lggram17_1.webp', 1),
+-- iPhone 11 Pro Max example
+(28, 'ex_iphone11promax_1.jpg', 1),
+(28, 'ex_iphone11promax_2.webp', 2),
+-- Sony WH-1000XM5 example
+(29, 'ex_sonywh1000xm5_1.jpg', 1),
+-- Garmin Forerunner 955 example
+(30, 'ex_garmin955_1.avif', 1),
+-- Canon PowerShot G7 X Mark III example
+(31, 'ex_canon_g7x_1.jpeg', 1),
+-- Razer BlackWidow V4 Pro example
+(32, 'ex_blackwidowv4_1.jpg', 1),
+-- Alienware AW3423DW Monitor example
+(33, 'ex_alienware_aw3423dw_1.webp', 1),
+-- Google Pixel 8 Pro example
+(34, 'ex_pixel8pro_1.jpg', 1),
+-- SteelSeries Arctis Nova Pro Wireless example
+(35, 'ex_arctisnova_1.jpg', 1),
+-- iPhone 13 example
+(36, 'ex_iphone13_1.webp', 1),
+-- MSI GeForce RTX 4070 Ventus GPU example
+(37, 'ex_rtx4070_1.jpg', 1),
+(37, 'ex_rtx4070_2.jpg', 2),
+-- Anker 737 Power Bank example
+(38, 'ex_anker737_1.png', 1),
+-- Samsung Family Hub Fridge RS6HA8891SL example
+(39, 'ex_samsung_fridge_1.avif', 1),
+-- Revolution R180 Connect Smart Toaster example
+(40, 'ex_smart_toaster_1.jpg', 1);
 
 INSERT INTO saleProducts (id, price) VALUES
 (1, 1500),
@@ -411,7 +492,29 @@ INSERT INTO saleProducts (id, price) VALUES
 (15, 449),
 (16, 149),
 (17, 599),
-(18, 119);
+(18, 119),
+(19, 49.99),
+(20, 379.99),
+(21, 759.99),
+(22, 399.00),
+(23, 299.99),
+(24, 649.00),
+(25, 129.99),
+(26, 59.99),
+(27, 899.99),
+(28, 300.00),
+(29, 149.99),
+(30, 199.00),
+(31, 229.99),
+(32, 499.00),
+(33, 129.99),
+(34, 199.99),
+(35, 99.99),
+(36, 99.00),
+(37, 999.00),
+(38, 59.99),
+(39, 1599.99),
+(40, 349.99);
 
 INSERT INTO repairProducts (id, problems, client_nif) VALUES (2, 'Broken screen', 220349535);
 INSERT INTO donationProducts (id, charity_nipc, donor_nif) VALUES (2, 556677889, 220349535);

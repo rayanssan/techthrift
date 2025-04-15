@@ -173,7 +173,7 @@ router.get('/tt/product/:id', (req, res) => {
                 isSaleProduct = result.length > 0;
 
                 // Based on whether it's a sale product, modify the main query
-                let query = `SELECT * FROM products, productImages JOIN productImages ON 
+                let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
                     products.id = productImages.product WHERE id = ?`;
                 let params = [id];
 
@@ -182,7 +182,7 @@ router.get('/tt/product/:id', (req, res) => {
                 SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
                 FROM products
                 JOIN saleProducts ON products.id = saleProducts.id
-                JOIN productImages ON products.id = productImages.product
+                LEFT JOIN productImages ON products.id = productImages.product
                 JOIN entities ON products.store_nipc = entities.nipc
                 JOIN clients ON entities.id = clients.id
                 WHERE products.id = ?;
@@ -217,7 +217,7 @@ router.get('/tt/product/:id', (req, res) => {
             isSaleProduct = result.length > 0;
 
             // Based on whether it's a sale product, modify the main query
-            let query = `SELECT * FROM products, productImages JOIN productImages ON 
+            let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
                     products.id = productImages.product WHERE id = ?`;
             let params = [id];
 
@@ -226,7 +226,7 @@ router.get('/tt/product/:id', (req, res) => {
                 SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
                 FROM products
                 JOIN saleProducts ON products.id = saleProducts.id
-                JOIN productImages ON products.id = productImages.product
+                LEFT JOIN productImages ON products.id = productImages.product
                 JOIN entities ON products.store_nipc = entities.nipc
                 JOIN clients ON entities.id = clients.id
                 WHERE products.id = ?;
@@ -864,7 +864,8 @@ router.put('/ttuser/client/edit', (req, res) => {
     // Add the id at the end of the values array for the WHERE clause
     values.push(updatedClient.id);
 
-    const query = `UPDATE clients SET ${columns.map(col => `${col} = ?`).join(', ')} WHERE nif = ?`;
+    const query = `UPDATE clients SET ${columns.map(col => `${col} = ?`).join(', ')} 
+    WHERE id = ? OR nif = ? OR nic = ? OR email = ? OR phone_number = ?`;
 
     db.execute(query, values, function (err) {
         if (err) {
@@ -1020,7 +1021,10 @@ router.put('/ttuser/employee/edit', (req, res) => {
     // Add the id at the end of the values array for the WHERE clause
     values.push(updatedEmployee.id);
 
-    const query = `UPDATE employees SET ${columns.map(col => `${col} = ?`).join(', ')} WHERE id = ?`;
+    const query = `UPDATE clients c
+    JOIN employees e ON c.id = e.id
+    SET ${columns.map(col => `${col} = ?`).join(', ')} 
+    WHERE e.id = ? OR e.internal_number = ?`;
 
     db.execute(query, values, function (err) {
         if (err) {
@@ -1299,7 +1303,8 @@ router.put('/ttuser/store/edit', (req, res) => {
     // Add the id at the end of the values array for the WHERE clause
     values.push(updatedStore.id);
 
-    const query = `UPDATE entities e SET ${columns.map(col => `${col} = ?`).join(', ')
+    const query = `UPDATE clients c JOIN entities e ON c.id = e.id
+        SET ${columns.map(col => `${col} = ?`).join(', ')
         } WHERE e.id = ? AND e.entity_type = "store"`;
 
     db.execute(query, values, function (err) {
@@ -1581,7 +1586,8 @@ router.put('/ttuser/charity/edit', (req, res) => {
     // Add the id at the end of the values array for the WHERE clause
     values.push(updatedCharity.id);
 
-    const query = `UPDATE entities e SET ${columns.map(col => `${col} = ?`).join(', ')
+    const query = `UPDATE clients c JOIN entities e ON c.id = e.id
+        SET ${columns.map(col => `${col} = ?`).join(', ')
         } WHERE e.id = ? AND e.entity_type = "charity"`;
 
     db.execute(query, values, function (err) {

@@ -3,6 +3,7 @@
 // Initial settings for product pagination
 let currentPage = 1;
 const productsPerPage = 12;
+const maxVisiblePages = 3;
 let products = [];
 
 /**
@@ -54,13 +55,46 @@ function renderProducts() {
  * @function updatePaginationControls
  */
 function updatePaginationControls() {
-    document.getElementById('paginationPageIndicator').textContent = `Page ${currentPage}`;
-
-    // Disable "Previous" button if on first page
     document.getElementById('paginationPrevPage').disabled = currentPage === 1;
+    const totalPages = Math.ceil(products.length / productsPerPage);
+    document.getElementById('paginationNextPage').disabled = currentPage === totalPages;
 
-    // Disable "Next" button if on last page
-    document.getElementById('paginationNextPage').disabled = currentPage * productsPerPage >= products.length;
+    function renderPagination() {
+        const paginationPages = document.getElementById('paginationPages');
+        paginationPages.innerHTML = ''; // Clear previous buttons
+
+        const totalPages = Math.ceil(products.length / productsPerPage);
+        const startPage = Math.max(1, currentPage - 1);
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        // Adjust if we're near the end
+        let realStart = startPage;
+        if (endPage - startPage < maxVisiblePages - 1 && totalPages >= maxVisiblePages) {
+            realStart = Math.max(1, totalPages - maxVisiblePages + 1);
+        }
+
+        // Render numbered page buttons
+        for (let i = realStart; i <= Math.min(totalPages, realStart + maxVisiblePages - 1); i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = `btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                updatePaginationControls();
+                renderProducts();
+            });
+            paginationPages.appendChild(pageButton);
+        }
+
+        // Add ellipsis if needed
+        if (endPage < totalPages) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.className = 'align-self-center';
+            paginationPages.appendChild(ellipsis);
+        }
+    }
+    renderPagination();
 }
 
 // Load many products if in the homepage
@@ -82,6 +116,9 @@ if (document.body.id === "homepage") {
         try {
             const response = await fetch('/tt');
             products = await response.json();
+            // Sort from newest to oldest
+            products.sort((a, b) => new Date(b.date_inserted) - new Date(a.date_inserted));
+
             if (products.length > 0) {
                 renderProducts();
             } else {
@@ -292,14 +329,14 @@ if (document.body.id === "homepage") {
                 item.addEventListener("click", () => {
                     const imageSrc = item.querySelector("img").src;
                     let modalEl = document.getElementById("image-popup");
-                
+
                     // If modal doesn't exist, create it once
                     if (!modalEl) {
-                      modalEl = document.createElement("div");
-                      modalEl.className = "modal fade";
-                      modalEl.id = "image-popup";
-                      modalEl.tabIndex = -1;
-                      modalEl.innerHTML = `
+                        modalEl = document.createElement("div");
+                        modalEl.className = "modal fade";
+                        modalEl.id = "image-popup";
+                        modalEl.tabIndex = -1;
+                        modalEl.innerHTML = `
                         <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
                           <div class="modal-content border-0 text-center rounded bg-white m-auto">
                             <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
@@ -309,16 +346,16 @@ if (document.body.id === "homepage") {
                           </div>
                         </div>
                       `;
-                      document.body.appendChild(modalEl);
+                        document.body.appendChild(modalEl);
                     }
-                
+
                     // Set image src dynamically
                     modalEl.querySelector("img").src = imageSrc;
-                
+
                     // Show modal via Bootstrap's API
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.show();
-                  });
+                });
             });
         });
     });
@@ -342,11 +379,15 @@ if (document.body.id === "homepage") {
         try {
             // Get category from URL
             const urlParam = new URLSearchParams(window.location.search);
-            const category = urlParam.get('is');
+            let category = urlParam.get('is');
 
             // Set title of the current page
             document.title += " - " + category;
             document.getElementById("category-indicator").textContent = category;
+
+            if (category.toLowerCase() === "more") {
+                category = "Other";
+            }
 
             // Fetch products for the given category
             const urls = [`/tt?category=${encodeURIComponent(category)}`];
@@ -695,7 +736,10 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
                 let endpoint = '/tt';
                 if (document.body.id === "categoryPage") {
                     const urlParam = new URLSearchParams(window.location.search);
-                    const category = urlParam.get('is');
+                    let category = urlParam.get('is');
+                    if (category.toLowerCase() === "more") {
+                        category = "Other";
+                    }
                     endpoint = `/tt?category=${encodeURIComponent(category)}`;
                     if (category == "Accessories") {
                         // Include categories that fall under Accessories
