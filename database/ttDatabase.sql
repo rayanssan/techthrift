@@ -2,8 +2,7 @@ CREATE TABLE IF NOT EXISTS clients (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    phone_number VARCHAR(20) NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),
     nif CHAR(9) UNIQUE,
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
@@ -13,7 +12,7 @@ CREATE TABLE IF NOT EXISTS clients (
     country VARCHAR(255)
 ); 
 
-CREATE TABLE IF NOT EXISTS entities (
+CREATE TABLE IF NOT EXISTS entities ( -- Stores and Charities
     id INT PRIMARY KEY,
     nipc CHAR(9) UNIQUE NOT NULL,
     entity_type ENUM('store', 'charity') NOT NULL,

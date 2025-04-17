@@ -753,12 +753,36 @@ router.get('/tt/categories', (req, res) => {
     });
 });
 
-// Get all clients
-router.get('/ttuser/client', (req, res) => {
+// Get all users in the system
+router.get('/ttuser', (req, res) => {
     db.query('SELECT * FROM clients', [], (err, rows) => {
         if (err) {
             // Fallback to replica DB
             dbR.query('SELECT * FROM clients', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+// Get all clients
+router.get('/ttuser/client', (req, res) => {
+    const query = `SELECT * FROM clients c
+    WHERE c.id NOT IN (
+        SELECT id FROM entities
+    )
+    AND c.id NOT IN (
+        SELECT id FROM employees
+    )`;
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
@@ -777,8 +801,14 @@ router.get('/ttuser/client/:id', (req, res) => {
     // Check all possibilities (id, nif, nic, email, phone_number)
     let query = `
         SELECT * 
-        FROM clients 
-        WHERE id = ? OR nif = ? OR nic = ? OR email = ? OR phone_number = ?
+        FROM clients c
+        WHERE (c.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?)
+        AND c.id NOT IN (
+            SELECT id FROM entities
+        )
+        AND c.id NOT IN (
+            SELECT id FROM employees
+        )
     `;
 
     // Use the `id` parameter for all possible search options
@@ -802,23 +832,6 @@ router.get('/ttuser/client/:id', (req, res) => {
         } else {
             // Send the client details in the response
             res.json(rows[0]);
-        }
-    });
-});
-
-// Get all users in the system
-router.get('/ttuser', (req, res) => {
-    db.query('SELECT * FROM clients', [], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query('SELECT * FROM clients', [], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                res.json(rows);
-            });
-        } else {
-            res.json(rows);
         }
     });
 });
@@ -1100,7 +1113,6 @@ router.get('/ttuser/store', (req, res) => {
                             nipc: row.nipc,
                             name: row.name,
                             email: row.email,
-                            password: row.password,
                             phone_number: row.phone_number,
                             address: row.address,
                             city: row.city,
@@ -1135,7 +1147,6 @@ router.get('/ttuser/store', (req, res) => {
                         nipc: row.nipc,
                         name: row.name,
                         email: row.email,
-                        password: row.password,
                         phone_number: row.phone_number,
                         address: row.address,
                         city: row.city,
@@ -1196,7 +1207,6 @@ router.get('/ttuser/store/:id', (req, res) => {
                             nipc: row.nipc,
                             name: row.name,
                             email: row.email,
-                            password: row.password,
                             phone_number: row.phone_number,
                             address: row.address,
                             city: row.city,
@@ -1233,7 +1243,6 @@ router.get('/ttuser/store/:id', (req, res) => {
                         nipc: row.nipc,
                         name: row.name,
                         email: row.email,
-                        password: row.password,
                         phone_number: row.phone_number,
                         address: row.address,
                         city: row.city,
@@ -1381,7 +1390,6 @@ router.get('/ttuser/charity', (req, res) => {
                             nipc: row.nipc,
                             name: row.name,
                             email: row.email,
-                            password: row.password,
                             phone_number: row.phone_number,
                             address: row.address,
                             city: row.city,
@@ -1416,7 +1424,6 @@ router.get('/ttuser/charity', (req, res) => {
                         nipc: row.nipc,
                         name: row.name,
                         email: row.email,
-                        password: row.password,
                         phone_number: row.phone_number,
                         address: row.address,
                         city: row.city,
@@ -1478,7 +1485,6 @@ router.get('/ttuser/charity/:id', (req, res) => {
                             nipc: row.nipc,
                             name: row.name,
                             email: row.email,
-                            password: row.password,
                             phone_number: row.phone_number,
                             address: row.address,
                             city: row.city,
@@ -1516,7 +1522,6 @@ router.get('/ttuser/charity/:id', (req, res) => {
                         nipc: row.nipc,
                         name: row.name,
                         email: row.email,
-                        password: row.password,
                         phone_number: row.phone_number,
                         address: row.address,
                         city: row.city,
