@@ -2,6 +2,11 @@
 
 window.addEventListener('userAuthenticated', (event) => {
   const loggedInUser = event.detail;
+  if (loggedInUser == null) {
+    document.getElementById('alerts-section').innerHTML = `
+    <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
+    return;
+  }
 
   document.getElementById("create-palert-button").addEventListener("click", () => {
     // Remove any existing modal

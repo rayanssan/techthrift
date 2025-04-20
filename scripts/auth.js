@@ -108,5 +108,11 @@ window.onload = async() => {
     if (document.getElementById('username')) {
       document.querySelector('#username p').textContent = "Sign in";
     }
+    if (document.getElementById('wishlist')) {
+      document.getElementById('wishlist').href = '/authentication';
+    }
+
+    const event = new CustomEvent('userAuthenticated', { detail: null });
+    window.dispatchEvent(event);
   }
 };
