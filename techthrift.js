@@ -93,6 +93,17 @@ app.get('/cart', (req, res) => {
     });
 });
 
+// Wishlist
+app.get('/wishlist', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/wishlist.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving wishlist.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 // Stores
 app.get('/stores', (req, res) => {
     const pagePath = path.join(__dirname, 'html/storesList.html');

@@ -302,18 +302,26 @@ CREATE TABLE IF NOT EXISTS donations (
 
 CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    interested_user INT,
-    watched_product INT,
-    minPrice DECIMAL(10,2),
+    interested_user VARCHAR(255) NOT NULL,
+    wishlisted_product INT,
+    brand VARCHAR(255),
+    category VARCHAR(255),
+    color VARCHAR(255),
+    graphics_card VARCHAR(255),
+    os VARCHAR(255),
+    processor VARCHAR(255),
+    product_condition ENUM('Like New', 'Excellent', 'Good'),
+    ram_memory VARCHAR(255),
+    screen VARCHAR(255),
+    storage VARCHAR(255),
+    year YEAR,
     maxPrice DECIMAL(10,2),
-    minYear YEAR,
-    maxYear YEAR,
+    date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT ck_interests_pricePositive check (minPrice >= 0),
-    CONSTRAINT ck_interests_price check (minPrice <= maxPrice),
-    CONSTRAINT ck_interests_year check (minYear <= maxYear),
-    FOREIGN KEY (interested_user) REFERENCES clients(id),
-    FOREIGN KEY (watched_product) REFERENCES products(id)
+    UNIQUE KEY uk_interested_user_product (interested_user, wishlisted_product),
+    FOREIGN KEY (interested_user) REFERENCES clients(email),
+    FOREIGN KEY (wishlisted_product) REFERENCES saleProducts(id),
+    FOREIGN KEY (category) REFERENCES categories(category)
 );
 
 CREATE TABLE IF NOT EXISTS reports (

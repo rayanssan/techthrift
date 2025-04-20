@@ -518,9 +518,5 @@ INSERT INTO saleProducts (id, price) VALUES
 
 INSERT INTO repairProducts (id, problems, client_nif) VALUES (2, 'Broken screen', 220349535);
 INSERT INTO donationProducts (id, charity_nipc, donor_nif) VALUES (2, 556677889, 220349535);
-INSERT INTO interests (interested_user, watched_product) VALUES (3, 1);
-INSERT INTO interests (interested_user, watched_product) VALUES (2, 1);
-INSERT INTO interests (interested_user, watched_product, minPrice, maxPrice) VALUES (1, 2, 1, 500);
-INSERT INTO interests (interested_user, watched_product) VALUES (3, 5);
 INSERT INTO reports (report) VALUES ('15/02/2025 - 3 new users; 3 new products; 1 new interest');
 INSERT INTO shipping (current_shipping_cost) VALUES (4.99);

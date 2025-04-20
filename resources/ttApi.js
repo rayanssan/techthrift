@@ -846,11 +846,16 @@ router.post('/ttuser/client/add', (req, res) => {
     const values = columns.map(col => newClient[col]);
 
     const query = `INSERT INTO clients (${columns.join(', ')
-        }) VALUES (${columns.map(() => '?').join(', ')})`;
+        }) VALUES (${columns.map(() => '?').join(', ')}) 
+        ON DUPLICATE KEY UPDATE ${columns.map(col => `${col} = VALUES(${col})`).join(', ')}`;
 
-    db.execute(query, values, function (err) {
+    db.execute(query, values, function (err, result) {
         if (err) {
             return res.status(500).send({ error: err.message });
+        }
+        // If no rows were inserted, the user already exists
+        if (result.affectedRows === 0) {
+            return res.status(200).send('User already exists');
         }
 
         // Update replica
@@ -995,6 +1000,7 @@ router.post('/ttuser/employee/add', (req, res) => {
         if (!row) {
             return res.status(404).send('Client not found');
         }
+        
         // Insert the user into the employees table
         db.execute('INSERT INTO employees (id) VALUES (?)',
             [newEmployee.id], function (err) {
@@ -1639,53 +1645,74 @@ router.delete('/ttuser/charity/remove/:id', (req, res) => {
         });
 });
 
-// Set user interest in product
+// Add product alert
 router.post('/ttuser/interest', (req, res) => {
-    const { interestedUser, watchedProduct } = req.body;
+    const newInterest = req.body;
 
-    db.execute('INSERT INTO interests (interested_user, watched_product) VALUES (?, ?)',
-        [interestedUser, watchedProduct], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            // Update replica
-            dbR.execute('INSERT INTO interests (interested_user, watched_product) VALUES (?, ?)',
-                [interestedUser, watchedProduct], function (err) {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                });
-            res.status(201).send('Interest successfully added');
+    // Filter out undefined or null values
+    const columns = Object.keys(newInterest).filter(key => newInterest[key] !== undefined);
+    const values = columns.map(col => {
+        if (col === 'year') {
+          return parseInt(newInterest[col], 10) || null;
+        }
+        return newInterest[col];
+      });
+      
+
+    const query = `INSERT INTO interests (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
+
+    db.execute(query, values, function (err) {
+        if (err) return res.status(500).send({ error: err.message });
+
+        // Update replica
+        dbR.execute(query, values, function (err) {
+            if (err) return res.status(500).send({ error: err.message });
         });
+
+        res.status(201).send('Product alert successfully added');
+    });
 });
 
-// Get user interests in products
-router.get('/ttuser/notifications/:id', (req, res) => {
+// Get product alert
+router.get('/ttuser/interest/:email', (req, res) => {
 
     const query = `
-        SELECT p.*, c.*
+        SELECT i.*, p.name AS wishlisted_product_name, sp.price
         FROM interests i
-        JOIN products p ON i.watched_product = p.id
-        JOIN clients c ON i.interested_user = c.id
+        JOIN clients c ON i.interested_user = c.email
+        LEFT JOIN saleProducts sp ON i.wishlisted_product = sp.id
+        LEFT JOIN products p ON sp.id = p.id
         WHERE i.interested_user = ?`;
 
-    db.query(query, [req.params.id], (err, rows) => {
+    db.query(query, [req.params.email], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [req.params.id], (err, rows) => {
+            dbR.query(query, [req.params.email], (err, rows) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
-                if (rows.length === 0) {
-                    return res.status(404).send('No product interests set for this client');
-                }
-                res.json(rows);
+                return res.status(200).json(rows || []);
             });
-        } else if (rows.length === 0) {
-            return res.status(404).send('No product interests set for this client');
         } else {
-            res.json(rows);
+            return res.status(200).json(rows || []);
         }
+    });
+});
+
+// Remove product alert
+router.delete('/ttuser/interest/remove/:id', (req, res) => {
+
+    const query = `DELETE FROM interests WHERE id = ?`;
+
+    db.execute(query, [req.params.id], function (err) {
+        if (err) return res.status(500).send({ error: err.message });
+
+        // Update replica
+        dbR.execute(query, [req.params.id], function (err) {
+            if (err) return res.status(500).send({ error: err.message });
+        });
+
+        res.status(200).send('Product alert successfully removed');
     });
 });
 
