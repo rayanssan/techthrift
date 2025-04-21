@@ -75,6 +75,37 @@ window.addEventListener('userAuthenticated', (event) => {
                   </select>
                 </div>
 
+                <!-- Product Model -->
+                <div class="col-md-6">
+                  <label for="productNameOrModel" class="form-label">Product Model</label>
+                  <input type="text" class="form-control" id="productModel" name="product_model" placeholder="e.g. Galaxy S21" required>
+                </div>
+
+                <!-- Maximum Price -->
+                <div class="col-md-6">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="maxPrice" class="form-label mb-0">Maximum Price</label>
+                    <div class="form-check mb-0">
+                      <input class="form-check-input" type="checkbox" id="noLimitCheckbox" onchange="
+                        const priceInput = document.getElementById('maxPrice');
+                        if (this.checked) {
+                          priceInput.disabled = true;
+                          priceInput.removeAttribute('required');
+                          priceInput.value = '';
+                        } else {
+                          priceInput.disabled = false;
+                          priceInput.setAttribute('required', 'required');
+                        }
+                      ">
+                      <label class="form-check-label" for="noLimitCheckbox">No limit</label>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <span class="input-group-text">€</span>
+                    <input type="number" class="form-control" id="maxPrice" name="max_price" min="1" required placeholder="e.g. 500">
+                  </div>
+                </div>
+
                 <!-- Color -->
                 <div class="col-md-6">
                     <label for="watchColor" class="form-label">Color</label>
@@ -155,9 +186,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     placeholder="e.g. Android, Windows">
                     <datalist id="osOptions">
                       <option value="Android">
-                      <option value="iOS">
                       <option value="Windows">
-                      <option value="macOS">
                       <option value="Linux">
                     </datalist>
                 </div>
@@ -209,6 +238,16 @@ window.addEventListener('userAuthenticated', (event) => {
       }
     });
 
+    // Hide OS field if brand is Apple
+    document.querySelector("#watchBrand").addEventListener("change", function (e) {
+      if (document.querySelector("#watchBrand").value.toLowerCase() == "apple") {
+        document.querySelector("#watchOS").parentElement.classList.add("d-none");
+        document.querySelector("#watchOS").value = "";
+      } else {
+        document.querySelector("#watchOS").parentElement.classList.remove("d-none");
+      }
+    });
+
     // Trigger once
     const changeCategoryEvent = new Event("change");
     document.getElementById("watchCategory").dispatchEvent(changeCategoryEvent);
@@ -251,6 +290,7 @@ window.addEventListener('userAuthenticated', (event) => {
 
         showMessage('Success', 'Product alert created!', 'success');
         fetchProductAlerts();
+        bootstrapModal.hide();
       } catch (err) {
         console.error("Error creating product alert:", err.message);
         showMessage('Error', 'Failed to create product alert. Please try again.', 'danger');
@@ -273,12 +313,17 @@ window.addEventListener('userAuthenticated', (event) => {
         document.querySelector('.wishlist-text').classList.add("d-none");
         wishlistSection.innerHTML = ``;
         wishlist.forEach(item => {
-          const productHTML = `
+          fetch(`/ttuser/wishlist/count/${item.product_id}`)
+            .then(res => res.json())
+            .then(data => {
+              const wishlistedProductCount = data.count || 0;
+
+              const productHTML = `
             <div class="wishlist-item card rounded-0 border-0 border-bottom" id="wishlist-item-${item.id}">
-                <div class="d-flex align-items-center gap-2 p-1 card-body">
+                <div class="d-flex align-items-center gap-3 p-0 card-body">
                     <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
                     onclick="window.location.href = 'product?is=${item.product_id}';"
-                    class="card-img product-image"
+                    class="card-img p-3 border-end rounded-0 product-image"
                     style="
                     max-width: 200px;
                     aspect-ratio: 1;
@@ -287,74 +332,75 @@ window.addEventListener('userAuthenticated', (event) => {
                     ">
                     <div class="ml-3">
                         <h5 onclick="window.location.href = 'product?is=${item.product_id}';"
-                        style="cursor: pointer;" class="btn-link text-decoration-none"
+                        style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
                         >${item.product_name} <i class="fa fa-angle-right"></i></h5>
                         <p class="mb-2">${item.category}</p>
                         <p><strong>Price:</strong> €${item.price}</p>
                         ${localStorage.getItem('cartProducts') &&
-              JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
-              `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
+                  JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
+                  `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
               data-product-id="${item.product_id}">In your cart</a>` :
-              `<a class="btn btn-primary me-2 shadow add-to-cart-button"
+                  `<a class="btn btn-primary me-2 shadow add-to-cart-button"
               data-product-id="${item.product_id}">Add to cart</a>`}
                         <button class="btn btn-danger btn-sm remove-from-wishlist" 
                         data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
                             Remove
                         </button>
+                        <p class="mt-3"><i>${wishlistedProductCount == 1 ? `${wishlistedProductCount} person has` :
+                  `${wishlistedProductCount} people have`} this item in their wishlist.</i></p>
                     </div>
                 </div>
             </div>
           `;
-          wishlistSection.innerHTML += productHTML;
-        });
+          wishlistSection.insertAdjacentHTML('beforeend', productHTML);
 
-        // Add event listener for "Add to cart" button
-        document.querySelectorAll('.add-to-cart-button').forEach(button => {
-          button.addEventListener('click', function () {
-            // Get the current cart products from localStorage (initialize as an empty array if not set)
-            let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
-            const productId = parseInt(this.getAttribute("data-product-id"));
-            // Add the current product's id to the cart array if not already in the cart
-            if (!cartProducts.includes(productId)) {
-              cartProducts.push(productId);
-              localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
-            }
-
-            this.textContent = "In your cart";
-            this.classList.replace("btn-primary", "btn-success");
-            this.classList.add("disabled");
-            window.location.href = "/cart";
-          });
-        });
-
-        // Add event listeners for removing products from wishlist
-        document.querySelectorAll('.remove-from-wishlist').forEach(button => {
-          button.addEventListener('click', function () {
-            const wishlistEntryId = this.getAttribute('data-wishlist-entry-id');
-
-            fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
-              method: 'DELETE'
-            }).then(response => {
-              if (response.ok) {
-                // Remove the product from the UI
-                const wishlistItem = document.getElementById(`wishlist-item-${wishlistEntryId}`);
-                wishlistItem.remove();
-                if (wishlistSection.innerHTML.trim() == "") {
-                  wishlistSection.innerHTML = `
-                  <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
-                  document.querySelector('.wishlist-text').classList.remove("d-none");
+              // Add event listener for "Add to cart" button
+              document.querySelector(`#wishlist-item-${item.id} .add-to-cart-button`)?.addEventListener('click', function () {
+                // Get the current cart products from localStorage (initialize as an empty array if not set)
+                let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
+                const productId = parseInt(this.getAttribute("data-product-id"));
+                // Add the current product's id to the cart array if not already in the cart
+                if (!cartProducts.includes(productId)) {
+                  cartProducts.push(productId);
+                  localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
                 }
-              } else {
-                throw new Error('Failed to remove product from wishlist');
-              }
-            })
-              .catch(err => {
-                console.error(err);
-                alert('Failed to remove product from wishlist');
-              });
-          });
-        });
 
+                this.textContent = "In your cart";
+                this.classList.replace("btn-primary", "btn-success");
+                this.classList.add("disabled");
+                window.location.href = "/cart";
+              });
+
+              // Add event listeners for removing products from wishlist
+              document.querySelector(`#wishlist-item-${item.id} .remove-from-wishlist`)?.addEventListener('click', function () {
+                const wishlistEntryId = this.getAttribute('data-wishlist-entry-id');
+
+                fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
+                  method: 'DELETE'
+                }).then(response => {
+                  if (response.ok) {
+                    // Remove the product from the UI
+                    const wishlistItem = document.getElementById(`wishlist-item-${wishlistEntryId}`);
+                    wishlistItem.remove();
+                    if (wishlistSection.innerHTML.trim() == "") {
+                      wishlistSection.innerHTML = `
+                  <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
+                      document.querySelector('.wishlist-text').classList.remove("d-none");
+                    }
+                  } else {
+                    throw new Error('Failed to remove product from wishlist');
+                  }
+                })
+                  .catch(err => {
+                    console.error(err);
+                    alert('Failed to remove product from wishlist');
+                  });
+              });
+            })
+            .catch(err => {
+              console.error("Error fetching wishlist count:", err);
+            });
+        });
       })
       .catch(err => {
         console.error(err);
@@ -414,7 +460,9 @@ window.addEventListener('userAuthenticated', (event) => {
           const itemDetails = Object.entries(item)
             .filter(([key, value]) => key !== "id" && key !== "interested_user"
               && key !== "brand"
+              && key !== "product_model"
               && key !== "category"
+              && key !== "max_price"
               && key !== "allKeys" && value)
             .map(([key, value]) => {
               const displayKey = fieldMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -428,10 +476,13 @@ window.addEventListener('userAuthenticated', (event) => {
           card.className = 'card rounded-0 border-0 border-bottom';
           card.innerHTML = `
           <div class="card-body">
-            <h6 class="card-text"><strong>Brand:</strong> <i>${item.brand || 'N/A'}</i></h6>
+            <h6 class="card-text"><strong>Alert for:</strong> <i>${item.product_model || 'N/A'}</i></h6>
+            <h6 class="card-text"><strong>Brand:</strong> ${item.brand || 'N/A'}</h6>
             <h6 class="card-text"><strong>Category:</strong> ${item.category || 'N/A'}</h6>
+            <h6 class="card-text"><strong>Maximum Price:</strong> 
+            ${item.max_price ? "€" + item.max_price : 'No Limit'}</h6>
             <details>
-              <summary>See more details</summary>
+              <summary class="btn-link">See more details</summary>
               <ul class="my-2">
                 ${itemDetails}
               </ul>

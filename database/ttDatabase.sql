@@ -303,8 +303,10 @@ CREATE TABLE IF NOT EXISTS donations (
 CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     interested_user VARCHAR(255) NOT NULL,
-    brand VARCHAR(255),
-    category VARCHAR(255),
+    brand VARCHAR(255) NOT NULL,
+    product_model VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    max_price DECIMAL(10,2),
     color VARCHAR(255),
     graphics_card VARCHAR(255),
     os VARCHAR(255),
@@ -314,7 +316,6 @@ CREATE TABLE IF NOT EXISTS interests (
     screen VARCHAR(255),
     storage VARCHAR(255),
     year YEAR,
-    maxPrice DECIMAL(10,2),
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (interested_user) REFERENCES clients(email),
@@ -327,6 +328,8 @@ CREATE TABLE IF NOT EXISTS wishlist (
     interested_user VARCHAR(255) NOT NULL,
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    CONSTRAINT uq_wishlisted_product_interested_user 
+    UNIQUE (wishlisted_product, interested_user),
     FOREIGN KEY (interested_user) REFERENCES clients(email),
     FOREIGN KEY (wishlisted_product) REFERENCES saleProducts(id)
 );

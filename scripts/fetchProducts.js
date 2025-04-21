@@ -283,12 +283,13 @@ if (document.body.id === "homepage") {
                 } fs-6">${product.product_condition} </span>
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
-                                ${localStorage.getItem('cartProducts') && 
-                                JSON.parse(localStorage.getItem('cartProducts')).includes(product.id) ?
-                                `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` : 
-                                `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
+                                ${localStorage.getItem('cartProducts') &&
+                    JSON.parse(localStorage.getItem('cartProducts')).includes(product.id) ?
+                    `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` :
+                    `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
                                 <a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
+                                    <span id="wishlist-count" class="text-secondary">0</span>
                                 </a>
                             </div>
                             ${technicalSpecsSection}
@@ -320,8 +321,22 @@ if (document.body.id === "homepage") {
 
             let wishlistEntryId;
 
+            const fetchWishlistCount = () => {
+                fetch(`/ttuser/wishlist/count/${product.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const count = data.count || 0;
+                    document.getElementById("wishlist-count").textContent = count;
+                })
+                .catch(err => {
+                    console.error("Error fetching wishlist count:", err);
+                });
+            }
+            fetchWishlistCount();
+
             // Check if product is in user's wishlist
-            fetch(`/ttuser/wishlist/${loggedInUser.email}`)
+            const checkWishlist = () => {
+                fetch(`/ttuser/wishlist/${loggedInUser.email}`)
                 .then(res => res.json())
                 .then(wishlistItems => {
                     const isInWishlist = wishlistItems.some(item => item.wishlisted_product === product.id);
@@ -332,30 +347,39 @@ if (document.body.id === "homepage") {
                         }
                     });
 
+                    const button = document.getElementById('add-to-wishlist-button')
+                    const icon = button.querySelector('i');
+                    const count = button.querySelector('span');
                     if (isInWishlist) {
-                        const button = document.getElementById('add-to-wishlist-button')
-                        const icon = button.querySelector('i');
                         button.classList.add('wishlisted');
+                        count.classList.replace('text-secondary', 'text-white')
+                        icon.classList.replace('text-secondary', 'text-white');
                         button.style.backgroundColor = "navy";
-                        icon.classList.remove('text-secondary');
-                        icon.style.color = "white";
+                    } else {
+                        button.classList.remove('wishlisted');
+                        count.classList.replace('text-white', 'text-secondary')
+                        icon.classList.replace('text-white', 'text-secondary');
+                        button.style.backgroundColor = "unset";
                     }
                 })
                 .catch(err => console.error('Failed to fetch wishlist:', err));
+            }
+            checkWishlist();
 
             // Add event listener for "❤️" button
             document.getElementById('add-to-wishlist-button').addEventListener('click', function () {
                 const button = this;
-                const icon = button.querySelector('i');
                 const isWishlisted = button.classList.contains('wishlisted');
 
-                if (!isWishlisted) {
-                    // Add to wishlist
-                    button.style.backgroundColor = "navy";
-                    icon.classList.remove('text-secondary');
-                    icon.style.color = "white";
-                    button.classList.add('wishlisted');
+                // Signal alterations to the wishlist
+                document.getElementById("wishlist").style.backgroundColor = "rgba(0, 0, 128, 0.7)";
+                document.getElementById("wishlist").classList.add("text-white");
+                setTimeout(function() {
+                    document.getElementById("wishlist").style.backgroundColor = ""; 
+                    document.getElementById("wishlist").classList.remove("text-white");
+                }, 500);
 
+                if (!isWishlisted) {
                     fetch('/ttuser/wishlist', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -365,33 +389,25 @@ if (document.body.id === "homepage") {
                         })
                     }).then(response => {
                         if (!response.ok) throw new Error('Failed to add to wishlist');
+                        checkWishlist();
+                        fetchWishlistCount();
                     }).catch(err => {
                         console.error(err);
-                        // Revert UI if failed
-                        button.style.backgroundColor = "unset";
-                        icon.classList.add('text-secondary');
-                        icon.style.color = "unset";
-                        button.classList.remove('wishlisted');
+                        checkWishlist();
+                        fetchWishlistCount();
                     });
 
                 } else {
-                    // Remove from wishlist
-                    button.style.backgroundColor = "unset";
-                    icon.classList.add('text-secondary');
-                    icon.style.color = "unset";
-                    button.classList.remove('wishlisted');
-
                     fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
                         method: 'DELETE'
                     }).then(response => {
                         if (!response.ok) throw new Error('Failed to remove from wishlist');
+                        checkWishlist();
+                        fetchWishlistCount();
                     }).catch(err => {
                         console.error(err);
-                        // Revert UI if failed
-                        button.style.backgroundColor = "navy";
-                        icon.classList.remove('text-secondary');
-                        icon.style.color = "white";
-                        button.classList.add('wishlisted');
+                        checkWishlist();
+                        fetchWishlistCount();
                     });
                 }
             });

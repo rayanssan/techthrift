@@ -1715,18 +1715,21 @@ router.delete('/ttuser/interest/remove/:id', (req, res) => {
 
 // Add product to wishlist
 router.post('/ttuser/wishlist', (req, res) => {
-    const { wishlisted_product, interested_user } = req.body;
-    const query = `INSERT INTO wishlist(wishlisted_product, interested_user) VALUES (?, ?)`;
+    const query = `INSERT IGNORE INTO wishlist(wishlisted_product, interested_user) VALUES (?, ?)`;
 
-    db.execute(query, [wishlisted_product, interested_user], function (err) {
-        if (err) return res.status(500).send({ error: err.message });
+    db.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err, result) {
+        if (err) {
+            return res.status(500).send({ error: err.message });
+        }
 
         // Update replica
-        dbR.execute(query, [wishlisted_product, interested_user], function (err) {
-            if (err) return res.status(500).send({ error: err.message });
-        });
+        dbR.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err) {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
 
-        res.status(201).send('Product successfully wishlisted');
+            res.status(201).send('Product successfully added to wishlist');
+        });
     });
 });
 
@@ -1773,7 +1776,30 @@ router.delete('/ttuser/wishlist/remove/:id', (req, res) => {
             if (err) return res.status(500).send({ error: err.message });
         });
 
-        res.status(200).send("Product successfully removed from the user's wishlist");
+        return res.status(200).send("Product successfully removed from the user's wishlist");
+    });
+});
+
+// Get product wishlist count
+router.get('/ttuser/wishlist/count/:product_id', (req, res) => {
+    const query = `
+        SELECT COUNT(*) AS count 
+        FROM wishlist 
+        WHERE wishlisted_product = ?
+    `;
+
+    db.query(query, [parseInt(req.params.product_id)], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [parseInt(req.params.product_id)], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                return res.status(200).json(rows[0] || { count: 0 });
+            });
+        } else {
+            return res.status(200).json(rows[0] || { count: 0 });
+        }
     });
 });
 

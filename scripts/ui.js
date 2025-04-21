@@ -11,10 +11,6 @@
 function showMessage(title, message, type) {
     const modalId = 'responseModal';
 
-    const backModal = document.querySelector("#productAlertFormModal");
-    if (backModal) {
-        backModal.style.display = "none";
-    }
     // Create modal HTML dynamically
     const modalHtml = `
           <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
@@ -49,9 +45,6 @@ function showMessage(title, message, type) {
     modal.show();
 
     document.getElementById(modalId).addEventListener('hidden.bs.modal', () => {
-        if (backModal) {
-            backModal.style.display = "unset";
-        }
         document.getElementById(modalId).remove();
     });
 }
