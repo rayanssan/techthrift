@@ -292,7 +292,7 @@ window.addEventListener('userAuthenticated', (event) => {
                         <p class="mb-2">${item.category}</p>
                         <p><strong>Price:</strong> €${item.price}</p>
                         ${localStorage.getItem('cartProducts') &&
-              localStorage.getItem('cartProducts').includes(item.product_id) ?
+              JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
               `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
               data-product-id="${item.product_id}">In your cart</a>` :
               `<a class="btn btn-primary me-2 shadow add-to-cart-button"
@@ -313,7 +313,7 @@ window.addEventListener('userAuthenticated', (event) => {
           button.addEventListener('click', function () {
             // Get the current cart products from localStorage (initialize as an empty array if not set)
             let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
-            const productId = this.getAttribute("data-product-id");
+            const productId = parseInt(this.getAttribute("data-product-id"));
             // Add the current product's id to the cart array if not already in the cart
             if (!cartProducts.includes(productId)) {
               cartProducts.push(productId);
@@ -339,6 +339,11 @@ window.addEventListener('userAuthenticated', (event) => {
                 // Remove the product from the UI
                 const wishlistItem = document.getElementById(`wishlist-item-${wishlistEntryId}`);
                 wishlistItem.remove();
+                if (wishlistSection.innerHTML.trim() == "") {
+                  wishlistSection.innerHTML = `
+                  <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
+                  document.querySelector('.wishlist-text').classList.remove("d-none");
+                }
               } else {
                 throw new Error('Failed to remove product from wishlist');
               }
@@ -454,8 +459,8 @@ window.addEventListener('userAuthenticated', (event) => {
                 .then(response => {
                   if (response.ok) {
                     card.remove();
-                    if (document.getElementById('alerts-section').innerHTML == "") {
-                      document.getElementById('alerts-section').innerHTML = `
+                    if (alertsSection.innerHTML.trim() == "") {
+                      alertsSection.innerHTML = `
                   <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
                     }
                   }

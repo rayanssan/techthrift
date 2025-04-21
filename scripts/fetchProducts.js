@@ -187,6 +187,7 @@ if (document.body.id === "homepage") {
             const response = await fetch(`/tt/product/${id}`);
             const product = await response.json();
             const productContainer = document.getElementById('product-info');
+            productContainer.innerHTML = ``;
 
             // Technical Specifications
             const specs = {
@@ -282,7 +283,8 @@ if (document.body.id === "homepage") {
                 } fs-6">${product.product_condition} </span>
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
-                                ${localStorage.getItem('cartProducts') && localStorage.getItem('cartProducts').includes(product.id) ?
+                                ${localStorage.getItem('cartProducts') && 
+                                JSON.parse(localStorage.getItem('cartProducts')).includes(product.id) ?
                                 `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` : 
                                 `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
                                 <a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
