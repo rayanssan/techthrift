@@ -250,7 +250,7 @@ window.addEventListener('userAuthenticated', (event) => {
         }
 
         showMessage('Success', 'Product alert created!', 'success');
-        fetchWishlist();
+        fetchProductAlerts();
       } catch (err) {
         console.error("Error creating product alert:", err.message);
         showMessage('Error', 'Failed to create product alert. Please try again.', 'danger');
@@ -259,116 +259,217 @@ window.addEventListener('userAuthenticated', (event) => {
   });
 
   const fetchWishlist = () => {
-    fetch(`/ttuser/interest/${loggedInUser.email}`).then(res => res.json())
-    .then(alertsList => {
-      if (alertsList.length === 0) {
-        document.getElementById('alerts-section').innerHTML = `
-        <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
-        return;
-      }
-      const alertsSection = document.getElementById('alerts-section');
-      document.querySelector('.alerts-text').innerHTML =
-        `<i>We will notify you when products matching your alerts become available.</i>`
-      alertsSection.innerHTML = ``;
-
-      alertsList.forEach(item => {
-        const fieldMap = {
-          category: "Category",
-          color: "Color",
-          graphics_card: "Graphics Card",
-          os: "Operating System",
-          processor: "Processor",
-          ram_memory: "RAM",
-          screen: "Screen Size",
-          storage: "Storage",
-          product_condition: "Condition",
-          date_inserted: "Alert created in"
-        };
-
-        /**
-         * Converts an ISO date string into a human-readable localized date and time format.
-         *
-         * @function formatDate
-         * @param {string} isoString - A date string in ISO 8601 format (e.g., "2025-04-20T14:30:00Z").
-         * @returns {string} - A formatted date string based on the user's locale, including year, 
-         * month (long), day, hour, and minute.
-         */
-        function formatDate(isoString) {
-          const date = new Date(isoString);
-          return date.toLocaleString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+    fetch(`/ttuser/wishlist/${loggedInUser.email}`).then(res => res.json())
+      .then(wishlist => {
+        const wishlistSection = document.getElementById('wishlist-section');
+        if (wishlist.length === 0) {
+          wishlistSection.innerHTML = `
+        <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
+          return;
         }
+        // Sort wishlist by date_inserted (most recent first)
+        wishlist.sort((a, b) => new Date(b.date_inserted) - new Date(a.date_inserted));
 
-        const itemDetails = Object.entries(item)
-          .filter(([key, value]) => key !== "id" && key !== "interested_user"
-            && key !== "brand"
-            && key !== "category"
-            && key !== "allKeys" && value)
-          .map(([key, value]) => {
-            const displayKey = fieldMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            const displayValue = key === 'date_inserted' ? formatDate(value) : value;
-            return `<li><strong>${displayKey}:</strong> ${displayValue}</li>`;
-          })
-          .join("");
+        document.querySelector('.wishlist-text').classList.add("d-none");
+        wishlistSection.innerHTML = ``;
+        wishlist.forEach(item => {
+          const productHTML = `
+            <div class="wishlist-item card rounded-0 border-0 border-bottom" id="wishlist-item-${item.id}">
+                <div class="d-flex align-items-center gap-2 p-1 card-body">
+                    <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
+                    onclick="window.location.href = 'product?is=${item.product_id}';"
+                    class="card-img product-image"
+                    style="
+                    max-width: 200px;
+                    aspect-ratio: 1;
+                    object-fit: contain;
+                    cursor: pointer;
+                    ">
+                    <div class="ml-3">
+                        <h5 onclick="window.location.href = 'product?is=${item.product_id}';"
+                        style="cursor: pointer;" class="btn-link text-decoration-none"
+                        >${item.product_name} <i class="fa fa-angle-right"></i></h5>
+                        <p class="mb-2">${item.category}</p>
+                        <p><strong>Price:</strong> €${item.price}</p>
+                        ${localStorage.getItem('cartProducts') &&
+              localStorage.getItem('cartProducts').includes(item.product_id) ?
+              `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
+              data-product-id="${item.product_id}">In your cart</a>` :
+              `<a class="btn btn-primary me-2 shadow add-to-cart-button"
+              data-product-id="${item.product_id}">Add to cart</a>`}
+                        <button class="btn btn-danger btn-sm remove-from-wishlist" 
+                        data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+          `;
+          wishlistSection.innerHTML += productHTML;
+        });
 
-        // Create the card element
-        const card = document.createElement('div');
-        card.className = 'card rounded-0 border-0 border-bottom';
-        card.innerHTML = `
-        <div class="card-body">
-          <h6 class="card-text"><strong>Brand:</strong> <i>${item.brand || 'N/A'}</i></h6>
-          <h6 class="card-text"><strong>Category:</strong> ${item.category || 'N/A'}</h6>
-          <details>
-            <summary>See more details</summary>
-            <ul class="my-2">
-              ${itemDetails}
-            </ul>
-            <button class="ms-3 btn btn-danger btn-sm">Delete Product Alert</button>
-          </details>
-        </div>
-        `;
+        // Add event listener for "Add to cart" button
+        document.querySelectorAll('.add-to-cart-button').forEach(button => {
+          button.addEventListener('click', function () {
+            // Get the current cart products from localStorage (initialize as an empty array if not set)
+            let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
+            const productId = this.getAttribute("data-product-id");
+            // Add the current product's id to the cart array if not already in the cart
+            if (!cartProducts.includes(productId)) {
+              cartProducts.push(productId);
+              localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+            }
 
-        // Append to alerts section
-        alertsSection.appendChild(card);
+            this.textContent = "In your cart";
+            this.classList.replace("btn-primary", "btn-success");
+            this.classList.add("disabled");
+            window.location.href = "/cart";
+          });
+        });
 
-        // Attach event listener to this specific button
-        const deleteBtn = card.querySelector('.btn-danger');
-        deleteBtn.addEventListener("click", async () => {
-          const confirmed = await showDialog(
-            'Confirm Delete',
-            `Are you sure you want to delete this product alert?`,
-            'Delete',
-            'Cancel'
-          );
-        
-          if (confirmed) {
-            fetch(`/ttuser/interest/remove/${item.id}`, {
+        // Add event listeners for removing products from wishlist
+        document.querySelectorAll('.remove-from-wishlist').forEach(button => {
+          button.addEventListener('click', function () {
+            const wishlistEntryId = this.getAttribute('data-wishlist-entry-id');
+
+            fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
               method: 'DELETE'
-            })
-            .then(response => {
+            }).then(response => {
               if (response.ok) {
-                card.remove();
-                if (document.getElementById('alerts-section').innerHTML == "") {
-                  document.getElementById('alerts-section').innerHTML = `
-                  <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
-                }
+                // Remove the product from the UI
+                const wishlistItem = document.getElementById(`wishlist-item-${wishlistEntryId}`);
+                wishlistItem.remove();
+              } else {
+                throw new Error('Failed to remove product from wishlist');
               }
             })
-            .catch(error => {
-              console.error('Error:', error);
-              alert('Error removing product alert');
+              .catch(err => {
+                console.error(err);
+                alert('Failed to remove product from wishlist');
+              });
+          });
+        });
+
+      })
+      .catch(err => {
+        console.error(err);
+        const wishlistSection = document.getElementById('wishlist-section');
+        wishlistSection.innerHTML = `
+        <p class="text-center text-muted mt-3">Error loading wishlist. Please try again later.</p>`;
+      });
+  }
+  fetchWishlist();
+
+  const fetchProductAlerts = () => {
+    fetch(`/ttuser/interest/${loggedInUser.email}`).then(res => res.json())
+      .then(alertsList => {
+        const alertsSection = document.getElementById('alerts-section');
+        if (alertsList.length === 0) {
+          alertsSection.innerHTML = `
+        <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
+          return;
+        }
+        document.querySelector('.alerts-text').innerHTML =
+          `<i>We will notify you when products matching your alerts become available.</i>`;
+        alertsSection.innerHTML = ``;
+
+        alertsList.forEach(item => {
+          const fieldMap = {
+            category: "Category",
+            color: "Color",
+            graphics_card: "Graphics Card",
+            os: "Operating System",
+            processor: "Processor",
+            ram_memory: "RAM",
+            screen: "Screen Size",
+            storage: "Storage",
+            product_condition: "Condition",
+            date_inserted: "Alert created in"
+          };
+
+          /**
+           * Converts an ISO date string into a human-readable localized date and time format.
+           *
+           * @function formatDate
+           * @param {string} isoString - A date string in ISO 8601 format (e.g., "2025-04-20T14:30:00Z").
+           * @returns {string} - A formatted date string based on the user's locale, including year, 
+           * month (long), day, hour, and minute.
+           */
+          function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
             });
           }
+
+          const itemDetails = Object.entries(item)
+            .filter(([key, value]) => key !== "id" && key !== "interested_user"
+              && key !== "brand"
+              && key !== "category"
+              && key !== "allKeys" && value)
+            .map(([key, value]) => {
+              const displayKey = fieldMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              const displayValue = key === 'date_inserted' ? formatDate(value) : value;
+              return `<li><strong>${displayKey}:</strong> ${displayValue}</li>`;
+            })
+            .join("");
+
+          // Create the card element
+          const card = document.createElement('div');
+          card.className = 'card rounded-0 border-0 border-bottom';
+          card.innerHTML = `
+          <div class="card-body">
+            <h6 class="card-text"><strong>Brand:</strong> <i>${item.brand || 'N/A'}</i></h6>
+            <h6 class="card-text"><strong>Category:</strong> ${item.category || 'N/A'}</h6>
+            <details>
+              <summary>See more details</summary>
+              <ul class="my-2">
+                ${itemDetails}
+              </ul>
+              <button class="ms-3 btn btn-danger btn-sm">Delete Product Alert</button>
+            </details>
+          </div>`;
+
+          // Append to alerts section
+          alertsSection.appendChild(card);
+
+          // Attach event listener to this specific button
+          const deleteBtn = card.querySelector('.btn-danger');
+          deleteBtn.addEventListener("click", async () => {
+            const confirmed = await showDialog(
+              'Confirm Delete',
+              `Are you sure you want to delete this product alert?`,
+              'Delete',
+              'Cancel'
+            );
+
+            if (confirmed) {
+              fetch(`/ttuser/interest/remove/${item.id}`, {
+                method: 'DELETE'
+              })
+                .then(response => {
+                  if (response.ok) {
+                    card.remove();
+                    if (document.getElementById('alerts-section').innerHTML == "") {
+                      document.getElementById('alerts-section').innerHTML = `
+                  <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
+                    }
+                  }
+                })
+                .catch(error => {
+                  console.error('Error:', error);
+                  alert('Error removing product alert');
+                });
+            }
+          });
         });
       });
-    });
   }
 
-  fetchWishlist();
+  fetchProductAlerts();
 });
 

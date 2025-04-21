@@ -1677,11 +1677,9 @@ router.post('/ttuser/interest', (req, res) => {
 router.get('/ttuser/interest/:email', (req, res) => {
 
     const query = `
-        SELECT i.*, p.name AS wishlisted_product_name, sp.price
+        SELECT i.*
         FROM interests i
         JOIN clients c ON i.interested_user = c.email
-        LEFT JOIN saleProducts sp ON i.wishlisted_product = sp.id
-        LEFT JOIN products p ON sp.id = p.id
         WHERE i.interested_user = ?`;
 
     db.query(query, [req.params.email], (err, rows) => {
@@ -1701,7 +1699,6 @@ router.get('/ttuser/interest/:email', (req, res) => {
 
 // Remove product alert
 router.delete('/ttuser/interest/remove/:id', (req, res) => {
-
     const query = `DELETE FROM interests WHERE id = ?`;
 
     db.execute(query, [req.params.id], function (err) {
@@ -1713,6 +1710,70 @@ router.delete('/ttuser/interest/remove/:id', (req, res) => {
         });
 
         res.status(200).send('Product alert successfully removed');
+    });
+});
+
+// Add product to wishlist
+router.post('/ttuser/wishlist', (req, res) => {
+    const { wishlisted_product, interested_user } = req.body;
+    const query = `INSERT INTO wishlist(wishlisted_product, interested_user) VALUES (?, ?)`;
+
+    db.execute(query, [wishlisted_product, interested_user], function (err) {
+        if (err) return res.status(500).send({ error: err.message });
+
+        // Update replica
+        dbR.execute(query, [wishlisted_product, interested_user], function (err) {
+            if (err) return res.status(500).send({ error: err.message });
+        });
+
+        res.status(201).send('Product successfully wishlisted');
+    });
+});
+
+// Get wishlist products
+router.get('/ttuser/wishlist/:email', (req, res) => {
+    const query = `
+        SELECT w.*, pi.image_path AS product_image, p.name AS product_name,
+        p.availability AS product_availability, 
+        p.category, 
+        p.brand, 
+        p.store_nipc, 
+        p.id AS product_id, sp.price
+        FROM wishlist w
+        JOIN clients c ON w.interested_user = c.email
+        LEFT JOIN saleProducts sp ON w.wishlisted_product = sp.id
+        LEFT JOIN products p ON sp.id = p.id
+        LEFT JOIN productImages pi ON p.id = pi.product AND pi.image_order = 1
+        WHERE w.interested_user = ?`;
+
+    db.query(query, [req.params.email], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [req.params.email], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                return res.status(200).json(rows || []);
+            });
+        } else {
+            return res.status(200).json(rows || []);
+        }
+    });
+});
+
+// Remove product from wishlist
+router.delete('/ttuser/wishlist/remove/:id', (req, res) => {
+    const query = `DELETE FROM wishlist WHERE id = ?`;
+
+    db.execute(query, [req.params.id], function (err) {
+        if (err) return res.status(500).send({ error: err.message });
+
+        // Update replica
+        dbR.execute(query, [req.params.id], function (err) {
+            if (err) return res.status(500).send({ error: err.message });
+        });
+
+        res.status(200).send("Product successfully removed from the user's wishlist");
     });
 });
 

@@ -109,7 +109,7 @@ window.onload = async() => {
       document.querySelector('#username p').textContent = "Sign in";
     }
     if (document.getElementById('wishlist')) {
-      document.getElementById('wishlist').href = '/authentication';
+      document.getElementById('wishlist').remove();
     }
 
     const event = new CustomEvent('userAuthenticated', { detail: null });

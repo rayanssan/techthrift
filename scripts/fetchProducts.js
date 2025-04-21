@@ -161,6 +161,7 @@ if (document.body.id === "homepage") {
     });
     // Load one single product's information if in a product's page
 } else if (document.body.id === "productPage") {
+    let loggedInUser;
 
     /**
      * Fetches a single product from the TechThrift database using the product ID from the URL.
@@ -282,7 +283,8 @@ if (document.body.id === "homepage") {
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
                                 ${localStorage.getItem('cartProducts') && localStorage.getItem('cartProducts').includes(product.id) ?
-                    `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` : `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
+                                `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` : 
+                                `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
                                 <a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                 </a>
@@ -313,6 +315,86 @@ if (document.body.id === "homepage") {
                 this.classList.add("disabled");
                 window.location.href = "/cart";
             });
+
+            let wishlistEntryId;
+
+            // Check if product is in user's wishlist
+            fetch(`/ttuser/wishlist/${loggedInUser.email}`)
+                .then(res => res.json())
+                .then(wishlistItems => {
+                    const isInWishlist = wishlistItems.some(item => item.wishlisted_product === product.id);
+
+                    wishlistItems.forEach(item => {
+                        if (item.wishlisted_product === product.id) {
+                            wishlistEntryId = item.id;
+                        }
+                    });
+
+                    if (isInWishlist) {
+                        const button = document.getElementById('add-to-wishlist-button')
+                        const icon = button.querySelector('i');
+                        button.classList.add('wishlisted');
+                        button.style.backgroundColor = "navy";
+                        icon.classList.remove('text-secondary');
+                        icon.style.color = "white";
+                    }
+                })
+                .catch(err => console.error('Failed to fetch wishlist:', err));
+
+            // Add event listener for "❤️" button
+            document.getElementById('add-to-wishlist-button').addEventListener('click', function () {
+                const button = this;
+                const icon = button.querySelector('i');
+                const isWishlisted = button.classList.contains('wishlisted');
+
+                if (!isWishlisted) {
+                    // Add to wishlist
+                    button.style.backgroundColor = "navy";
+                    icon.classList.remove('text-secondary');
+                    icon.style.color = "white";
+                    button.classList.add('wishlisted');
+
+                    fetch('/ttuser/wishlist', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            wishlisted_product: product.id,
+                            interested_user: loggedInUser.email
+                        })
+                    }).then(response => {
+                        if (!response.ok) throw new Error('Failed to add to wishlist');
+                    }).catch(err => {
+                        console.error(err);
+                        // Revert UI if failed
+                        button.style.backgroundColor = "unset";
+                        icon.classList.add('text-secondary');
+                        icon.style.color = "unset";
+                        button.classList.remove('wishlisted');
+                    });
+
+                } else {
+                    // Remove from wishlist
+                    button.style.backgroundColor = "unset";
+                    icon.classList.add('text-secondary');
+                    icon.style.color = "unset";
+                    button.classList.remove('wishlisted');
+
+                    fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
+                        method: 'DELETE'
+                    }).then(response => {
+                        if (!response.ok) throw new Error('Failed to remove from wishlist');
+                    }).catch(err => {
+                        console.error(err);
+                        // Revert UI if failed
+                        button.style.backgroundColor = "navy";
+                        icon.classList.remove('text-secondary');
+                        icon.style.color = "white";
+                        button.classList.add('wishlisted');
+                    });
+                }
+            });
+
+            // check if item in wishlist and style already if so
         } catch (error) {
             console.log("Error fetching product:", error);
             const productContainer = document.getElementById('product-info');
@@ -324,38 +406,45 @@ if (document.body.id === "homepage") {
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        fetchOneSellingProduct().then(() => {
-            this.querySelectorAll(".carousel-item").forEach(item => {
-                item.addEventListener("click", () => {
-                    const imageSrc = item.querySelector("img").src;
-                    let modalEl = document.getElementById("image-popup");
+        window.addEventListener('userAuthenticated', (event) => {
+            loggedInUser = event.detail;
+            fetchOneSellingProduct().then(() => {
+                this.querySelectorAll(".carousel-item").forEach(item => {
+                    item.addEventListener("click", () => {
+                        const imageSrc = item.querySelector("img").src;
+                        let modalEl = document.getElementById("image-popup");
 
-                    // If modal doesn't exist, create it once
-                    if (!modalEl) {
-                        modalEl = document.createElement("div");
-                        modalEl.className = "modal fade";
-                        modalEl.id = "image-popup";
-                        modalEl.tabIndex = -1;
-                        modalEl.innerHTML = `
-                        <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
-                          <div class="modal-content border-0 text-center rounded bg-white m-auto">
-                            <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
-                            data-bs-dismiss="modal" aria-label="Close"></button>
-                            <img class="img-fluid p-3 border-top shadow-lg" 
-                            style="margin-top: 3.5rem;">
-                          </div>
-                        </div>
-                      `;
-                        document.body.appendChild(modalEl);
-                    }
+                        // If modal doesn't exist, create it once
+                        if (!modalEl) {
+                            modalEl = document.createElement("div");
+                            modalEl.className = "modal fade";
+                            modalEl.id = "image-popup";
+                            modalEl.tabIndex = -1;
+                            modalEl.innerHTML = `
+                            <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
+                            <div class="modal-content border-0 text-center rounded bg-white m-auto">
+                                <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
+                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                <img class="img-fluid p-3 border-top shadow-lg" 
+                                style="margin-top: 3.5rem;">
+                            </div>
+                            </div>`;
+                            document.body.appendChild(modalEl);
+                        }
 
-                    // Set image src dynamically
-                    modalEl.querySelector("img").src = imageSrc;
+                        // Set image src dynamically
+                        modalEl.querySelector("img").src = imageSrc;
 
-                    // Show modal via Bootstrap's API
-                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modal.show();
+                        // Show modal via Bootstrap's API
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                    });
                 });
+                if (loggedInUser == null) {
+                    if (document.getElementById('add-to-wishlist-button')) {
+                        document.getElementById('add-to-wishlist-button').style.display = 'none';
+                    }
+                }
             });
         });
     });
