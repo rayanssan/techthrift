@@ -493,7 +493,10 @@ if (document.body.id === "homepage") {
 
             // Set title of the current page
             document.title += " - " + category;
-            document.getElementById("category-indicator").textContent = category;
+            document.getElementById("category-indicator").innerHTML = `
+            <a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                <i class="fa fa-angle-left fs-3"></i>
+            </a>${category}`;
 
             if (category.toLowerCase() === "more") {
                 category = "Other";
@@ -585,7 +588,10 @@ if (document.body.id === "homepage") {
             // Set title of the current page
             document.title += " - " + search;
             if (!isFeaturedSearch) {
-                document.getElementById("search-indicator").textContent = `Search results for "${search}"`;
+                document.getElementById("search-indicator").innerHTML = `
+                <a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                <i class="fa fa-angle-left fs-3"></i>
+                </a>Search results for "${search}"`;
             } else {
                 const brandBanner = `
                 <div class="main-banner text-white shadow bg-white text-center">
@@ -601,7 +607,10 @@ if (document.body.id === "homepage") {
 
                 const nav = document.querySelector("nav");
                 nav.insertAdjacentHTML("afterend", brandBanner);
-                document.getElementById("search-indicator").textContent = search + " Products";
+                document.getElementById("search-indicator").innerHTML = `
+                <a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                <i class="fa fa-angle-left fs-3"></i>
+                </a>${search} Products`;
             }
 
             const urls = [
