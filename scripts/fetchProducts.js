@@ -323,46 +323,49 @@ if (document.body.id === "homepage") {
 
             const fetchWishlistCount = () => {
                 fetch(`/ttuser/wishlist/count/${product.id}`)
-                .then(res => res.json())
-                .then(data => {
-                    const count = data.count || 0;
-                    document.getElementById("wishlist-count").textContent = count;
-                })
-                .catch(err => {
-                    console.error("Error fetching wishlist count:", err);
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        const count = data.count || 0;
+                        document.getElementById("wishlist-count").textContent = count;
+                    })
+                    .catch(err => {
+                        console.error("Error fetching wishlist count:", err);
+                    });
             }
             fetchWishlistCount();
 
             // Check if product is in user's wishlist
             const checkWishlist = () => {
-                fetch(`/ttuser/wishlist/${loggedInUser.email}`)
-                .then(res => res.json())
-                .then(wishlistItems => {
-                    const isInWishlist = wishlistItems.some(item => item.wishlisted_product === product.id);
+                if (loggedInUser) {
+                    fetch(`/ttuser/wishlist/${loggedInUser.email}`)
+                        .then(res => res.json())
+                        .then(wishlistItems => {
+                            const isInWishlist = wishlistItems.some(
+                                item => item.wishlisted_product === product.id);
 
-                    wishlistItems.forEach(item => {
-                        if (item.wishlisted_product === product.id) {
-                            wishlistEntryId = item.id;
-                        }
-                    });
+                            wishlistItems.forEach(item => {
+                                if (item.wishlisted_product === product.id) {
+                                    wishlistEntryId = item.id;
+                                }
+                            });
 
-                    const button = document.getElementById('add-to-wishlist-button')
-                    const icon = button.querySelector('i');
-                    const count = button.querySelector('span');
-                    if (isInWishlist) {
-                        button.classList.add('wishlisted');
-                        count.classList.replace('text-secondary', 'text-white')
-                        icon.classList.replace('text-secondary', 'text-white');
-                        button.style.backgroundColor = "navy";
-                    } else {
-                        button.classList.remove('wishlisted');
-                        count.classList.replace('text-white', 'text-secondary')
-                        icon.classList.replace('text-white', 'text-secondary');
-                        button.style.backgroundColor = "unset";
-                    }
-                })
-                .catch(err => console.error('Failed to fetch wishlist:', err));
+                            const button = document.getElementById('add-to-wishlist-button')
+                            const icon = button.querySelector('i');
+                            const count = button.querySelector('span');
+                            if (isInWishlist) {
+                                button.classList.add('wishlisted');
+                                count.classList.replace('text-secondary', 'text-white')
+                                icon.classList.replace('text-secondary', 'text-white');
+                                button.style.backgroundColor = "navy";
+                            } else {
+                                button.classList.remove('wishlisted');
+                                count.classList.replace('text-white', 'text-secondary')
+                                icon.classList.replace('text-white', 'text-secondary');
+                                button.style.backgroundColor = "unset";
+                            }
+                        })
+                        .catch(err => console.error('Failed to fetch wishlist:', err));
+                }
             }
             checkWishlist();
 
@@ -374,8 +377,8 @@ if (document.body.id === "homepage") {
                 // Signal alterations to the wishlist
                 document.getElementById("wishlist").style.backgroundColor = "rgba(0, 0, 128, 0.7)";
                 document.getElementById("wishlist").classList.add("text-white");
-                setTimeout(function() {
-                    document.getElementById("wishlist").style.backgroundColor = ""; 
+                setTimeout(function () {
+                    document.getElementById("wishlist").style.backgroundColor = "";
                     document.getElementById("wishlist").classList.remove("text-white");
                 }, 500);
 
@@ -577,10 +580,29 @@ if (document.body.id === "homepage") {
             // Get search query from URL
             const urlParam = new URLSearchParams(window.location.search);
             const search = urlParam.get('is');
+            const isFeaturedSearch = urlParam.get('featured');
 
             // Set title of the current page
             document.title += " - " + search;
-            document.getElementById("search-indicator").textContent = `Search results for "${search}"`;
+            if (!isFeaturedSearch) {
+                document.getElementById("search-indicator").textContent = `Search results for "${search}"`;
+            } else {
+                const brandBanner = `
+                <div class="main-banner text-white shadow bg-white text-center">
+                    <div class="container">
+                        <img alt="${search} logo" 
+                        src="../media/images/featured/${urlParam.get('featuredImage')}"
+                        style="
+                            height: 300px;
+                            object-fit: cover;
+                        ">
+                    </div>
+                </div>`;
+
+                const nav = document.querySelector("nav");
+                nav.insertAdjacentHTML("afterend", brandBanner);
+                document.getElementById("search-indicator").textContent = search + " Products";
+            }
 
             const urls = [
                 `/tt?name=${encodeURIComponent(search)}`,
@@ -603,9 +625,10 @@ if (document.body.id === "homepage") {
             });
 
             products = Array.from(uniqueProducts.values()); // Convert Map back to an array
-            document.getElementById("search-indicator").insertAdjacentHTML('afterend', `
-                <span>${products.length} products found.</span>
-            `);
+            if (!isFeaturedSearch) {
+                document.getElementById("search-indicator").insertAdjacentHTML('afterend',
+                    `<span>${products.length} products found.</span>`);
+            }
 
             if (products.length > 0) {
                 renderProducts();
@@ -865,9 +888,28 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
                 } else if (document.body.id === "searchPage") {
                     const urlParam = new URLSearchParams(window.location.search);
                     const search = urlParam.get('is');
-                    endpoint = `/tt?name=${encodeURIComponent(search)}`;
-                    const response = await fetch(endpoint);
-                    allProducts = await response.json();
+
+                    const urls = [
+                        `/tt?name=${encodeURIComponent(search)}`,
+                        `/tt?category=${encodeURIComponent(search)}`,
+                        `/tt?color=${encodeURIComponent(search)}`,
+                        `/tt?processor=${encodeURIComponent(search)}`,
+                        `/tt?os=${encodeURIComponent(search)}`,
+                        `/tt?storage=${encodeURIComponent(search)}`,
+                    ];
+
+                    // Fetch all requests
+                    const responses = await Promise.all(urls.map(url => fetch(url)));
+                    const data = await Promise.all(responses.map(response => response.json()));
+
+                    // Merge results and remove duplicates
+                    const uniqueProducts = new Map();
+
+                    data.flat().forEach(product => {
+                        uniqueProducts.set(product.id, product);
+                    });
+
+                    allProducts = Array.from(uniqueProducts.values()); // Convert Map back to an array
                 } else {
                     const response = await fetch(endpoint);
                     allProducts = await response.json();

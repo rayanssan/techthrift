@@ -66,6 +66,7 @@ figure {
 }
 
 .product-link,
+.featured-link,
 #productCarousel {
     img {
         aspect-ratio: 1;
@@ -248,7 +249,7 @@ select {
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
-    height: 17px;
+    height: 10px;
     background: white;
     border-radius: 10px;
     outline: none;
@@ -258,16 +259,18 @@ input[type="range"] {
     &::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
-        width: 15px;
-        height: 15px;
+        width: 23px;
+        height: 23px;
         background: #007bff;
         border-radius: 50%;
         cursor: pointer;
     }
 
     &::-moz-range-thumb {
-        width: 15px;
-        height: 15px;
+        -moz-appearance: none;
+        appearance: none;
+        width: 23px;
+        height: 23px;
         background: #007bff;
         border-radius: 50%;
         cursor: pointer;

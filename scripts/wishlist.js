@@ -319,40 +319,39 @@ window.addEventListener('userAuthenticated', (event) => {
               const wishlistedProductCount = data.count || 0;
 
               const productHTML = `
-            <div class="wishlist-item card rounded-0 border-0 border-bottom" id="wishlist-item-${item.id}">
-                <div class="d-flex align-items-center gap-3 p-0 card-body">
-                    <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
-                    onclick="window.location.href = 'product?is=${item.product_id}';"
-                    class="card-img p-3 border-end rounded-0 product-image"
-                    style="
-                    max-width: 200px;
-                    aspect-ratio: 1;
-                    object-fit: contain;
-                    cursor: pointer;
-                    ">
-                    <div class="ml-3">
-                        <h5 onclick="window.location.href = 'product?is=${item.product_id}';"
-                        style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
-                        >${item.product_name} <i class="fa fa-angle-right"></i></h5>
-                        <p class="mb-2">${item.category}</p>
-                        <p><strong>Price:</strong> €${item.price}</p>
-                        ${localStorage.getItem('cartProducts') &&
+              <div class="wishlist-item card rounded-0 border-0 border-bottom" id="wishlist-item-${item.id}">
+                  <div class="d-flex align-items-center gap-3 p-0 card-body">
+                      <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
+                      onclick="window.location.href = 'product?is=${item.product_id}';"
+                      class="card-img p-3 border-end rounded-0 product-image"
+                      style="
+                      max-width: 200px;
+                      aspect-ratio: 1;
+                      object-fit: contain;
+                      cursor: pointer;
+                      ">
+                      <div class="ml-3">
+                          <h5 onclick="window.location.href = 'product?is=${item.product_id}';"
+                          style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
+                          >${item.product_name} <i class="fa fa-angle-right"></i></h5>
+                          <p class="mb-2">${item.category}</p>
+                          <p><strong>Price:</strong> €${item.price}</p>
+                          ${localStorage.getItem('cartProducts') &&
                   JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
                   `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
-              data-product-id="${item.product_id}">In your cart</a>` :
+                          data-product-id="${item.product_id}">In your cart</a>` :
                   `<a class="btn btn-primary me-2 shadow add-to-cart-button"
-              data-product-id="${item.product_id}">Add to cart</a>`}
-                        <button class="btn btn-danger btn-sm remove-from-wishlist" 
-                        data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
+                          data-product-id="${item.product_id}">Add to cart</a>`}
+                          <button class="btn btn-danger btn-sm remove-from-wishlist" 
+                          data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
                             Remove
-                        </button>
-                        <p class="mt-3"><i>${wishlistedProductCount == 1 ? `${wishlistedProductCount} person has` :
+                          </button>
+                          <p class="mt-3"><i>${wishlistedProductCount == 1 ? `${wishlistedProductCount} person has` :
                   `${wishlistedProductCount} people have`} this item in their wishlist.</i></p>
-                    </div>
-                </div>
-            </div>
-          `;
-          wishlistSection.insertAdjacentHTML('beforeend', productHTML);
+                      </div>
+                  </div>
+              </div>`;
+              wishlistSection.insertAdjacentHTML('beforeend', productHTML);
 
               // Add event listener for "Add to cart" button
               document.querySelector(`#wishlist-item-${item.id} .add-to-cart-button`)?.addEventListener('click', function () {
@@ -384,7 +383,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     wishlistItem.remove();
                     if (wishlistSection.innerHTML.trim() == "") {
                       wishlistSection.innerHTML = `
-                  <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
+                      <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
                       document.querySelector('.wishlist-text').classList.remove("d-none");
                     }
                   } else {

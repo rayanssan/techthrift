@@ -144,11 +144,11 @@
                         And Your Wallet.
                     </h1>
                     <button type="button" class="btn btn-outline-light learn-more-button" data-title="About TechThrift"
-                    data-content="Electronic waste has become a major environmental issue in recent years.
+                        data-content="Electronic waste has become a major environmental issue in recent years.
                    By choosing to buy used electronics with <strong>TechThrift</strong>, 
                    you are not just saving money — you are helping protect the planet!">
                         Learn more
-                    </a>
+                        </a>
                     </button>
                     <button type="button" class="btn btn-light shadow-0 text-primary pt-2 border border-white">
                         <a href="#product-list" class="pt-1 text-decoration-none">Purchase now</a>
@@ -159,6 +159,19 @@
         </div>
     </div>
     <!-- Main banner -->
+
+    <!-- Featured -->
+    <section class="py-5" style="background-color: #f5f5f5;">
+        <div class="container">
+            <header>
+                <h3>Featured</h3>
+            </header>
+            <div id="featuredContainer" class="container-fluid d-flex justify-content-center gap-3 pt-3 px-0 flex-wrap">
+                <!-- Featured cards will be injected here dynamically -->
+           </div>
+        </div>
+    </section>
+    <!-- Featured -->
 
     <!-- Products -->
     <section>
@@ -176,8 +189,7 @@
                     </button>
                     <!-- Toggle button for filters in narrow displays -->
                     <!-- Filters -->
-                    <div id="filtersCollapse"
-                        class="collapse flex-wrap justify-content-center w-100 gap-2 mt-3 show">
+                    <div id="filtersCollapse" class="collapse flex-wrap justify-content-center w-100 gap-2 mt-3 show">
                         <!-- Brand -->
                         <select id="filterBrand" class="form-select w-100 w-md-auto mb-2">
                             <option value="">Brand</option>
@@ -206,7 +218,7 @@
                         </select>
                         <!-- Year -->
                         <!-- Price Range -->
-                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center px-2 gap-2 mb-2">
                             <label for="maxPrice" class="me-2">Max Price</label>
                             <input type="range" id="maxPrice" class="mb-0 border">
                             <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
@@ -465,6 +477,7 @@
     <!-- Scripts -->
     <script src="../scripts/auth.js"></script>
     <script src="../scripts/ui.js"></script>
+    <script src="../scripts/featured.js"></script>
     <script src="../scripts/search.js"></script>
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
