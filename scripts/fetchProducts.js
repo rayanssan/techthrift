@@ -595,14 +595,14 @@ if (document.body.id === "homepage") {
             } else {
                 const brandBanner = `
                 <div class="main-banner text-white shadow bg-white text-center">
-                    <div class="container">
-                        <img alt="${search} logo" 
-                        src="../media/images/featured/${urlParam.get('featuredImage')}"
-                        style="
-                            height: 300px;
-                            object-fit: cover;
-                        ">
-                    </div>
+                    <img alt="${search} logo" 
+                    src="../media/images/featured/${urlParam.get('featuredImage')}"
+                    style="
+                        height: 50vw;
+                        max-height: 400px;
+                        object-fit: cover;
+                        margin: auto;
+                    ">
                 </div>`;
 
                 const nav = document.querySelector("nav");
