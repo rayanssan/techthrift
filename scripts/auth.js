@@ -4,8 +4,8 @@ const domain = "dev-l8ytlq131pzoy67u.us.auth0.com";
 const clientId = "L1fWb50rJ2E6mPWVuJsynrqskjQ7454Q";
 const redirectUri = window.location.origin + "/authentication";
 
-async function login() {
-  const url = `https://${domain}/authorize?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid profile email`;
+function login() {
+  const url = `https://${domain}/authorize?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid profile email&connection=Username-Password-Authentication`;
   window.location.href = url;
 }
 
@@ -31,37 +31,15 @@ async function getUserProfile(token) {
 
     if (!response.ok) throw new Error(await response.text());
 
-    let loggedInUser = await response.json();
-    const event = new CustomEvent('userAuthenticated', { detail: loggedInUser });
-    window.dispatchEvent(event);
-    
-    const newClient = {
-      name: loggedInUser.nickname,
-      email: loggedInUser.email
-      // TODO Add the rest of the fields
-    };
-    // POST user to the database
-    const addResponse = await fetch('/ttuser/client/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newClient)
-    });
-
-    if (!addResponse.ok) {
-      const errMessage = await addResponse.text();
-      throw new Error(`Failed to add user: ${errMessage}`);
-    }
-
-    console.log("Client:", loggedInUser);
+    const user = await response.json();
+    console.log("Utilizador:", user);
 
     const nameEl = document.getElementById("user-name");
     const picEl = document.getElementById("user-pic");
     const infoEl = document.getElementById("user-info");
 
-    if (nameEl) nameEl.textContent = loggedInUser.name || loggedInUser.nickname;
-    if (picEl) picEl.src = loggedInUser.picture;
+    if (nameEl) nameEl.textContent = user.name || user.nickname;
+    if (picEl) picEl.src = user.picture;
     if (infoEl) infoEl.classList.remove("d-none");
 
     const loginBtn = document.getElementById("btn-login");
@@ -70,9 +48,9 @@ async function getUserProfile(token) {
     if (logoutBtn) logoutBtn.classList.remove("d-none");
     if (document.getElementById('username')) {
       document.querySelector('#username').innerHTML = `
-      <img alt="User Picture" src=${loggedInUser.picture} alt="User Picture" 
+      <img alt="User Picture" src=${user.picture} alt="User Picture" 
       class="rounded-circle me-md-2" style="scale:1.1;" width="22" height="22">
-      <p class="d-none d-md-block mb-0">${loggedInUser.nickname}</p>`;
+      <p class="d-none d-md-block mb-0">${user.nickname}</p>`;
     }
   } catch (err) {
     console.error("Error while trying to obtain profile:", err);
@@ -82,7 +60,7 @@ async function getUserProfile(token) {
   }
 }
 
-window.onload = async() => {
+window.onload = () => {
   let token = getAccessTokenFromUrl();
 
   if (token) {
@@ -94,7 +72,7 @@ window.onload = async() => {
   }
 
   if (token) {
-    await getUserProfile(token);
+    getUserProfile(token);
   } else {
     // Garantir que os botões existem antes de mexer neles
     const loginBtn = document.getElementById("btn-login");
@@ -108,11 +86,5 @@ window.onload = async() => {
     if (document.getElementById('username')) {
       document.querySelector('#username p').textContent = "Sign in";
     }
-    if (document.getElementById('wishlist')) {
-      document.getElementById('wishlist').remove();
-    }
-
-    const event = new CustomEvent('userAuthenticated', { detail: null });
-    window.dispatchEvent(event);
   }
 };
