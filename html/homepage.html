@@ -225,9 +225,12 @@
                         </div>
                         <!-- Price Range -->
                         <!-- Sorting -->
-                        <div class="col-12 col-md-auto mb-2">
+                        <div class="input-group flex-row col-12 w-auto col-md-auto mb-2">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-funnel"></i>
+                            </span>
                             <select id="sortDropdown" class="form-select">
-                                <option value="">Sort By</option>
+                                <option value="newest" selected>Newest first</option>
                                 <option value="price-asc">Price: Low to High</option>
                                 <option value="price-desc">Price: High to Low</option>
                                 <option value="condition">Condition</option>
@@ -461,8 +464,9 @@
                 <div class="d-flex justify-content-between py-4 border-top">
                     <div>
                         <i class="fab fa-lg fa-cc-visa text-dark"></i>
-                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
                         <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
+                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                        <i class="fab fa-lg fa-cc-apple-pay text-dark"></i>
                         <i class="fab fa-lg fa-cc-paypal text-dark"></i>
                     </div>
                     <p class="mb-0">

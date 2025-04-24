@@ -4,7 +4,8 @@
 let currentPage = 1;
 const productsPerPage = 12;
 const maxVisiblePages = 3;
-let products = [];
+let products = []; // Can be filtered
+let allProducts = []; // Has all products
 
 /**
  * Renders the products dynamically, showing a maximum of 12 per page.
@@ -294,9 +295,13 @@ if (document.body.id === "homepage") {
                             </div>
                             ${technicalSpecsSection}
                             <!-- Store -->
-                            <p class="mb-2"><strong>Sold by:</strong> <a href="/store?is=${product.store_nipc}">${product.store}</a></p>
+                            <div class="bg-white shadow border-0 rounded w-100 p-2 d-inline-block mb-2">
+                                <i class="fas fa-store m-1"></i>
+                                <strong>Sold by:</strong> 
+                                <a href="/store?is=${product.store_nipc}">${product.store}</a>
+                            </div>
                             <!-- Date added -->
-                            <p><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
+                            <p class="mt-2"><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>
@@ -599,7 +604,7 @@ if (document.body.id === "homepage") {
                     src="../media/images/featured/${urlParam.get('featuredImage')}"
                     style="
                         height: 50vw;
-                        max-height: 400px;
+                        max-height: 336px;
                         object-fit: cover;
                         margin: auto;
                     ">
@@ -857,8 +862,6 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
         const sortDropdown = document.getElementById("sortDropdown");
         const filtersContainer = document.getElementById("filtersContainer");
 
-        let allProducts = [];
-        let filteredProducts = [];
         let filtersOffsetTop = filtersContainer.offsetTop;
 
         /**
@@ -924,9 +927,6 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
                     allProducts = await response.json();
                 }
 
-                filteredProducts = [...allProducts];
-                products = [...filteredProducts];
-
                 const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))].sort();
                 const colors = [...new Set(allProducts.map(p => p.color).filter(Boolean))].sort();
                 const years = [...new Set(allProducts.map(p => p.year).filter(Boolean))].sort();
@@ -941,6 +941,7 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
                 maxPrice.max = Math.ceil(maxProductPrice * 1.1);
                 maxPrice.value = maxPrice.max;
                 maxPriceValue.textContent = `€${maxPrice.value}`;
+                applySorting("newest");
             } catch (error) {
                 const productContainer = document.getElementById('product-list');
                 productContainer.innerHTML = `<div class="container my-4">
@@ -971,7 +972,7 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
 
         /**
          * Applies selected filter values (brand, condition, color, year, max price)
-         * to the list of all products and updates the filteredProducts and products arrays.
+         * to the list of all products and updates the products and products arrays.
          * Triggers sorting and re-renders products. 
          * Shows a friendly message if no matches are found.
          * Also handles pagination visibility.
@@ -987,7 +988,7 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
                 const price = parseFloat(maxPrice.value);
                 const maxAllowedPrice = parseFloat(maxPrice.max);
 
-                filteredProducts = allProducts.filter(product => {
+                products = allProducts.filter(product => {
                     const matchesBrand = !brand || product.brand === brand;
                     const matchesCondition = !condition || product.product_condition === condition;
                     const matchesColor = !color || product.color === color;
@@ -998,7 +999,7 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
                 });
 
                 applySorting(false);
-                products = [...filteredProducts];
+                products = [...products];
                 currentPage = 1;
                 renderProducts();
 
@@ -1022,7 +1023,8 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
         }
 
         /**
-         * Sorts the filteredProducts array based on the selected sort criteria:
+         * Sorts the products array based on the selected sort criteria:
+         * - "newest": newest first
          * - "price-asc": ascending by price
          * - "price-desc": descending by price
          * - "condition": custom condition ranking
@@ -1033,20 +1035,22 @@ if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
          * @param {boolean} [shouldRender=true] - Whether to re-render products after sorting.
          */
         function applySorting(shouldRender = true) {
-            if (sortDropdown.value === "price-asc") {
-                filteredProducts.sort((a, b) => a.price - b.price);
+            if (sortDropdown.value === "newest") {
+                products.sort((a, b) => b.id - a.id);
+            } else if (sortDropdown.value === "price-asc") {
+                products.sort((a, b) => a.price - b.price);
             } else if (sortDropdown.value === "price-desc") {
-                filteredProducts.sort((a, b) => b.price - a.price);
+                products.sort((a, b) => b.price - a.price);
             } else if (sortDropdown.value === "condition") {
                 const conditionOrder = ["Like New", "Excellent", "Good", "Needs Repair"];
-                filteredProducts.sort((a, b) =>
+                products.sort((a, b) =>
                     conditionOrder.indexOf(a.product_condition) -
                     conditionOrder.indexOf(b.product_condition)
                 );
             }
 
             if (shouldRender) {
-                products = [...filteredProducts];
+                products = [...products];
                 currentPage = 1;
                 renderProducts();
             }

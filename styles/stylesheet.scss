@@ -25,8 +25,7 @@ body {
     justify-content: center;
 }
 
-header #recent-searches-wrapper#recent-searches-wrapper 
-#recent-searches#recent-searches {
+header #recent-searches-wrapper#recent-searches-wrapper #recent-searches#recent-searches {
     z-index: 100;
 }
 
@@ -237,6 +236,10 @@ select {
         border-color: #007bff;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
+
+    &:hover {
+        background-color: #f5f5f5;
+    }
 }
 
 // Price slider styling
@@ -274,6 +277,22 @@ input[type="range"] {
         background: #007bff;
         border-radius: 50%;
         cursor: pointer;
+    }
+
+    &::-webkit-slider-thumb:hover {
+        background-color: #0063cc;
+    }
+
+    &::-moz-range-thumb:hover {
+        background-color: #0063cc;
+    }
+
+    &::-webkit-slider-thumb:active {
+        background-color: #004288;
+    }
+
+    &::-moz-range-thumb:active {
+        background-color: #004288;
     }
 }
 

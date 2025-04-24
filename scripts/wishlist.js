@@ -68,7 +68,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 <div class="col-md-6">
                   <label for="watchCondition" class="form-label">Condition</label>
                   <select class="form-select" id="watchCondition" name="product_condition">
-                    <option selected disabled>Select condition</option>
+                    <option value="" selected>Any Condition</option>
                     <option value="Like New">Like New</option>
                     <option value="Excellent">Excellent</option>
                     <option value="Good">Good</option>
@@ -194,7 +194,7 @@ window.addEventListener('userAuthenticated', (event) => {
 
               <!-- Submit -->
               <div class="mt-3 d-grid">
-                <button type="submit" class="btn btn-success">Create Product Alert</button>
+                <button type="submit" class="btn btn-success" disabled>Create Product Alert</button>
               </div>
             </form>
           </div>
@@ -256,12 +256,27 @@ window.addEventListener('userAuthenticated', (event) => {
     const bootstrapModal = new bootstrap.Modal(modal);
     bootstrapModal.show();
 
+    // Listen for changes in the form to enable/disable submit button when needed
+    document.getElementById("product-alert-form").addEventListener("change", () => {
+      const form = document.getElementById("product-alert-form");
+      const requiredFields = form.querySelectorAll("[required]");
+      const submitButton = form.querySelector("button[type='submit']");
+
+      let allFilled = true;
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          allFilled = false;
+        }
+      });
+
+      submitButton.disabled = !allFilled;
+    });
+
     // Handle new product alert form submission
     document.getElementById("product-alert-form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const formData = new FormData(e.target);
-      console.log(formData);
       const watchData = Object.fromEntries(formData.entries());
 
       if (watchData.storage) {
@@ -269,6 +284,9 @@ window.addEventListener('userAuthenticated', (event) => {
       }
       if (watchData.ram_memory) {
         watchData.ram_memory += " GB";
+      }
+      if (!watchData.product_condition) {
+        watchData.product_condition = null;
       }
 
       // Add interested_user from logged-in user object

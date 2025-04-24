@@ -8,9 +8,7 @@
     transform: translateY(0);
   }
 }
-
 .animate-item {
   opacity: 0;
   animation: fadeInUp 0.4s ease forwards;
-  animation-delay: 0.05s; /* Example delay */
-}
+}/*# sourceMappingURL=adminstyles.css.map */
