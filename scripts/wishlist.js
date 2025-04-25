@@ -9,7 +9,26 @@ window.addEventListener('userAuthenticated', (event) => {
   }
 
   /**
-   * TODO
+   * Fetches matching products from the `/tt` endpoint based on the provided product alert criteria.
+   *
+   * Converts the `watchData` object into query parameters for the backend product search.
+   * Fields such as `condition`, `year`, and `maxPrice` are included only if present.
+   *
+   * @async
+   * @function getProductAlertResults
+   * @param {Object} watchData - The user-defined alert data containing product preferences.
+   * @param {string} [watchData.product_model] - Name or model of the product to watch.
+   * @param {string} [watchData.product_condition] - Desired condition (e.g., "Like New", "Excellent").
+   * @param {string} [watchData.category] - Product category (e.g., "Smartphones").
+   * @param {string} [watchData.brand] - Brand of the product (e.g., "Apple").
+   * @param {string} [watchData.processor] - Processor type (e.g., "A13 Bionic").
+   * @param {string} [watchData.color] - Preferred product color.
+   * @param {string} [watchData.screen] - Screen type or size.
+   * @param {string} [watchData.storage] - Storage capacity (e.g., "128GB").
+   * @param {string} [watchData.os] - Operating system (e.g., "Android").
+   * @param {string|number} [watchData.year] - Manufacturing year of the product.
+   * @param {string|number} [watchData.max_price] - Maximum acceptable price.
+   * @returns {Promise<Object[]>} - A promise that resolves to an array of matching product objects.
    */
   async function getProductAlertResults(watchData) {
     // Handle product alert creation
