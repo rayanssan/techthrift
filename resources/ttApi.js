@@ -8,7 +8,7 @@ import { db, dbR } from './dbConnection.js';
 // Get all products up for sale
 router.get('/tt', (req, res) => {
     const { name, condition, category, brand, color, processor,
-        storage, os, year, maxPrice, store } = req.query;
+        storage, screen, os, year, maxPrice, store } = req.query;
 
     let query = `SELECT p.*, sp.*, pi.image_path AS image, c.name AS store
         FROM saleProducts sp
@@ -47,6 +47,10 @@ router.get('/tt', (req, res) => {
     if (storage) {
         query += ` AND p.storage LIKE ?`;
         params.push(`%${storage}%`);
+    }
+    if (screen) {
+        query += ` AND p.screen LIKE ?`;
+        params.push(`%${screen}%`);
     }
     if (os) {
         query += ` AND p.os LIKE ?`;

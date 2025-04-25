@@ -8,6 +8,30 @@ window.addEventListener('userAuthenticated', (event) => {
     return;
   }
 
+  /**
+   * TODO
+   */
+  async function getProductAlertResults(watchData) {
+    // Handle product alert creation
+    const alertCriteria = {
+      name: watchData.product_model,
+      condition: watchData.product_condition ? watchData.product_condition : "",
+      category: watchData.category,
+      brand: watchData.brand,
+      processor: watchData.processor,
+      color: watchData.color,
+      screen: watchData.screen,
+      storage: watchData.storage,
+      os: watchData.os,
+      year: watchData.year ? watchData.year : "",
+      maxPrice: watchData.max_price ? watchData.max_price : "",
+    };
+    console.log(alertCriteria);
+
+    const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
+    return await productsResponse.json();
+  }
+
   document.getElementById("create-palert-button").addEventListener("click", () => {
     // Remove any existing modal
     const existingModal = document.getElementById("productAlertFormModal");
@@ -29,175 +53,175 @@ window.addEventListener('userAuthenticated', (event) => {
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div>
-            <h6>Add a Product Alert</h6>
-            <p>Enter the details of a product you're looking for. We will notify you if it becomes available.</p>
-            <form id="product-alert-form">
-              <div class="row g-3">
-                <!-- Brand -->
-                <div class="col-md-6">
-                  <label for="watchBrand" class="form-label">Brand</label>
-                  <input list="brandOptions" class="form-control" id="watchBrand" name="brand" required
-                  placeholder="e.g. Apple">
-                  <datalist id="brandOptions">
-                    <option value="Apple">
-                    <option value="Samsung">
-                    <option value="Dell">
-                    <option value="HP">
-                    <option value="Lenovo">
-                    <option value="ASUS">
-                    <option value="Sony">
-                    <option value="Microsoft">
-                    <option value="Google">
-                    <option value="LG">
-                    <option value="Canon">
-                    <option value="Nikon">
-                    <option value="Xiaomi">
-                    <option value="Huawei">
-                    <option value="Acer">
-                    <option value="Razer">
-                    <option value="Bose">
-                    <option value="JBL">
-                    <option value="OnePlus">
-                    <option value="Garmin">
-                    <option value="GoPro">
+          <h6>Add a Product Alert</h6>
+          <p>Enter the details of a product you're looking for. We will notify you if it becomes available.</p>
+          <form id="product-alert-form">
+            <div class="row g-3">
+              <!-- Brand -->
+              <div class="col-md-6">
+                <label for="watchBrand" class="form-label">Brand</label>
+                <input list="brandOptions" class="form-control" id="watchBrand" name="brand" required
+                placeholder="e.g. Apple">
+                <datalist id="brandOptions">
+                  <option value="Apple">
+                  <option value="Samsung">
+                  <option value="Dell">
+                  <option value="HP">
+                  <option value="Lenovo">
+                  <option value="ASUS">
+                  <option value="Sony">
+                  <option value="Microsoft">
+                  <option value="Google">
+                  <option value="LG">
+                  <option value="Canon">
+                  <option value="Nikon">
+                  <option value="Xiaomi">
+                  <option value="Huawei">
+                  <option value="Acer">
+                  <option value="Razer">
+                  <option value="Bose">
+                  <option value="JBL">
+                  <option value="OnePlus">
+                  <option value="Garmin">
+                  <option value="GoPro">
+                </datalist>
+              </div>
+
+              <!-- Condition -->
+              <div class="col-md-6">
+                <label for="watchCondition" class="form-label">Condition</label>
+                <select class="form-select" id="watchCondition" name="product_condition">
+                  <option value="" selected>Any Condition</option>
+                  <option value="Like New">Like New</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                </select>
+              </div>
+
+              <!-- Product Model -->
+              <div class="col-md-6">
+                <label for="productNameOrModel" class="form-label">Product Model</label>
+                <input type="text" class="form-control" id="productModel" 
+                name="product_model" placeholder="e.g. Galaxy S21" required>
+              </div>
+
+              <!-- Maximum Price -->
+              <div class="col-md-6">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="maxPrice" class="form-label mb-0">Maximum Price</label>
+                  <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="noLimitCheckbox" onchange="
+                      const priceInput = document.getElementById('maxPrice');
+                      if (this.checked) {
+                        priceInput.disabled = true;
+                        priceInput.removeAttribute('required');
+                        priceInput.value = '';
+                      } else {
+                        priceInput.disabled = false;
+                        priceInput.setAttribute('required', 'required');
+                      }
+                    ">
+                    <label class="form-check-label" for="noLimitCheckbox">No limit</label>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <span class="input-group-text">€</span>
+                  <input type="number" class="form-control" 
+                  id="maxPrice" name="max_price" min="1" required placeholder="e.g. 500">
+                </div>
+              </div>
+
+              <!-- Color -->
+              <div class="col-md-6">
+                  <label for="watchColor" class="form-label">Color</label>
+                  <input type="text" class="form-control" id="watchColor" name="color"
+                      placeholder="e.g. Silver">
+              </div>
+
+              <!-- Year -->
+              <div class="col-md-6">
+                  <label for="watchYear" class="form-label">Year</label>
+                  <input type="number" class="form-control" id="watchYear" name="year" min="1979"
+                      max="${new Date().getFullYear()}" step="1" inputmode="numeric" pattern="[0-9]{4}"
+                      oninput="this.value = this.value.slice(0, 4);"
+                      onkeydown="return event.keyCode !== 69 && event.keyCode !== 190 && 
+                      event.keyCode !== 187 && event.keyCode !== 189;"
+                      onpaste="return false;" placeholder="e.g. 2023">
+              </div>
+
+              <!-- Category -->
+              <div class="col-md-6 w-100">
+                <label for="watchCategory" class="form-label">Category</label>
+                <select class="form-select" id="watchCategory" name="category" required>
+                  <option selected disabled value="">Select a category</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Category-Specific Fields -->
+            <div id="categorySpecificFields" class="row g-3 mt-1">
+              <!-- Processor -->
+              <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
+                <label for="watchProcessor" class="form-label">Processor</label>
+                <input type="text" class="form-control" id="watchProcessor" name="processor"
+                placeholder="e.g. Apple A15, Intel i5">
+              </div>
+
+              <!-- Screen -->
+              <div class="col-md-6 conditional-field"
+                data-categories="TVs & Monitors,Smartphones,Laptops & PCs,Tablets">
+                <label for="watchScreen" class="form-label">Screen Size</label>
+                <input type="text" class="form-control" id="watchScreen" name="screen"
+                placeholder="e.g. 6.1&quot;, 15.6&quot;">
+              </div>
+
+              <!-- RAM -->
+              <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
+                <label for="watchRAM" class="form-label">RAM (GB)</label>
+                <input type="number" class="form-control" id="watchRAM" name="ram_memory" min="1" max="256"
+                placeholder="e.g. 16">
+              </div>
+
+              <!-- Graphics Card -->
+              <div class="col-md-6 conditional-field" data-categories="Laptops & PCs">
+                <label for="watchGraphics" class="form-label">Graphics Card</label>
+                <input type="text" class="form-control" id="watchGraphics" name="graphics_card"
+                placeholder="e.g. NVIDIA RTX 3060">
+              </div>
+
+              <!-- Storage -->
+              <div class="col-md-6 conditional-field"
+                data-categories="Smartphones,Laptops & PCs,Tablets,Gaming">
+                <label for="watchStorage" class="form-label">Storage</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" id="watchStorage" name="storage" min="1"
+                  max="999" placeholder="e.g. 256">
+                  <select class="form-select" id="storageUnit"
+                  onchange="document.getElementById('watchStorage').placeholder = this.value === 'TB' ? 'e.g. 1' : 'e.g. 256'">
+                    <option value="GB" selected>GB</option>
+                    <option value="TB">TB</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Operating System -->
+              <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
+                  <label for="watchOS" class="form-label">Operating System</label>
+                  <input list="osOptions" class="form-control" id="watchOS" name="os"
+                  placeholder="e.g. Android, Windows">
+                  <datalist id="osOptions">
+                    <option value="Android">
+                    <option value="Windows">
+                    <option value="Linux">
                   </datalist>
-                </div>
-
-                <!-- Condition -->
-                <div class="col-md-6">
-                  <label for="watchCondition" class="form-label">Condition</label>
-                  <select class="form-select" id="watchCondition" name="product_condition">
-                    <option value="" selected>Any Condition</option>
-                    <option value="Like New">Like New</option>
-                    <option value="Excellent">Excellent</option>
-                    <option value="Good">Good</option>
-                  </select>
-                </div>
-
-                <!-- Product Model -->
-                <div class="col-md-6">
-                  <label for="productNameOrModel" class="form-label">Product Model</label>
-                  <input type="text" class="form-control" id="productModel" name="product_model" placeholder="e.g. Galaxy S21" required>
-                </div>
-
-                <!-- Maximum Price -->
-                <div class="col-md-6">
-                  <div class="d-flex justify-content-between align-items-center mb-1">
-                    <label for="maxPrice" class="form-label mb-0">Maximum Price</label>
-                    <div class="form-check mb-0">
-                      <input class="form-check-input" type="checkbox" id="noLimitCheckbox" onchange="
-                        const priceInput = document.getElementById('maxPrice');
-                        if (this.checked) {
-                          priceInput.disabled = true;
-                          priceInput.removeAttribute('required');
-                          priceInput.value = '';
-                        } else {
-                          priceInput.disabled = false;
-                          priceInput.setAttribute('required', 'required');
-                        }
-                      ">
-                      <label class="form-check-label" for="noLimitCheckbox">No limit</label>
-                    </div>
-                  </div>
-                  <div class="input-group">
-                    <span class="input-group-text">€</span>
-                    <input type="number" class="form-control" id="maxPrice" name="max_price" min="1" required placeholder="e.g. 500">
-                  </div>
-                </div>
-
-                <!-- Color -->
-                <div class="col-md-6">
-                    <label for="watchColor" class="form-label">Color</label>
-                    <input type="text" class="form-control" id="watchColor" name="color"
-                        placeholder="e.g. Silver">
-                </div>
-
-                <!-- Year -->
-                <div class="col-md-6">
-                    <label for="watchYear" class="form-label">Year</label>
-                    <input type="number" class="form-control" id="watchYear" name="year" min="1979"
-                        max="${new Date().getFullYear()}" step="1" inputmode="numeric" pattern="[0-9]{4}"
-                        oninput="this.value = this.value.slice(0, 4);"
-                        onkeydown="return event.keyCode !== 69 && event.keyCode !== 190 && 
-                        event.keyCode !== 187 && event.keyCode !== 189;"
-                        onpaste="return false;" placeholder="e.g. 2023">
-                </div>
-
-                <!-- Category -->
-                <div class="col-md-6 w-100">
-                  <label for="watchCategory" class="form-label">Category</label>
-                  <select class="form-select" id="watchCategory" name="category" required>
-                    <option selected disabled value="">Select a category</option>
-                  </select>
-                </div>
               </div>
+            </div>
 
-              <!-- Category-Specific Fields -->
-              <div id="categorySpecificFields" class="row g-3 mt-1">
-                <!-- Processor -->
-                <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
-                  <label for="watchProcessor" class="form-label">Processor</label>
-                  <input type="text" class="form-control" id="watchProcessor" name="processor"
-                  placeholder="e.g. Apple A15, Intel i5">
-                </div>
-
-                <!-- Screen -->
-                <div class="col-md-6 conditional-field"
-                  data-categories="TVs & Monitors,Smartphones,Laptops & PCs,Tablets">
-                  <label for="watchScreen" class="form-label">Screen Size</label>
-                  <input type="text" class="form-control" id="watchScreen" name="screen"
-                  placeholder="e.g. 6.1&quot;, 15.6&quot;">
-                </div>
-
-                <!-- RAM -->
-                <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
-                  <label for="watchRAM" class="form-label">RAM (GB)</label>
-                  <input type="number" class="form-control" id="watchRAM" name="ram_memory" min="1" max="256"
-                  placeholder="e.g. 16">
-                </div>
-
-                <!-- Graphics Card -->
-                <div class="col-md-6 conditional-field" data-categories="Laptops & PCs">
-                  <label for="watchGraphics" class="form-label">Graphics Card</label>
-                  <input type="text" class="form-control" id="watchGraphics" name="graphics_card"
-                  placeholder="e.g. NVIDIA RTX 3060">
-                </div>
-
-                <!-- Storage -->
-                <div class="col-md-6 conditional-field"
-                  data-categories="Smartphones,Laptops & PCs,Tablets,Gaming">
-                  <label for="watchStorage" class="form-label">Storage</label>
-                  <div class="input-group">
-                    <input type="number" class="form-control" id="watchStorage" name="storage" min="1"
-                    max="999" placeholder="e.g. 256">
-                    <select class="form-select" id="storageUnit"
-                    onchange="document.getElementById('watchStorage').placeholder = this.value === 'TB' ? 'e.g. 1' : 'e.g. 256'">
-                      <option value="GB" selected>GB</option>
-                      <option value="TB">TB</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Operating System -->
-                <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
-                    <label for="watchOS" class="form-label">Operating System</label>
-                    <input list="osOptions" class="form-control" id="watchOS" name="os"
-                    placeholder="e.g. Android, Windows">
-                    <datalist id="osOptions">
-                      <option value="Android">
-                      <option value="Windows">
-                      <option value="Linux">
-                    </datalist>
-                </div>
-              </div>
-
-              <!-- Submit -->
-              <div class="mt-3 d-grid">
-                <button type="submit" class="btn btn-success" disabled>Create Product Alert</button>
-              </div>
-            </form>
-          </div>
+            <!-- Submit -->
+            <div class="mt-3 d-grid">
+              <button type="submit" class="btn btn-success" disabled>Create Product Alert</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>`;
@@ -306,9 +330,53 @@ window.addEventListener('userAuthenticated', (event) => {
           throw new Error(err.error || 'Unknown error');
         }
 
-        showMessage('Success', 'Product alert created!', 'success');
+        // Handle product alert creation
+        const products = getProductAlertResults(watchData);
+
+        let modalContent = `
+        <div class="modal-header">
+          <h5 class="modal-title">Product alert created!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">`;
+        if (products.length > 0) {
+          modalContent += `
+          <p>We already found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
+          <div class="mt-3 border rounded overflow-auto">`;
+          products.forEach(product => {
+            modalContent += `
+              <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
+                <div class="d-flex align-items-center gap-3 p-0 card-body">
+                  <img src="../media/images/products/${product.image}" alt="${product.name}" 
+                  class="card-img p-3 border-end rounded-0 product-image"
+                  style="
+                  max-width: 200px;
+                  aspect-ratio: 1;
+                  object-fit: contain;
+                  cursor: pointer;
+                  ">
+                  <div class="ml-3">
+                    <h5
+                    style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
+                    >${product.name} <i class="fa fa-angle-right"></i></h5>
+                    <p class="mb-2">${product.category}</p>
+                    <p><strong>Price:</strong> €${product.price}</p>
+                  </div>
+                </div>
+              </div>`;
+          });
+          modalContent += `</div>`;
+        } else {
+          modalContent += `<p class="mt-3">We will alert you when a matching product becomes available.</p>`;
+        }
+        modalContent += `</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+        </div>`;
+
+        // Show the modal with the content
+        document.querySelector('#productAlertFormModal .modal-content').innerHTML = modalContent;
         fetchProductAlerts();
-        bootstrapModal.hide();
       } catch (err) {
         console.error("Error creating product alert:", err.message);
         showMessage('Error', 'Failed to create product alert. Please try again.', 'danger');
@@ -493,22 +561,83 @@ window.addEventListener('userAuthenticated', (event) => {
           card.className = 'card rounded-0 border-0 border-bottom';
           card.innerHTML = `
           <div class="card-body">
-            <h6 class="card-text"><strong>Alert for:</strong> <i>${item.product_model || 'N/A'}</i></h6>
+            <h5 class="card-text"><strong>Alert for:</strong> <i>${item.product_model || 'N/A'}</i></h5>
             <h6 class="card-text"><strong>Brand:</strong> ${item.brand || 'N/A'}</h6>
             <h6 class="card-text"><strong>Category:</strong> ${item.category || 'N/A'}</h6>
             <h6 class="card-text"><strong>Maximum Price:</strong> 
             ${item.max_price ? "€" + item.max_price : 'No Limit'}</h6>
-            <details>
-              <summary class="btn-link">See more details</summary>
+            <button class="mb-2 btn btn-primary btn-sm see-matches-btn">See current matches</button>
+            <details class="border rounded py-2 px-3">
+              <summary class="btn-link text-decoration-none">See more details</summary>
               <ul class="my-2">
                 ${itemDetails}
               </ul>
-              <button class="ms-3 btn btn-danger btn-sm">Delete Product Alert</button>
+              <button class="ms-3 mb-2 btn btn-danger btn-sm">Delete Product Alert</button>
             </details>
           </div>`;
 
           // Append to alerts section
           alertsSection.appendChild(card);
+
+          card.querySelector('.see-matches-btn').addEventListener("click", async () => {
+            console.log(item)
+            const products = await getProductAlertResults(item);
+
+            // Create modal container
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'dynamicMatchModal';
+            modal.tabIndex = -1;
+            modal.innerHTML = `
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Product Alert Matches</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  ${products.length > 0 ? `
+                    <p>We found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
+                    <div class="mt-3 border rounded overflow-auto">
+                      ${products.map(product => `
+                        <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
+                          <div class="d-flex align-items-center gap-3 p-0 card-body">
+                            <img src="../media/images/products/${product.image}" alt="${product.name}" 
+                            class="card-img p-3 border-end rounded-0 product-image"
+                            style="
+                            max-width: 200px;
+                            aspect-ratio: 1;
+                            object-fit: contain;
+                            cursor: pointer;
+                            ">
+                            <div class="ml-3">
+                              <h5
+                              style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
+                              >${product.name} <i class="fa fa-angle-right"></i></h5>
+                              <p class="mb-2">${product.category}</p>
+                              <p><strong>Price:</strong> €${product.price}</p>
+                            </div>
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `
+                    <p class="mt-3">No matching products found. We will notify you when something becomes available!</p>
+                  `}
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>`;
+
+            // Append modal to body
+            document.body.appendChild(modal);
+
+            // Initialize and show modal
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+          });
 
           // Attach event listener to this specific button
           const deleteBtn = card.querySelector('.btn-danger');
