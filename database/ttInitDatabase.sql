@@ -24,8 +24,8 @@ INSERT INTO clients (id, name, email, phone_number, address, city, country) VALU
 (19, 'El Mundo del Gadget', 'mundogadget@example.com', '612345678', 'Calle de Fuencarral 78, 28004', 'Madrid', 'Spain'),
 (20, 'Reciclaje Digital', 'reciclajedigital@example.com', '623456789', 'Carrer de València 150, 46005', 'Valencia', 'Spain'),
 (21, 'Segunda Mano Tech', 'segunda@example.com', '612345789', 'Carrer de la Pau 15, 46003', 'Valencia', 'Spain'),
-(22, 'Gizmos España', 'gizmos@example.com', '625678901', 'Avenida de la Constitución 10, 41001', 'Sevilla', 'Spain'),
-(23, 'E-Tech Spain', 'etechspain@example.com', '635789012', 'Calle del Carmen 34, 41003', 'Sevilla', 'Spain'),
+(22, 'Gizmos España', 'gizmos@example.com', '625678901', 'Avenida de la Constitución 10, 41001', 'Seville', 'Spain'),
+(23, 'E-Tech Spain', 'etechspain@example.com', '635789012', 'Calle del Carmen 34, 41003', 'Seville', 'Spain'),
 (24, 'ReparaTech', 'reparatech@example.com', '644321098', 'Carrer de la Diputació 125, 08015', 'Barcelona', 'Spain'),
 (25, 'Tech & Co.', 'techco@example.com', '651234567', 'Calle de San Bernardo 78, 28015', 'Madrid', 'Spain');
 

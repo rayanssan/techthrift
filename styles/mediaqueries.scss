@@ -6,6 +6,16 @@
     #search-form-mobile {
         display: flex !important;
     }
+
+    #username {
+        p {
+            display: none !important;
+        }
+
+        img {
+            margin: 0 !important;
+        }
+    }
 }
 
 @media (max-width: 768px) {
