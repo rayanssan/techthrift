@@ -45,7 +45,6 @@ window.addEventListener('userAuthenticated', (event) => {
       year: watchData.year ? watchData.year : "",
       maxPrice: watchData.max_price ? watchData.max_price : "",
     };
-    console.log(alertCriteria);
 
     const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
     return await productsResponse.json();
@@ -599,7 +598,6 @@ window.addEventListener('userAuthenticated', (event) => {
           alertsSection.appendChild(card);
 
           card.querySelector('.see-matches-btn').addEventListener("click", async () => {
-            console.log(item)
             const products = await getProductAlertResults(item);
 
             // Create modal container
