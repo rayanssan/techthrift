@@ -3,8 +3,10 @@
 window.addEventListener('userAuthenticated', (event) => {
   const loggedInUser = event.detail;
   if (loggedInUser == null) {
-    document.getElementById('alerts-section').innerHTML = `
-    <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
+    if (document.body.id == "wishlistPage") {
+      document.getElementById('alerts-section').innerHTML = `
+      <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
+    }
     return;
   }
 
@@ -49,21 +51,40 @@ window.addEventListener('userAuthenticated', (event) => {
     const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
     return await productsResponse.json();
   }
+  
+  // Periodically check for updates
+  setInterval(async () => {
+    try {
+      // Fetch alerts from the server
+      const res = await fetch(`/ttuser/interest/${loggedInUser.email}`);
+      const alertsList = await res.json();
+      
+      for (const alert of alertsList) {
+        const products = await getProductAlertResults(alert);
 
-  document.getElementById("create-palert-button").addEventListener("click", () => {
-    // Remove any existing modal
-    const existingModal = document.getElementById("productAlertFormModal");
-    if (existingModal) existingModal.remove();
+        // If there are new matching products, show a notification
+        // TODO
+      }
+    } catch (error) {
+      console.error('Error fetching or processing alerts:', error);
+    }
+  }, 5000);
+  
+  if (document.body.id == "wishlistPage") {
+    document.getElementById("create-palert-button").addEventListener("click", () => {
+      // Remove any existing modal
+      const existingModal = document.getElementById("productAlertFormModal");
+      if (existingModal) existingModal.remove();
 
-    // Create modal wrapper
-    const modal = document.createElement("div");
-    modal.className = "modal fade";
-    modal.id = "productAlertFormModal";
-    modal.tabIndex = -1;
-    modal.setAttribute("aria-hidden", "true");
+      // Create modal wrapper
+      const modal = document.createElement("div");
+      modal.className = "modal fade";
+      modal.id = "productAlertFormModal";
+      modal.tabIndex = -1;
+      modal.setAttribute("aria-hidden", "true");
 
-    // Modal content
-    modal.innerHTML = `
+      // Modal content
+      modal.innerHTML = `
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -244,125 +265,125 @@ window.addEventListener('userAuthenticated', (event) => {
       </div>
     </div>`;
 
-    // Append modal to body
-    document.body.appendChild(modal);
+      // Append modal to body
+      document.body.appendChild(modal);
 
-    fetch('/tt/categories')
-      .then(res => res.json())
-      .then(categories => {
-        const order = [
-          "Home", "Smartphones", "Laptops & PCs", "Gaming", "TVs & Monitors",
-          "Audio", "Tablets", "Cameras", "Smartwatches",
-          "Accessories", "Home Appliances", "Other"
-        ];
-        // Sort
-        categories.sort((a, b) => {
-          const indexA = order.indexOf(a.category);
-          const indexB = order.indexOf(b.category);
-          return indexA - indexB;
-        });
-        document.getElementById("watchCategory").innerHTML = `
+      fetch('/tt/categories')
+        .then(res => res.json())
+        .then(categories => {
+          const order = [
+            "Home", "Smartphones", "Laptops & PCs", "Gaming", "TVs & Monitors",
+            "Audio", "Tablets", "Cameras", "Smartwatches",
+            "Accessories", "Home Appliances", "Other"
+          ];
+          // Sort
+          categories.sort((a, b) => {
+            const indexA = order.indexOf(a.category);
+            const indexB = order.indexOf(b.category);
+            return indexA - indexB;
+          });
+          document.getElementById("watchCategory").innerHTML = `
       <option selected disabled value="">Select a category</option>
       ${categories.map(c => `<option value="${c.category}">${c.category}</option>`).join('')}
     `;
-      })
-      .catch(err => {
-        console.error("Failed to load categories:", err);
-      });
-
-    document.getElementById("watchCategory").addEventListener("change", function (e) {
-      if (e.target && e.target.id === "watchCategory") {
-        const selected = e.target.value;
-        document.querySelectorAll(".conditional-field").forEach(field => {
-          const categories = field.dataset.categories.split(",");
-          field.style.display = categories.includes(selected) ? "block" : "none";
+        })
+        .catch(err => {
+          console.error("Failed to load categories:", err);
         });
-      }
-    });
 
-    // Hide OS field if brand is Apple
-    document.querySelector("#watchBrand").addEventListener("change", function (e) {
-      if (document.querySelector("#watchBrand").value.toLowerCase() == "apple") {
-        document.querySelector("#watchOS").parentElement.classList.add("d-none");
-        document.querySelector("#watchOS").value = "";
-      } else {
-        document.querySelector("#watchOS").parentElement.classList.remove("d-none");
-      }
-    });
-
-    // Trigger once
-    const changeCategoryEvent = new Event("change");
-    document.getElementById("watchCategory").dispatchEvent(changeCategoryEvent);
-
-    // Initialize and show modal
-    const bootstrapModal = new bootstrap.Modal(modal);
-    bootstrapModal.show();
-
-    // Listen for changes in the form to enable/disable submit button when needed
-    document.getElementById("product-alert-form").addEventListener("change", () => {
-      const form = document.getElementById("product-alert-form");
-      const requiredFields = form.querySelectorAll("[required]");
-      const submitButton = form.querySelector("button[type='submit']");
-
-      let allFilled = true;
-      requiredFields.forEach(field => {
-        if (!field.value.trim()) {
-          allFilled = false;
+      document.getElementById("watchCategory").addEventListener("change", function (e) {
+        if (e.target && e.target.id === "watchCategory") {
+          const selected = e.target.value;
+          document.querySelectorAll(".conditional-field").forEach(field => {
+            const categories = field.dataset.categories.split(",");
+            field.style.display = categories.includes(selected) ? "block" : "none";
+          });
         }
       });
 
-      submitButton.disabled = !allFilled;
-    });
+      // Hide OS field if brand is Apple
+      document.querySelector("#watchBrand").addEventListener("change", function (e) {
+        if (document.querySelector("#watchBrand").value.toLowerCase() == "apple") {
+          document.querySelector("#watchOS").parentElement.classList.add("d-none");
+          document.querySelector("#watchOS").value = "";
+        } else {
+          document.querySelector("#watchOS").parentElement.classList.remove("d-none");
+        }
+      });
 
-    // Handle new product alert form submission
-    document.getElementById("product-alert-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
+      // Trigger once
+      const changeCategoryEvent = new Event("change");
+      document.getElementById("watchCategory").dispatchEvent(changeCategoryEvent);
 
-      const formData = new FormData(e.target);
-      const watchData = Object.fromEntries(formData.entries());
+      // Initialize and show modal
+      const bootstrapModal = new bootstrap.Modal(modal);
+      bootstrapModal.show();
 
-      if (watchData.storage) {
-        watchData.storage = `${watchData.storage} ${document.querySelector("#storageUnit").value}`;
-      }
-      if (watchData.ram_memory) {
-        watchData.ram_memory += " GB";
-      }
-      if (!watchData.product_condition) {
-        watchData.product_condition = null;
-      }
+      // Listen for changes in the form to enable/disable submit button when needed
+      document.getElementById("product-alert-form").addEventListener("change", () => {
+        const form = document.getElementById("product-alert-form");
+        const requiredFields = form.querySelectorAll("[required]");
+        const submitButton = form.querySelector("button[type='submit']");
 
-      // Add interested_user from logged-in user object
-      watchData.interested_user = loggedInUser.email;
-
-      try {
-        const response = await fetch('/ttuser/interest', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(watchData)
+        let allFilled = true;
+        requiredFields.forEach(field => {
+          if (!field.value.trim()) {
+            allFilled = false;
+          }
         });
 
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || 'Unknown error');
+        submitButton.disabled = !allFilled;
+      });
+
+      // Handle new product alert form submission
+      document.getElementById("product-alert-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const watchData = Object.fromEntries(formData.entries());
+
+        if (watchData.storage) {
+          watchData.storage = `${watchData.storage} ${document.querySelector("#storageUnit").value}`;
+        }
+        if (watchData.ram_memory) {
+          watchData.ram_memory += " GB";
+        }
+        if (!watchData.product_condition) {
+          watchData.product_condition = null;
         }
 
-        // Handle product alert creation
-        const products = await getProductAlertResults(watchData);
-        
-        let modalContent = `
+        // Add interested_user from logged-in user object
+        watchData.interested_user = loggedInUser.email;
+
+        try {
+          const response = await fetch('/ttuser/interest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(watchData)
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Unknown error');
+          }
+
+          // Handle product alert creation
+          const products = await getProductAlertResults(watchData);
+
+          let modalContent = `
         <div class="modal-header">
           <h5 class="modal-title">Product alert created!</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">`;
-        if (products.length > 0) {
-          modalContent += `
+          if (products.length > 0) {
+            modalContent += `
           <p>We already found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
           <div class="mt-3 border rounded overflow-auto">`;
-          products.forEach(product => {
-            modalContent += `
+            products.forEach(product => {
+              modalContent += `
               <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
                 <div class="d-flex align-items-center gap-3 p-0 card-body">
                   <img src="../media/images/products/${product.image}" alt="${product.name}" 
@@ -382,47 +403,47 @@ window.addEventListener('userAuthenticated', (event) => {
                   </div>
                 </div>
               </div>`;
-          });
-          modalContent += `</div>`;
-        } else {
-          modalContent += `<p class="mt-3">We will alert you when a matching product becomes available.</p>`;
-        }
-        modalContent += `</div>
+            });
+            modalContent += `</div>`;
+          } else {
+            modalContent += `<p class="mt-3">We will alert you when a matching product becomes available.</p>`;
+          }
+          modalContent += `</div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
         </div>`;
 
-        // Show the modal with the content
-        document.querySelector('#productAlertFormModal .modal-content').innerHTML = modalContent;
-        fetchProductAlerts();
-      } catch (err) {
-        console.error("Error creating product alert:", err.message);
-        showMessage('Error', 'Failed to create product alert. Please try again.', 'danger');
-      }
-    });
-  });
-
-  const fetchWishlist = () => {
-    fetch(`/ttuser/wishlist/${loggedInUser.email}`).then(res => res.json())
-      .then(wishlist => {
-        const wishlistSection = document.getElementById('wishlist-section');
-        if (wishlist.length === 0) {
-          wishlistSection.innerHTML = `
-        <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
-          return;
+          // Show the modal with the content
+          document.querySelector('#productAlertFormModal .modal-content').innerHTML = modalContent;
+          fetchProductAlerts();
+        } catch (err) {
+          console.error("Error creating product alert:", err.message);
+          showMessage('Error', 'Failed to create product alert. Please try again.', 'danger');
         }
-        // Sort wishlist by date_inserted (most recent first)
-        wishlist.sort((a, b) => new Date(b.date_inserted) - new Date(a.date_inserted));
+      });
+    });
 
-        document.querySelector('.wishlist-text').classList.add("d-none");
-        wishlistSection.innerHTML = ``;
-        wishlist.forEach(item => {
-          fetch(`/ttuser/wishlist/count/${item.product_id}`)
-            .then(res => res.json())
-            .then(data => {
-              const wishlistedProductCount = data.count || 0;
+    const fetchWishlist = () => {
+      fetch(`/ttuser/wishlist/${loggedInUser.email}`).then(res => res.json())
+        .then(wishlist => {
+          const wishlistSection = document.getElementById('wishlist-section');
+          if (wishlist.length === 0) {
+            wishlistSection.innerHTML = `
+        <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
+            return;
+          }
+          // Sort wishlist by date_inserted (most recent first)
+          wishlist.sort((a, b) => new Date(b.date_inserted) - new Date(a.date_inserted));
 
-              const productHTML = `
+          document.querySelector('.wishlist-text').classList.add("d-none");
+          wishlistSection.innerHTML = ``;
+          wishlist.forEach(item => {
+            fetch(`/ttuser/wishlist/count/${item.product_id}`)
+              .then(res => res.json())
+              .then(data => {
+                const wishlistedProductCount = data.count || 0;
+
+                const productHTML = `
               <div class="wishlist-item card rounded-0 border-0 border-bottom" id="wishlist-item-${item.id}">
                   <div class="d-flex align-items-center gap-3 p-0 card-body">
                       <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
@@ -441,143 +462,143 @@ window.addEventListener('userAuthenticated', (event) => {
                           <p class="mb-2">${item.category}</p>
                           <p><strong>Price:</strong> €${item.price}</p>
                           ${localStorage.getItem('cartProducts') &&
-                  JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
-                  `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
+                    JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
+                    `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
                           data-product-id="${item.product_id}">In your cart</a>` :
-                  `<a class="btn btn-primary me-2 shadow add-to-cart-button"
+                    `<a class="btn btn-primary me-2 shadow add-to-cart-button"
                           data-product-id="${item.product_id}">Add to cart</a>`}
                           <button class="btn btn-danger btn-sm remove-from-wishlist" 
                           data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
                             Remove
                           </button>
                           <p class="mt-3"><i>${wishlistedProductCount == 1 ? `${wishlistedProductCount} person has` :
-                  `${wishlistedProductCount} people have`} this item in their wishlist.</i></p>
+                    `${wishlistedProductCount} people have`} this item in their wishlist.</i></p>
                       </div>
                   </div>
               </div>`;
-              wishlistSection.insertAdjacentHTML('beforeend', productHTML);
+                wishlistSection.insertAdjacentHTML('beforeend', productHTML);
 
-              // Add event listener for "Add to cart" button
-              document.querySelector(`#wishlist-item-${item.id} .add-to-cart-button`)?.addEventListener('click', function () {
-                // Get the current cart products from localStorage (initialize as an empty array if not set)
-                let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
-                const productId = parseInt(this.getAttribute("data-product-id"));
-                // Add the current product's id to the cart array if not already in the cart
-                if (!cartProducts.includes(productId)) {
-                  cartProducts.push(productId);
-                  localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
-                }
-
-                this.textContent = "In your cart";
-                this.classList.replace("btn-primary", "btn-success");
-                this.classList.add("disabled");
-                window.location.href = "/cart";
-              });
-
-              // Add event listeners for removing products from wishlist
-              document.querySelector(`#wishlist-item-${item.id} .remove-from-wishlist`)?.addEventListener('click', function () {
-                const wishlistEntryId = this.getAttribute('data-wishlist-entry-id');
-
-                fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
-                  method: 'DELETE'
-                }).then(response => {
-                  if (response.ok) {
-                    // Remove the product from the UI
-                    const wishlistItem = document.getElementById(`wishlist-item-${wishlistEntryId}`);
-                    wishlistItem.remove();
-                    if (wishlistSection.innerHTML.trim() == "") {
-                      wishlistSection.innerHTML = `
-                      <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
-                      document.querySelector('.wishlist-text').classList.remove("d-none");
-                    }
-                  } else {
-                    throw new Error('Failed to remove product from wishlist');
+                // Add event listener for "Add to cart" button
+                document.querySelector(`#wishlist-item-${item.id} .add-to-cart-button`)?.addEventListener('click', function () {
+                  // Get the current cart products from localStorage (initialize as an empty array if not set)
+                  let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
+                  const productId = parseInt(this.getAttribute("data-product-id"));
+                  // Add the current product's id to the cart array if not already in the cart
+                  if (!cartProducts.includes(productId)) {
+                    cartProducts.push(productId);
+                    localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
                   }
-                })
-                  .catch(err => {
-                    console.error(err);
-                    alert('Failed to remove product from wishlist');
-                  });
+
+                  this.textContent = "In your cart";
+                  this.classList.replace("btn-primary", "btn-success");
+                  this.classList.add("disabled");
+                  window.location.href = "/cart";
+                });
+
+                // Add event listeners for removing products from wishlist
+                document.querySelector(`#wishlist-item-${item.id} .remove-from-wishlist`)?.addEventListener('click', function () {
+                  const wishlistEntryId = this.getAttribute('data-wishlist-entry-id');
+
+                  fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
+                    method: 'DELETE'
+                  }).then(response => {
+                    if (response.ok) {
+                      // Remove the product from the UI
+                      const wishlistItem = document.getElementById(`wishlist-item-${wishlistEntryId}`);
+                      wishlistItem.remove();
+                      if (wishlistSection.innerHTML.trim() == "") {
+                        wishlistSection.innerHTML = `
+                      <p class="text-center text-muted mt-3">No items have been added to your wishlist.</p>`;
+                        document.querySelector('.wishlist-text').classList.remove("d-none");
+                      }
+                    } else {
+                      throw new Error('Failed to remove product from wishlist');
+                    }
+                  })
+                    .catch(err => {
+                      console.error(err);
+                      alert('Failed to remove product from wishlist');
+                    });
+                });
+              })
+              .catch(err => {
+                console.error("Error fetching wishlist count:", err);
               });
-            })
-            .catch(err => {
-              console.error("Error fetching wishlist count:", err);
-            });
-        });
-      })
-      .catch(err => {
-        console.error(err);
-        const wishlistSection = document.getElementById('wishlist-section');
-        wishlistSection.innerHTML = `
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          const wishlistSection = document.getElementById('wishlist-section');
+          wishlistSection.innerHTML = `
         <p class="text-center text-muted mt-3">Error loading wishlist. Please try again later.</p>`;
-      });
-  }
-  fetchWishlist();
+        });
+    }
+    fetchWishlist();
 
-  const fetchProductAlerts = () => {
-    fetch(`/ttuser/interest/${loggedInUser.email}`).then(res => res.json())
-      .then(alertsList => {
-        const alertsSection = document.getElementById('alerts-section');
-        if (alertsList.length === 0) {
-          alertsSection.innerHTML = `
+    const fetchProductAlerts = () => {
+      fetch(`/ttuser/interest/${loggedInUser.email}`).then(res => res.json())
+        .then(alertsList => {
+          const alertsSection = document.getElementById('alerts-section');
+          if (alertsList.length === 0) {
+            alertsSection.innerHTML = `
         <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
-          return;
-        }
-        document.querySelector('.alerts-text').innerHTML =
-          `<i>We will notify you when products matching your alerts become available.</i>`;
-        alertsSection.innerHTML = ``;
-
-        alertsList.forEach(item => {
-          const fieldMap = {
-            category: "Category",
-            color: "Color",
-            graphics_card: "Graphics Card",
-            os: "Operating System",
-            processor: "Processor",
-            ram_memory: "RAM",
-            screen: "Screen Size",
-            storage: "Storage",
-            product_condition: "Condition",
-            date_inserted: "Alert created in"
-          };
-
-          /**
-           * Converts an ISO date string into a human-readable localized date and time format.
-           *
-           * @function formatDate
-           * @param {string} isoString - A date string in ISO 8601 format (e.g., "2025-04-20T14:30:00Z").
-           * @returns {string} - A formatted date string based on the user's locale, including year, 
-           * month (long), day, hour, and minute.
-           */
-          function formatDate(isoString) {
-            const date = new Date(isoString);
-            return date.toLocaleString(undefined, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
+            return;
           }
+          document.querySelector('.alerts-text').innerHTML =
+            `<i>We will notify you when products matching your alerts become available.</i>`;
+          alertsSection.innerHTML = ``;
 
-          const itemDetails = Object.entries(item)
-            .filter(([key, value]) => key !== "id" && key !== "interested_user"
-              && key !== "brand"
-              && key !== "product_model"
-              && key !== "category"
-              && key !== "max_price"
-              && key !== "allKeys" && value)
-            .map(([key, value]) => {
-              const displayKey = fieldMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-              const displayValue = key === 'date_inserted' ? formatDate(value) : value;
-              return `<li><strong>${displayKey}:</strong> ${displayValue}</li>`;
-            })
-            .join("");
+          alertsList.forEach(item => {
+            const fieldMap = {
+              category: "Category",
+              color: "Color",
+              graphics_card: "Graphics Card",
+              os: "Operating System",
+              processor: "Processor",
+              ram_memory: "RAM",
+              screen: "Screen Size",
+              storage: "Storage",
+              product_condition: "Condition",
+              date_inserted: "Alert created in"
+            };
 
-          // Create the card element
-          const card = document.createElement('div');
-          card.className = 'card rounded-0 border-0 border-bottom';
-          card.innerHTML = `
+            /**
+             * Converts an ISO date string into a human-readable localized date and time format.
+             *
+             * @function formatDate
+             * @param {string} isoString - A date string in ISO 8601 format (e.g., "2025-04-20T14:30:00Z").
+             * @returns {string} - A formatted date string based on the user's locale, including year, 
+             * month (long), day, hour, and minute.
+             */
+            function formatDate(isoString) {
+              const date = new Date(isoString);
+              return date.toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+            }
+
+            const itemDetails = Object.entries(item)
+              .filter(([key, value]) => key !== "id" && key !== "interested_user"
+                && key !== "brand"
+                && key !== "product_model"
+                && key !== "category"
+                && key !== "max_price"
+                && key !== "allKeys" && value)
+              .map(([key, value]) => {
+                const displayKey = fieldMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const displayValue = key === 'date_inserted' ? formatDate(value) : value;
+                return `<li><strong>${displayKey}:</strong> ${displayValue}</li>`;
+              })
+              .join("");
+
+            // Create the card element
+            const card = document.createElement('div');
+            card.className = 'card rounded-0 border-0 border-bottom';
+            card.innerHTML = `
           <div class="card-body">
             <h5 class="card-text"><strong>Alert for:</strong> <i>${item.product_model || 'N/A'}</i></h5>
             <h6 class="card-text"><strong>Brand:</strong> ${item.brand || 'N/A'}</h6>
@@ -594,18 +615,18 @@ window.addEventListener('userAuthenticated', (event) => {
             </details>
           </div>`;
 
-          // Append to alerts section
-          alertsSection.appendChild(card);
+            // Append to alerts section
+            alertsSection.appendChild(card);
 
-          card.querySelector('.see-matches-btn').addEventListener("click", async () => {
-            const products = await getProductAlertResults(item);
+            card.querySelector('.see-matches-btn').addEventListener("click", async () => {
+              const products = await getProductAlertResults(item);
 
-            // Create modal container
-            const modal = document.createElement('div');
-            modal.className = 'modal fade';
-            modal.id = 'dynamicMatchModal';
-            modal.tabIndex = -1;
-            modal.innerHTML = `
+              // Create modal container
+              const modal = document.createElement('div');
+              modal.className = 'modal fade';
+              modal.id = 'dynamicMatchModal';
+              modal.tabIndex = -1;
+              modal.innerHTML = `
             <div class="modal-dialog modal-lg modal-dialog-centered">
               <div class="modal-content">
                 <div class="modal-header">
@@ -648,47 +669,47 @@ window.addEventListener('userAuthenticated', (event) => {
               </div>
             </div>`;
 
-            // Append modal to body
-            document.body.appendChild(modal);
+              // Append modal to body
+              document.body.appendChild(modal);
 
-            // Initialize and show modal
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
-          });
+              // Initialize and show modal
+              const bsModal = new bootstrap.Modal(modal);
+              bsModal.show();
+            });
 
-          // Attach event listener to this specific button
-          const deleteBtn = card.querySelector('.btn-danger');
-          deleteBtn.addEventListener("click", async () => {
-            const confirmed = await showDialog(
-              'Confirm Delete',
-              `Are you sure you want to delete this product alert?`,
-              'Delete',
-              'Cancel'
-            );
+            // Attach event listener to this specific button
+            const deleteBtn = card.querySelector('.btn-danger');
+            deleteBtn.addEventListener("click", async () => {
+              const confirmed = await showDialog(
+                'Confirm Delete',
+                `Are you sure you want to delete this product alert?`,
+                'Delete',
+                'Cancel'
+              );
 
-            if (confirmed) {
-              fetch(`/ttuser/interest/remove/${item.id}`, {
-                method: 'DELETE'
-              })
-                .then(response => {
-                  if (response.ok) {
-                    card.remove();
-                    if (alertsSection.innerHTML.trim() == "") {
-                      alertsSection.innerHTML = `
-                  <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
-                    }
-                  }
+              if (confirmed) {
+                fetch(`/ttuser/interest/remove/${item.id}`, {
+                  method: 'DELETE'
                 })
-                .catch(error => {
-                  console.error('Error:', error);
-                  alert('Error removing product alert');
-                });
-            }
+                  .then(response => {
+                    if (response.ok) {
+                      card.remove();
+                      if (alertsSection.innerHTML.trim() == "") {
+                        alertsSection.innerHTML = `
+                  <p class="text-center text-muted mt-3">No product alerts have been created.</p>`;
+                      }
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error removing product alert');
+                  });
+              }
+            });
           });
         });
-      });
+    }
+    fetchProductAlerts();
   }
-
-  fetchProductAlerts();
 });
 

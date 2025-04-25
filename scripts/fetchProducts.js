@@ -68,7 +68,7 @@ function updatePaginationControls() {
         const startPage = Math.max(1, currentPage - 1);
         const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-        // Adjust if we're near the end
+        // Adjust near the end
         let realStart = startPage;
         if (endPage - startPage < maxVisiblePages - 1 && totalPages >= maxVisiblePages) {
             realStart = Math.max(1, totalPages - maxVisiblePages + 1);
@@ -93,7 +93,8 @@ function updatePaginationControls() {
             ellipsis.textContent = '•••';
             ellipsis.className = 'align-self-center text-secondary px-1';
             paginationPages.appendChild(ellipsis);
-        } else if (currentPage >= 3 && totalPages > 3) {
+        } 
+        if (currentPage >= 3 && totalPages > 3) {
             const ellipsis = document.createElement('span');
             ellipsis.textContent = '•••';
             ellipsis.className = 'align-self-center text-secondary px-1';
