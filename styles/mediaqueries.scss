@@ -25,6 +25,16 @@
         }
     }
 
+    #featuredContainer {
+        div {
+            height: 105px !important;
+        }
+
+        img {
+            height: 225px !important;
+        }
+    }
+
     #filtersContainer {
         button[data-bs-target="#filtersCollapse"] {
             display: unset !important;
@@ -48,6 +58,18 @@
             input[type='range'] {
                 width: 100%;
             }
+        }
+    }
+}
+
+@media (max-width: 500px) {
+    #featuredContainer {
+        div {
+            height: 85px !important;
+        }
+
+        img {
+            height: 180px !important;
         }
     }
 }

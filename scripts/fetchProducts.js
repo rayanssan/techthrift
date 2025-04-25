@@ -93,7 +93,7 @@ function updatePaginationControls() {
             ellipsis.textContent = '•••';
             ellipsis.className = 'align-self-center text-secondary px-1';
             paginationPages.appendChild(ellipsis);
-        } else {
+        } else if (currentPage >= 3 && totalPages > 3) {
             const ellipsis = document.createElement('span');
             ellipsis.textContent = '•••';
             ellipsis.className = 'align-self-center text-secondary px-1';

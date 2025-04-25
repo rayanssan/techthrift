@@ -15,9 +15,9 @@ featuredCategories.forEach(category => {
         class="d-flex mb-2 featured-link">
         <div class="card w-100 shadow justify-content-center overflow-hidden" style="height: 150px">
                 <img alt="${category.name} Image" 
-                     src="../media/images/featured/${category.image}" 
-                     class="rounded" 
-                     style="height: 265px; object-fit: contain;">
+                    src="../media/images/featured/${category.image}" 
+                    class="rounded px-3" 
+                    style="height: 305px; object-fit: contain;">
         </div>
     </div>`;
     document.getElementById('featuredContainer').insertAdjacentHTML('beforeend', card);
