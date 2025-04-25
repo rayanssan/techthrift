@@ -45,6 +45,7 @@ window.addEventListener('userAuthenticated', (event) => {
       year: watchData.year ? watchData.year : "",
       maxPrice: watchData.max_price ? watchData.max_price : "",
     };
+    console.log(alertCriteria);
 
     const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
     return await productsResponse.json();
@@ -349,8 +350,8 @@ window.addEventListener('userAuthenticated', (event) => {
         }
 
         // Handle product alert creation
-        const products = getProductAlertResults(watchData);
-
+        const products = await getProductAlertResults(watchData);
+        
         let modalContent = `
         <div class="modal-header">
           <h5 class="modal-title">Product alert created!</h5>
