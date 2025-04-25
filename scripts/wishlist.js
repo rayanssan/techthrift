@@ -45,7 +45,6 @@ window.addEventListener('userAuthenticated', (event) => {
       year: watchData.year ? watchData.year : "",
       maxPrice: watchData.max_price ? watchData.max_price : "",
     };
-    console.log(alertCriteria);
 
     const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
     return await productsResponse.json();
