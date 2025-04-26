@@ -266,34 +266,58 @@ router.get('/tt/product/:id', (req, res) => {
 // Add product
 router.post('/tt/add', (req, res) => {
     const newProduct = req.body;
-    db.execute(`INSERT INTO products 
-        (name, store_nipc, condition, availability, description, category) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)`, [
-        newProduct.name,
-        newProduct.store_nipc,
-        newProduct.condition,
-        newProduct.availability,
-        newProduct.description,
-        newProduct.category], function (err) {
+
+    // Construct the fields
+    const columns = [
+        'name', 
+        'store_nipc', 
+        'product_condition', 
+        'availability', 
+        'description', 
+        'category', 
+        'brand', 
+        'model_code', 
+        'color', 
+        'weight', 
+        'dimensions', 
+        'processor', 
+        'screen', 
+        'ram_memory', 
+        'graphics_card', 
+        'storage', 
+        'keyboard', 
+        'os', 
+        'year'
+    ];
+
+    const values = columns.map(col => newProduct[col] !== undefined ? newProduct[col] : null);
+
+    // Generate the query dynamically based on the columns and values
+    const query = `
+        INSERT INTO products 
+        (${columns.join(', ')}) 
+        VALUES (${columns.map(() => '?').join(', ')})
+    `;
+
+    db.execute(query, values, function (err, result) {
+        if (err) {
+            return res.status(500).send({ error: err.message });
+        }
+
+        const insertedProduct = {
+            id: result.insertId,
+            ...newProduct
+        };
+
+        // Update replica
+        dbR.execute(query, values, function (err) {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
-            // Update replica 
-            dbR.execute(`INSERT INTO products 
-                (name, store_nipc, condition, availability, description, category) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`, [
-                newProduct.name,
-                newProduct.store_nipc,
-                newProduct.condition,
-                newProduct.availability,
-                newProduct.description,
-                newProduct.category], function (err) {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                });
-            res.status(201).json(newProduct); // Send back the newly added product
         });
+
+        res.status(201).json(insertedProduct); // Send back the newly added product
+    });
 });
 
 // Remove a product
@@ -321,6 +345,7 @@ router.delete('/tt/remove/:id', (req, res) => {
 // Set product up for sale
 router.post('/tt/sale/add', (req, res) => {
     const newSaleProduct = req.body;
+    
     // Check if product exists in the products table
     db.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
         if (err) {
@@ -874,17 +899,25 @@ router.post('/ttuser/client/add', (req, res) => {
 });
 
 // Edit client
-router.put('/ttuser/client/edit', (req, res) => {
+router.put('/ttuser/client/edit/:id', (req, res) => {
     const updatedClient = req.body;
+    const id = req.params.id;
 
-    /* Since some attributes are optional, extract keys and values from the newClient object, 
-    filtering out any undefined values, and do not allow changing the id */
+    // Determine whether id is numeric or string
+    const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value));
+
+    // Since some attributes are optional, extract keys and values from the newClient object,
+    // filtering out any undefined values, and do not allow changing the id
     const columns = Object.keys(updatedClient).filter(key =>
-        updatedClient[key] !== undefined && key !== 'id');
+        updatedClient[key] !== undefined && key !== 'id'
+    );
     const values = columns.map(col => updatedClient[col]);
 
-    // Add the id at the end of the values array for the WHERE clause
-    values.push(updatedClient.id);
+    values.push(isNumeric(id) ? parseInt(id) : null,
+                isNumeric(id) ? parseInt(id) : null, 
+                isNumeric(id) ? parseInt(id) : null, 
+                id,
+                id);
 
     const query = `UPDATE clients SET ${columns.map(col => `${col} = ?`).join(', ')} 
     WHERE id = ? OR nif = ? OR nic = ? OR email = ? OR phone_number = ?`;

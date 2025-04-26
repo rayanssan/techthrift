@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS clients (
     dob DATE,
     address VARCHAR(255),
     city VARCHAR(255),
-    country VARCHAR(255)
+    country VARCHAR(255),
+    read_notifications INT,
+    unread_notifications INT
 ); 
 
 CREATE TABLE IF NOT EXISTS entities ( -- Stores and Charities

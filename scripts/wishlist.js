@@ -51,25 +51,58 @@ window.addEventListener('userAuthenticated', (event) => {
     const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
     return await productsResponse.json();
   }
-  
+
   // Periodically check for updates
   setInterval(async () => {
     try {
+      // Fetch user notifications
+      const resUser = await fetch(`/ttuser/client/${loggedInUser.email}`);
+      const user = await resUser.json();
+      let userReadNotifications = user.read_notifications;
+      let userUnreadNotifications = user.unread_notifications;
+
       // Fetch alerts from the server
-      const res = await fetch(`/ttuser/interest/${loggedInUser.email}`);
-      const alertsList = await res.json();
-      
+      const resAlertsList = await fetch(`/ttuser/interest/${loggedInUser.email}`);
+      const alertsList = await resAlertsList.json();
+
       for (const alert of alertsList) {
         const products = await getProductAlertResults(alert);
 
-        // If there are new matching products, show a notification
-        // TODO
+        if (products.length > userReadNotifications) {
+          // New products found
+          const newNotifications = products.length - userReadNotifications;
+          userUnreadNotifications += newNotifications;
+
+          await fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ unread_notifications: userUnreadNotifications })
+          });
+
+          // Update notification badge on wishlist button
+          const wishlistButton = document.getElementById('wishlist');
+          if (wishlistButton) {
+            wishlistButton.insertAdjacentHTML('beforeend', `
+              <span class="badge bg-danger ms-2">${userUnreadNotifications}</span>
+            `);
+          }
+        } else if (products.length < userReadNotifications) {
+          // Products were sold or removed
+          userReadNotifications = products.length;
+
+          await fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ unread_notifications: userUnreadNotifications })
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching or processing alerts:', error);
     }
   }, 5000);
-  
+
+
   if (document.body.id == "wishlistPage") {
     document.getElementById("create-palert-button").addEventListener("click", () => {
       // Remove any existing modal
@@ -371,6 +404,14 @@ window.addEventListener('userAuthenticated', (event) => {
 
           // Handle product alert creation
           const products = await getProductAlertResults(watchData);
+
+          await fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ read_notifications: products.length,
+              unread_notifications: 0
+             })
+          });
 
           let modalContent = `
         <div class="modal-header">
@@ -712,4 +753,3 @@ window.addEventListener('userAuthenticated', (event) => {
     fetchProductAlerts();
   }
 });
-
