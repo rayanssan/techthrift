@@ -1,3 +1,15 @@
+@media (1200px <= width <= 1400px) {
+    #featuredContainer {
+        zoom: 0.86;
+    }
+}
+
+@media (1000px <= width <= 1200px) {
+    #featuredContainer {
+        zoom: 0.72;
+    }
+}
+
 @media (max-width: 1200px) {
     #search-form {
         display: none !important;

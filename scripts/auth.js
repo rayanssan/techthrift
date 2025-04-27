@@ -34,7 +34,7 @@ async function getUserProfile(token) {
     let loggedInUser = await response.json();
     const event = new CustomEvent('userAuthenticated', { detail: loggedInUser });
     window.dispatchEvent(event);
-    
+
     const newClient = {
       name: loggedInUser.nickname,
       email: loggedInUser.email
@@ -82,7 +82,7 @@ async function getUserProfile(token) {
   }
 }
 
-window.onload = async() => {
+window.onload = async () => {
   let token = getAccessTokenFromUrl();
 
   if (token) {
@@ -111,6 +111,11 @@ window.onload = async() => {
     if (document.getElementById('wishlist')) {
       document.getElementById('wishlist').remove();
     }
+    ["My orders", "Refunds"].forEach(
+      t => ((l => l && (l.href = "/authentication"))(
+        Array.from(document.querySelectorAll("footer li a")).
+          find(e => e.textContent.trim() === t))));
+
 
     const event = new CustomEvent('userAuthenticated', { detail: null });
     window.dispatchEvent(event);

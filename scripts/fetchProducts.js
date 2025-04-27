@@ -281,7 +281,7 @@ if (document.body.id === "homepage") {
                             <h2><a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
                                 <i class="fa fa-angle-left fs-3"></i>
                             </a>${product.name}</h2>
-                            <p class="fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            <h5 class="fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
                             <p>${product.description}</p>
                             <!-- Product condition -->
                             <p class="mb-0 d-flex align-items-center gap-1">
