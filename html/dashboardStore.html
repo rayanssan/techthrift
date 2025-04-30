@@ -37,7 +37,7 @@
             <div class="row align-items-center gap-3">
                 <!-- Left elements -->
                 <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
-                    <a id="header-brand" href="/adminDashboard">
+                    <a id="header-brand" href="/dashboardStore">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
                 </div>
@@ -115,6 +115,112 @@
                 </div>
             </div>
 
+            <div id="add-product-form" class="d-none">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="mb-0">Add New Product</h3>
+                    <div>
+                        <button class="btn btn-light me-2" onclick="hideAddProductForm()">Cancel</button>
+                        <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
+                    </div>
+                </div>
+
+                <form id="productForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Product Images</label>
+                            <div id="dropzone" class="border border-secondary rounded p-0 text-center position-relative"
+                                style="height: auto;">
+                                <!-- This will be replaced dynamically -->
+                            </div>
+
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Brand</label>
+                                <input type="text" name="brand" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Condition</label>
+                                <select name="condition"class="form-select" required>
+                                    <option value="Like New">Like New</option>
+                                    <option value="Excellent">Excellent</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Needs Repair">Needs Repair"</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Availability</label>
+                                <select name="availability" class="form-select">
+                                    <option value="true">Available</option>
+                                    <option value="false">Unavailable</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <input type="text" name="category" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Color</label>
+                                <input type="text" name="color" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Screen</label>
+                                <input type="text" name="screen" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Operating System (OS)</label>
+                                <input type="text" name="os" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Storage</label>
+                                <input type="text" name="storage" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Processor</label>
+                                <input type="text" name="processor" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Graphics Card</label>
+                                <input type="text" name="graphics_card" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">RAM Memory</label>
+                                <input type="text" name="ram_memory" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Year</label>
+                                <input type="text" name="year" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Keyboard</label>
+                                <input type="text" name="keyboard" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dimensions</label>
+                                <input type="text" name="dimensions" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Weight</label>
+                                <input type="text" name="weight" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Model Code</label>
+                                <input type="text" name="model_code" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-4">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" rows="5" class="form-control"></textarea>
+                    </div>
+
+                </form>
+            </div>
+
             <hr>
 
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -159,59 +265,6 @@
                         <tbody id="repair-parts-list" class="animate-list"></tbody>
                     </table>
                 </div>
-            </div>
-
-            <div id="add-product-form" class="d-none">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Add New Product</h2>
-                    <div>
-                        <button class="btn btn-light me-2" onclick="hideAddProductForm()">Cancel</button>
-                        <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
-                    </div>
-                </div>
-
-                <form id="productForm" enctype="multipart/form-data">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Product Images</label>
-                            <div id="dropzone" class="border border-secondary rounded p-0 text-center position-relative"
-                                style="height: auto;">
-                                <!-- This will be replaced dynamically -->
-                            </div>
-
-                        </div>
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input type="text" name="name" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Store NIPC</label>
-                                <input type="text" name="store_nipc" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Condition</label>
-                                <input type="text" name="condition" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Availability</label>
-                                <select name="availability" class="form-select">
-                                    <option value="true">Available</option>
-                                    <option value="false">Unavailable</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Category</label>
-                                <input type="text" name="category" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3 mt-4">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" rows="5" class="form-control"></textarea>
-                    </div>
-
-                </form>
             </div>
         </div>
     </div>

@@ -18,6 +18,17 @@ dbReady.then((isConnected) => {
         app.use(dbConnection);
         app.use(ttApi);
 
+        // Handle non-existent routes
+        app.use((req, res) => {
+            const errorPagePath = path.join(__dirname, 'html/404.html');
+            res.status(404).sendFile(errorPagePath, (err) => {
+                if (err) {
+                    console.error('Error serving 404.html:', err);
+                    res.status(500).send('Internal Server Error');
+                }
+            });
+        });
+
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
@@ -201,6 +212,6 @@ app.get("/geocode", async (req, res) => {
         res.json(data);
     } catch (err) {
         console.log(err);
-		res.status(500).send(err.message);
+        res.status(500).send(err.message);
     }
 });
