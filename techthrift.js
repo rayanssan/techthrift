@@ -148,45 +148,45 @@ app.get('/authentication', (req, res) => {
     });
 });
 
-// Admin Dashboard
-app.get('/adminDashboard', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminDashboard.html');
+// Employee Dashboard
+app.get('/dashboardEmployee', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/dashboardEmployee.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving adminDashboard.html:', err);
+            console.error('Error serving dashboardEmployee.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
 });
 
-// Admin Products
-app.get('/adminProducts', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminProducts.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminProducts.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Users
-app.get('/adminUsers', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminUsers.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminadminUsers.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Orders
+// Admin Orders // to remove
 app.get('/adminOrders', (req, res) => {
     const pagePath = path.join(__dirname, 'html/adminOrders.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving adminadminOrders.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Store Dashboard
+app.get('/dashboardStore', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/dashboardStore.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving dashboardStore.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Charity Dashboard
+app.get('/dashboardCharity', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/dashboardCharity.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving dashboardCharity.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
