@@ -7,9 +7,6 @@ CREATE TABLE IF NOT EXISTS clients (
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
-    address VARCHAR(255),
-    city VARCHAR(255),
-    country VARCHAR(255),
     read_notifications INT,
     unread_notifications INT
 ); 
@@ -18,6 +15,9 @@ CREATE TABLE IF NOT EXISTS entities ( -- Stores and Charities
     id INT PRIMARY KEY,
     nipc CHAR(9) UNIQUE NOT NULL,
     entity_type ENUM('store', 'charity') NOT NULL,
+    address VARCHAR(255),
+    city VARCHAR(255),
+    country VARCHAR(255),
 
     FOREIGN KEY (id) REFERENCES clients(id)
 );
@@ -26,25 +26,16 @@ CREATE TRIGGER check_entity_client_fields
 BEFORE INSERT ON entities
 FOR EACH ROW
 BEGIN
-    DECLARE address_ VARCHAR(255);
-    DECLARE city_ VARCHAR(255);
-    DECLARE country_ VARCHAR(255);
     DECLARE nic_ CHAR(9);
     DECLARE nif_ CHAR(9);
     DECLARE dob_ DATE;
     DECLARE gender_ ENUM('Male', 'Female', 'Other');
 
     -- Get relevant fields from clients
-    SELECT address, city, country, nic, nif, dob, gender
-    INTO address_, city_, country_, nic_, nif_, dob_, gender_
+    SELECT nic, nif, dob, gender
+    INTO  nic_, nif_, dob_, gender_
     FROM clients
     WHERE id = NEW.id;
-
-    -- Check required fields are NOT NULL
-    IF address_ IS NULL OR city_ IS NULL OR country_ IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Entities must have address, city, and country NOT NULL';
-    END IF;
 
     -- Check forbidden fields are NULL
     IF nic_ IS NOT NULL OR nif_ IS NOT NULL OR dob_ IS NOT NULL OR gender_ IS NOT NULL THEN
@@ -208,6 +199,10 @@ CREATE TABLE IF NOT EXISTS sales (
     paypal_order_number VARCHAR(255) UNIQUE,
     store INT,
     employee INT,
+    shipping_address VARCHAR(255) NOT NULL,
+    shipping_postal_code VARCHAR(255) NOT NULL,
+    shipping_city VARCHAR(255) NOT NULL,
+    shipping_country CHAR(2) NOT NULL,
 
     FOREIGN KEY (transaction_id) REFERENCES transactions(id),
     FOREIGN KEY (store) REFERENCES entities(id),
