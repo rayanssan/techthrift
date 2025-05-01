@@ -808,7 +808,7 @@ if (document.body.id === "homepage") {
 
         paginatedProducts.forEach(product => {
             const productCard = `
-            <div id="productid-${product.id}" class="w-100 d-flex card border-0 w-100 my-2 shadow h-100 flex-column mb-auto">
+            <div id="productid-${product.id}" class="w-100 d-flex card border-0 w-100 my-2 shadow flex-column mb-auto">
                 <!-- Button to remove product from cart -->
                 <button class="btn-close btn-sm
                 p-3 ms-auto remove-product" 

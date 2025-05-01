@@ -1897,12 +1897,18 @@ router.post('/ttuser/reports/add', (req, res) => {
 });
 
 // Get sale transactions
-router.get('/tttransaction/transactions/sales', (req, res) => {
+router.get('/tttransaction/sales', (req, res) => {
     const query = `
         SELECT 
             t.*, 
             s.is_online, 
             s.paypal_order_number,
+            s.employee,
+            s.store,
+            s.shipping_address,
+            s.shipping_postal_code,
+            s.shipping_city,
+            s.shipping_country,
             p.id AS product_id,
             p.name AS product_name
         FROM transactions t 
@@ -1922,6 +1928,12 @@ router.get('/tttransaction/transactions/sales', (req, res) => {
                     date_inserted: row.date_inserted,
                     is_online: row.is_online,
                     paypal_order_number: row.paypal_order_number,
+                    overseeing_employee: row.employee,
+                    store_of_sale: row.store,
+                    shipping_address: row.shipping_address,
+                    shipping_postal_code: row.shipping_postal_code,
+                    shipping_city: row.shipping_city,
+                    shipping_country: row.shipping_country,
                     sold_products: []
                 });
             }
@@ -1954,8 +1966,10 @@ router.get('/tttransaction/transactions/sales', (req, res) => {
 });
 
 // Add sale transaction
-router.post('/tttransaction/transactions/sales/add', (req, res) => {
-    const { client, transaction_value, is_online, paypal_order_number, products } = req.body;
+router.post('/tttransaction/sales/add', (req, res) => {
+    const { client, transaction_value, is_online, paypal_order_number, 
+        employee, store, shipping_address, shipping_postal_code, 
+        shipping_city, shipping_country, products } = req.body;
 
     if (!client || !transaction_value ||
         typeof is_online !== 'boolean' || !Array.isArray(products)) {
@@ -1968,8 +1982,9 @@ router.post('/tttransaction/transactions/sales/add', (req, res) => {
     `;
 
     const saleQuery = `
-        INSERT INTO sales (transaction_id, is_online, paypal_order_number)
-        VALUES (?, ?, ?)
+        INSERT INTO sales (transaction_id, is_online, paypal_order_number, employee, store, 
+        shipping_address, shipping_postal_code, shipping_city, shipping_country)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const soldProductsQuery = `
@@ -1991,7 +2006,8 @@ router.post('/tttransaction/transactions/sales/add', (req, res) => {
         const transactionId = result.insertId;
 
         db.query(saleQuery,
-            [transactionId, is_online, paypal_order_number || null], (err) => {
+            [transactionId, is_online, paypal_order_number, employee, store, shipping_address,
+                shipping_postal_code, shipping_city, shipping_country || null], (err) => {
                 if (err) {
                     console.error(err);
                     return res.status(500).send({ error: err.message });
@@ -2028,7 +2044,8 @@ router.post('/tttransaction/transactions/sales/add', (req, res) => {
 
                         // Insert into sales
                         dbR.query(saleQuery,
-                            [transactionId, is_online, paypal_order_number || null], (err) => {
+                            [transactionId, is_online, paypal_order_number, employee, store, shipping_address,
+                                shipping_postal_code, shipping_city, shipping_country || null], (err) => {
                                 if (err) {
                                     console.error(err);
                                     return res.status(500).send({ error: err.message });
@@ -2064,7 +2081,7 @@ router.post('/tttransaction/transactions/sales/add', (req, res) => {
 });
 
 // Check availability of products
-router.post('/tttransaction/products/check-availability', (req, res) => {
+router.post('/tttransaction/product-availability', (req, res) => {
     const { productIds } = req.body;
     if (!Array.isArray(productIds) || productIds.length === 0) {
         return res.status(400).json({ error: "No products provided" });
@@ -2088,7 +2105,7 @@ router.post('/tttransaction/products/check-availability', (req, res) => {
 
 
 // Get repair transactions
-router.get('/tttransaction/transactions/repairs', (req, res) => {
+router.get('/tttransaction/repairs', (req, res) => {
     const query = `SELECT * FROM transactions t 
     INNER JOIN repairs r ON r.transaction_id = t.id`
     db.query(query, [], (err, rows) => {
@@ -2108,7 +2125,7 @@ router.get('/tttransaction/transactions/repairs', (req, res) => {
 
 
 // Get donation transactions
-router.get('/tttransaction/transactions/repairs', (req, res) => {
+router.get('/tttransaction/donations', (req, res) => {
     const query = `SELECT * FROM transactions t 
     INNER JOIN donations ON d.transaction_id = t.id`
     db.query(query, [], (err, rows) => {
