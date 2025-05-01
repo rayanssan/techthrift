@@ -93,7 +93,7 @@ function updatePaginationControls() {
             ellipsis.textContent = '•••';
             ellipsis.className = 'align-self-center text-secondary px-1';
             paginationPages.appendChild(ellipsis);
-        } 
+        }
         if (currentPage >= 3 && totalPages > 3) {
             const ellipsis = document.createElement('span');
             ellipsis.textContent = '•••';
@@ -290,16 +290,23 @@ if (document.body.id === "homepage") {
                 } fs-6">${product.product_condition} </span>
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
-                                ${localStorage.getItem('cartProducts') &&
-                                JSON.parse(localStorage.getItem('cartProducts')).includes(product.id) ?
-                                `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">
-                                <i class="fa-solid fa-cart-arrow-down"></i> In your cart</a>` :
-                                `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">
-                                <i class="fas fa-cart-plus"></i> Add to cart</a>`}
-                                <a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
+                                ${product.availability === 0 ?
+                    `<a id="add-to-cart-button" class="btn btn-secondary me-2 shadow disabled">
+                                    <i class="fas fa-ban"></i> This product has been sold already
+                                </a>` :
+                    (localStorage.getItem('cartProducts') &&
+                        JSON.parse(localStorage.getItem('cartProducts')).includes(product.id) ?
+                        `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">
+                                    <i class="fa-solid fa-cart-arrow-down"></i> In your cart
+                                </a>` :
+                        `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">
+                                    <i class="fas fa-cart-plus"></i> Add to cart
+                                </a>`)}
+                                ${product.availability === 0 ? "" :
+                    `<a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                     <span id="wishlist-count" class="text-secondary">0</span>
-                                </a>
+                                </a>`}
                             </div>
                             ${technicalSpecsSection}
                             <!-- Store -->
@@ -339,7 +346,9 @@ if (document.body.id === "homepage") {
                     .then(res => res.json())
                     .then(data => {
                         const count = data.count || 0;
-                        document.getElementById("wishlist-count").textContent = count;
+                        if (document.getElementById("wishlist-count")) {
+                            document.getElementById("wishlist-count").textContent = count;
+                        }
                     })
                     .catch(err => {
                         console.error("Error fetching wishlist count:", err);
@@ -362,19 +371,21 @@ if (document.body.id === "homepage") {
                                 }
                             });
 
-                            const button = document.getElementById('add-to-wishlist-button')
-                            const icon = button.querySelector('i');
-                            const count = button.querySelector('span');
-                            if (isInWishlist) {
-                                button.classList.add('wishlisted');
-                                count.classList.replace('text-secondary', 'text-white')
-                                icon.classList.replace('text-secondary', 'text-white');
-                                button.style.backgroundColor = "navy";
-                            } else {
-                                button.classList.remove('wishlisted');
-                                count.classList.replace('text-white', 'text-secondary')
-                                icon.classList.replace('text-white', 'text-secondary');
-                                button.style.backgroundColor = "unset";
+                            const button = document.getElementById('add-to-wishlist-button');
+                            if (button) {
+                                const icon = button.querySelector('i');
+                                const count = button.querySelector('span');
+                                if (isInWishlist) {
+                                    button.classList.add('wishlisted');
+                                    count.classList.replace('text-secondary', 'text-white')
+                                    icon.classList.replace('text-secondary', 'text-white');
+                                    button.style.backgroundColor = "navy";
+                                } else {
+                                    button.classList.remove('wishlisted');
+                                    count.classList.replace('text-white', 'text-secondary')
+                                    icon.classList.replace('text-white', 'text-secondary');
+                                    button.style.backgroundColor = "unset";
+                                }
                             }
                         })
                         .catch(err => console.error('Failed to fetch wishlist:', err));
@@ -383,7 +394,7 @@ if (document.body.id === "homepage") {
             checkWishlist();
 
             // Add event listener for "❤️" button
-            document.getElementById('add-to-wishlist-button').addEventListener('click', function () {
+            document.getElementById('add-to-wishlist-button')?.addEventListener('click', function () {
                 const button = this;
                 const isWishlisted = button.classList.contains('wishlisted');
 
@@ -434,7 +445,7 @@ if (document.body.id === "homepage") {
             const productContainer = document.getElementById('product-info');
             productContainer.innerHTML = `<div class="container my-4">
                 <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Back to Homepage</a>
-                <p class="text-center fw-bold display-4">Sorry, this page does not exist anymore. ☹️</p>
+                <p class="text-center fw-bold display-5 p-5 mt-4 mb-5">Sorry, this page does not exist anymore. ☹️</p>
             </div>`;
         }
     }
@@ -852,6 +863,6 @@ if (document.body.id === "homepage") {
             });
         });
     }
-    
+
     window.fetchCartProducts = fetchCartProducts;
 }

@@ -16,7 +16,7 @@ router.get('/tt', (req, res) => {
         INNER JOIN entities e ON p.store_nipc = e.nipc
         INNER JOIN clients c ON e.id = c.id 
         LEFT JOIN productImages pi ON p.id = pi.product AND pi.image_order = 1 
-        WHERE 1=1`;
+        WHERE p.availability = 1 `;
 
     let params = [];
 
@@ -269,24 +269,24 @@ router.post('/tt/add', (req, res) => {
 
     // Construct the fields
     const columns = [
-        'name', 
-        'store_nipc', 
-        'product_condition', 
-        'availability', 
-        'description', 
-        'category', 
-        'brand', 
-        'model_code', 
-        'color', 
-        'weight', 
-        'dimensions', 
-        'processor', 
-        'screen', 
-        'ram_memory', 
-        'graphics_card', 
-        'storage', 
-        'keyboard', 
-        'os', 
+        'name',
+        'store_nipc',
+        'product_condition',
+        'availability',
+        'description',
+        'category',
+        'brand',
+        'model_code',
+        'color',
+        'weight',
+        'dimensions',
+        'processor',
+        'screen',
+        'ram_memory',
+        'graphics_card',
+        'storage',
+        'keyboard',
+        'os',
         'year'
     ];
 
@@ -345,7 +345,7 @@ router.delete('/tt/remove/:id', (req, res) => {
 // Set product up for sale
 router.post('/tt/sale/add', (req, res) => {
     const newSaleProduct = req.body;
-    
+
     // Check if product exists in the products table
     db.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
         if (err) {
@@ -914,10 +914,10 @@ router.put('/ttuser/client/edit/:id', (req, res) => {
     const values = columns.map(col => updatedClient[col]);
 
     values.push(isNumeric(id) ? parseInt(id) : null,
-                isNumeric(id) ? parseInt(id) : null, 
-                isNumeric(id) ? parseInt(id) : null, 
-                id,
-                id);
+        isNumeric(id) ? parseInt(id) : null,
+        isNumeric(id) ? parseInt(id) : null,
+        id,
+        id);
 
     const query = `UPDATE clients SET ${columns.map(col => `${col} = ?`).join(', ')} 
     WHERE id = ? OR nif = ? OR nic = ? OR email = ? OR phone_number = ?`;
@@ -1037,7 +1037,7 @@ router.post('/ttuser/employee/add', (req, res) => {
         if (!row) {
             return res.status(404).send('Client not found');
         }
-        
+
         // Insert the user into the employees table
         db.execute('INSERT INTO employees (id) VALUES (?)',
             [newEmployee.id], function (err) {
@@ -1690,11 +1690,11 @@ router.post('/ttuser/interest', (req, res) => {
     const columns = Object.keys(newInterest).filter(key => newInterest[key] !== undefined);
     const values = columns.map(col => {
         if (col === 'year') {
-          return parseInt(newInterest[col], 10) || null;
+            return parseInt(newInterest[col], 10) || null;
         }
         return newInterest[col];
-      });
-      
+    });
+
 
     const query = `INSERT INTO interests (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
 
@@ -1912,7 +1912,7 @@ router.get('/tttransaction/transactions/sales', (req, res) => {
     `;
     const groupSales = (rows) => {
         const salesMap = new Map();
-    
+
         rows.forEach(row => {
             if (!salesMap.has(row.id)) {
                 salesMap.set(row.id, {
@@ -1925,15 +1925,15 @@ router.get('/tttransaction/transactions/sales', (req, res) => {
                     sold_products: []
                 });
             }
-    
+
             const sale = salesMap.get(row.id);
-    
+
             sale.sold_products.push({
                 id: row.product_id,
                 name: row.product_name
             });
         });
-    
+
         return Array.from(salesMap.values());
     }
     db.query(query, [], (err, rows) => {
@@ -1957,16 +1957,31 @@ router.get('/tttransaction/transactions/sales', (req, res) => {
 router.post('/tttransaction/transactions/sales/add', (req, res) => {
     const { client, transaction_value, is_online, paypal_order_number, products } = req.body;
 
-    if (!client || !transaction_value || typeof is_online !== 'boolean' || !Array.isArray(products)) {
+    if (!client || !transaction_value ||
+        typeof is_online !== 'boolean' || !Array.isArray(products)) {
         return res.status(400).send({ error: 'Missing required fields' });
     }
 
-    // Insert transaction first
     const transactionQuery = `
         INSERT INTO transactions (client, transaction_value)
         VALUES (?, ?)
     `;
 
+    const saleQuery = `
+        INSERT INTO sales (transaction_id, is_online, paypal_order_number)
+        VALUES (?, ?, ?)
+    `;
+
+    const soldProductsQuery = `
+        INSERT INTO soldProducts (product_id, sale_id)
+        VALUES ?
+    `;
+
+    const productsQuery = `
+        UPDATE products SET availability = 0 WHERE id = ?
+    `;
+
+    // Insert transaction
     db.query(transactionQuery, [client, transaction_value], (err, result) => {
         if (err) {
             console.error(err);
@@ -1975,73 +1990,102 @@ router.post('/tttransaction/transactions/sales/add', (req, res) => {
 
         const transactionId = result.insertId;
 
-        // Insert into sales
-        const saleQuery = `
-            INSERT INTO sales (transaction_id, is_online, paypal_order_number)
-            VALUES (?, ?, ?)
-        `;
-
-        db.query(saleQuery, [transactionId, is_online, paypal_order_number || null], (err) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send({ error: err.message });
-            }
-
-            // Insert sold products
-            if (products.length === 0) {
-                return res.status(400).send({ error: 'No products provided' });
-            }
-
-            const soldProductsQuery = `
-                INSERT INTO soldProducts (product_id, sale_id)
-                VALUES ?
-            `;
-
-            const soldProductsData = products.map(productId => [productId, transactionId]);
-
-            db.query(soldProductsQuery, [soldProductsData], (err) => {
+        db.query(saleQuery,
+            [transactionId, is_online, paypal_order_number || null], (err) => {
                 if (err) {
                     console.error(err);
                     return res.status(500).send({ error: err.message });
                 }
 
-                // Update replica
-                dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
+                // Insert sold products
+                if (products.length === 0) {
+                    return res.status(400).send({ error: 'No products provided' });
+                }
+
+                const soldProductsData = products.map(productId => [productId, transactionId]);
+
+                db.query(soldProductsQuery, [soldProductsData], (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).send({ error: err.message });
                     }
-            
-                    const transactionId = result.insertId;
 
-                    // Insert into sales
-                    dbR.query(saleQuery, [transactionId, is_online, paypal_order_number || null], (err) => {
+                    // Update availability of sold products
+                    products.forEach(productId => {
+                        db.query(productsQuery, [productId], (err) => {
+                            if (err) console.error('Product update error:', err.message);
+                        });
+                    });
+
+                    // Update replica
+                    dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
                         if (err) {
                             console.error(err);
                             return res.status(500).send({ error: err.message });
                         }
-            
-                        // Insert sold products
-                        if (products.length === 0) {
-                            return res.status(400).send({ error: 'No products provided' });
-                        }
-            
-                        const soldProductsData = products.map(productId => [productId, transactionId]);
-            
-                        dbR.query(soldProductsQuery, [soldProductsData], (err) => {
-                            if (err) {
-                                console.error(err);
-                                return res.status(500).send({ error: err.message });
-                            }
-                        });
-                    });
-                });
 
-                res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+                        const transactionId = result.insertId;
+
+                        // Insert into sales
+                        dbR.query(saleQuery,
+                            [transactionId, is_online, paypal_order_number || null], (err) => {
+                                if (err) {
+                                    console.error(err);
+                                    return res.status(500).send({ error: err.message });
+                                }
+
+                                // Insert sold products
+                                if (products.length === 0) {
+                                    return res.status(400).send({ error: 'No products provided' });
+                                }
+
+                                const soldProductsData = products.map(productId => [productId, transactionId]);
+
+                                dbR.query(soldProductsQuery, [soldProductsData], (err) => {
+                                    if (err) {
+                                        console.error(err);
+                                        return res.status(500).send({ error: err.message });
+                                    }
+
+                                    // Update availability of sold products
+                                    products.forEach(productId => {
+                                        dbR.query(productsQuery, [productId], (err) => {
+                                            if (err) console.error('Product update error:', err.message);
+                                        });
+                                    });
+                                });
+                            });
+                    });
+
+                    res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+                });
             });
+    });
+});
+
+// Check availability of products
+router.post('/tttransaction/products/check-availability', (req, res) => {
+    const { productIds } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0) {
+        return res.status(400).json({ error: "No products provided" });
+    }
+
+    const placeholders = productIds.map(() => '?').join(',');
+    const query = `SELECT id FROM products WHERE id IN (${placeholders}) AND availability = 0`;
+
+    db.query(query, productIds, (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        const unavailable = rows.map(row => row.id);
+        res.json({
+            allAvailable: unavailable.length === 0,
+            unavailable
         });
     });
 });
+
 
 // Get repair transactions
 router.get('/tttransaction/transactions/repairs', (req, res) => {
