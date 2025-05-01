@@ -1896,6 +1896,192 @@ router.post('/ttuser/reports/add', (req, res) => {
     });
 });
 
+// Get sale transactions
+router.get('/tttransaction/transactions/sales', (req, res) => {
+    const query = `
+        SELECT 
+            t.*, 
+            s.is_online, 
+            s.paypal_order_number,
+            p.id AS product_id,
+            p.name AS product_name
+        FROM transactions t 
+        INNER JOIN sales s ON s.transaction_id = t.id
+        INNER JOIN soldProducts sp ON s.transaction_id = sp.sale_id
+        INNER JOIN products p ON sp.product_id = p.id
+    `;
+    const groupSales = (rows) => {
+        const salesMap = new Map();
+    
+        rows.forEach(row => {
+            if (!salesMap.has(row.id)) {
+                salesMap.set(row.id, {
+                    id: row.id,
+                    client: row.client,
+                    transaction_value: row.transaction_value,
+                    date_inserted: row.date_inserted,
+                    is_online: row.is_online,
+                    paypal_order_number: row.paypal_order_number,
+                    sold_products: []
+                });
+            }
+    
+            const sale = salesMap.get(row.id);
+    
+            sale.sold_products.push({
+                id: row.product_id,
+                name: row.product_name
+            });
+        });
+    
+        return Array.from(salesMap.values());
+    }
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                const result = groupSales(rows);
+                res.json(result);
+            });
+        } else {
+            const result = groupSales(rows);
+            res.json(result);
+        }
+    });
+});
+
+// Add sale transaction
+router.post('/tttransaction/transactions/sales/add', (req, res) => {
+    const { client, transaction_value, is_online, paypal_order_number, products } = req.body;
+
+    if (!client || !transaction_value || typeof is_online !== 'boolean' || !Array.isArray(products)) {
+        return res.status(400).send({ error: 'Missing required fields' });
+    }
+
+    // Insert transaction first
+    const transactionQuery = `
+        INSERT INTO transactions (client, transaction_value)
+        VALUES (?, ?)
+    `;
+
+    db.query(transactionQuery, [client, transaction_value], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send({ error: err.message });
+        }
+
+        const transactionId = result.insertId;
+
+        // Insert into sales
+        const saleQuery = `
+            INSERT INTO sales (transaction_id, is_online, paypal_order_number)
+            VALUES (?, ?, ?)
+        `;
+
+        db.query(saleQuery, [transactionId, is_online, paypal_order_number || null], (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send({ error: err.message });
+            }
+
+            // Insert sold products
+            if (products.length === 0) {
+                return res.status(400).send({ error: 'No products provided' });
+            }
+
+            const soldProductsQuery = `
+                INSERT INTO soldProducts (product_id, sale_id)
+                VALUES ?
+            `;
+
+            const soldProductsData = products.map(productId => [productId, transactionId]);
+
+            db.query(soldProductsQuery, [soldProductsData], (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send({ error: err.message });
+                }
+
+                // Update replica
+                dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send({ error: err.message });
+                    }
+            
+                    const transactionId = result.insertId;
+
+                    // Insert into sales
+                    dbR.query(saleQuery, [transactionId, is_online, paypal_order_number || null], (err) => {
+                        if (err) {
+                            console.error(err);
+                            return res.status(500).send({ error: err.message });
+                        }
+            
+                        // Insert sold products
+                        if (products.length === 0) {
+                            return res.status(400).send({ error: 'No products provided' });
+                        }
+            
+                        const soldProductsData = products.map(productId => [productId, transactionId]);
+            
+                        dbR.query(soldProductsQuery, [soldProductsData], (err) => {
+                            if (err) {
+                                console.error(err);
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                    });
+                });
+
+                res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+            });
+        });
+    });
+});
+
+// Get repair transactions
+router.get('/tttransaction/transactions/repairs', (req, res) => {
+    const query = `SELECT * FROM transactions t 
+    INNER JOIN repairs r ON r.transaction_id = t.id`
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+
+// Get donation transactions
+router.get('/tttransaction/transactions/repairs', (req, res) => {
+    const query = `SELECT * FROM transactions t 
+    INNER JOIN donations ON d.transaction_id = t.id`
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
 // Get shipping costs
 router.get('/tttransaction/shipping', (req, res) => {
     db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {

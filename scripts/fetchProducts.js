@@ -717,7 +717,7 @@ if (document.body.id === "homepage") {
             cartPrice += parseFloat(product.price);
         });
         const prices = {
-            'shipping': shippingPrice == 0 ? 'Free' : shippingPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+            'shipping': shippingPrice == 0 ? 'Free' : shippingPrice.toFixed(2).replace(".", ","),
             'cart': cartPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
             'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
@@ -797,17 +797,18 @@ if (document.body.id === "homepage") {
 
         paginatedProducts.forEach(product => {
             const productCard = `
-            <div id="productid-${product.id}" class="w-100 d-flex mb-auto">
-                <div class="card border-0 w-100 my-2 shadow h-100 flex-row">
+            <div id="productid-${product.id}" class="w-100 d-flex card border-0 w-100 my-2 shadow h-100 flex-column mb-auto">
                 <!-- Button to remove product from cart -->
-                    <button class="btn-close p-2 btn-sm 
-                    position-absolute end-0 m-2 remove-product" 
-                    aria-label="Close" data-product-id="${product.id}"></button>
+                <button class="btn-close btn-sm
+                p-3 ms-auto remove-product" 
+                aria-label="Close" data-product-id="${product.id}"></button>
+                <hr class="mt-0 text-secondary">
+                <div class="d-flex flex-row">
                     <img onclick='location.href="/product?is=${product.id}"'
                     alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img"
                     style="width: 25%; aspect-ratio: 1;
                     object-fit: contain;cursor: pointer;">
-                    <div class="card-body d-flex flex-column">
+                    <div class="card-body overflow-hidden pt-0 d-flex flex-column">
                         <a class="mb-2 text-truncate text-decoration-none link-opacity-75-hover fs-5"
                         href="/product?is=${product.id}">${product.name} <i class="fa fa-angle-right" 
                         style="vertical-align: text-bottom;"></i></a>
@@ -851,9 +852,6 @@ if (document.body.id === "homepage") {
             });
         });
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchCartProducts();
-    });
-
+    
+    window.fetchCartProducts = fetchCartProducts;
 }

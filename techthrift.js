@@ -7,11 +7,17 @@ import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
+import https from 'https';
+import fs from 'fs';
 const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 app.use(express.json());
+
+// Set up HTTPS server
+const serverPem = fs.readFileSync(path.join(__dirname, 'certificates/server.pem'), 'utf8');
+const credentials = { key: serverPem, cert: serverPem };
 
 dbReady.then((isConnected) => {
     if (isConnected) {
@@ -29,8 +35,11 @@ dbReady.then((isConnected) => {
             });
         });
 
+        // https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
+        //     console.log(`Server is running on https://0.0.0.0:${PORT}`);
+        // });
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server is running on http://0.0.0.0:${PORT}`);
+            console.log(`Server is running on https://0.0.0.0:${PORT}`);
         });
     } else {
         exec('node resources/dbCreate.js', (err, stdout, stderr) => {
