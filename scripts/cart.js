@@ -3,9 +3,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetchCartProducts().then(() => {
 
+        let totalPrice;
         // Parse price
-        let totalPrice = document.querySelector("#total-price").
-            innerText.split(" ")[1].replace("€", "").replace(",", "").trim();
+        if (document.querySelector("#total-price")) {
+            totalPrice = document.querySelector("#total-price").
+                innerText.split(" ")[1].replace("€", "").replace(",", "").trim();
+        }
 
         /* PayPal */
 
