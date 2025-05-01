@@ -733,7 +733,7 @@ if (document.body.id === "homepage") {
             'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
         document.getElementById('shipping-price').textContent = `Shipping: 
-                €${prices.shipping}`;
+                €${prices.shipping} - Delivers in 5–7 days`;
         document.getElementById('total-price').innerHTML = `
                     <strong>
                         Total: €${prices.total}

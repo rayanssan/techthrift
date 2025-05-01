@@ -16,7 +16,7 @@ app.use(express.static(__dirname));
 app.use(express.json());
 
 // Set up HTTPS server
-const serverPem = fs.readFileSync(path.join(__dirname, 'certificates/server.pem'), 'utf8');
+const serverPem = fs.readFileSync(path.join(__dirname, 'haproxy.pem'), 'utf8');
 const credentials = { key: serverPem, cert: serverPem };
 
 dbReady.then((isConnected) => {
@@ -35,10 +35,7 @@ dbReady.then((isConnected) => {
             });
         });
 
-        // https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
-        //     console.log(`Server is running on https://0.0.0.0:${PORT}`);
-        // });
-        app.listen(PORT, '0.0.0.0', () => {
+        https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on https://0.0.0.0:${PORT}`);
         });
     } else {

@@ -15,8 +15,11 @@
     <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
     <!-- Font Awesome -->
     <!-- PayPal API -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT&components=buttons,applepay"></script>
     <!-- PayPal API -->
+    <script crossorigin
+    src="https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js"
+    ></script>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <!-- Stylesheets -->
@@ -89,6 +92,9 @@
                 <div class="card shadow-sm p-4">
                     <h5 class="mb-3">Payment</h5>
                     <!-- Payment options -->
+                    <apple-pay-button class="btn p-0 mb-3" buttonstyle="black" type="plain" locale="en-PT"
+                    style="--apple-pay-button-height: 3.2rem; --apple-pay-button-border-radius: 10px;"
+                    ></apple-pay-button>
                     <div id="paypal">
                     </div>
                     <!-- Payment options -->
