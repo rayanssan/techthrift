@@ -2,18 +2,19 @@ CREATE TABLE IF NOT EXISTS clients (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    phone_number VARCHAR(20) NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),
     nif CHAR(9) UNIQUE,
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
     address VARCHAR(255),
     city VARCHAR(255),
-    country VARCHAR(255)
+    country VARCHAR(255),
+    read_notifications INT,
+    unread_notifications INT
 ); 
 
-CREATE TABLE IF NOT EXISTS entities (
+CREATE TABLE IF NOT EXISTS entities ( -- Stores and Charities
     id INT PRIMARY KEY,
     nipc CHAR(9) UNIQUE NOT NULL,
     entity_type ENUM('store', 'charity') NOT NULL,
@@ -106,15 +107,12 @@ INSERT INTO categories (category) VALUES
 
 CREATE TABLE IF NOT EXISTS charityProjects (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    amountNeeded INT,
+    name VARCHAR(255) NOT NULL,
+    charity INT NOT NULL,
+    description VARCHAR(255),
     endDate DATE,
-    store INT NOT NULL,
-    organizer INT NOT NULL,
-    category VARCHAR(255),
 
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (category) REFERENCES categories(category),
-    FOREIGN KEY (organizer) REFERENCES clients(id)
+    FOREIGN KEY (charity) REFERENCES entities(id)
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -175,6 +173,12 @@ CREATE TABLE IF NOT EXISTS repairProducts (
     FOREIGN KEY (client_nic) REFERENCES clients(nic)
 );
 
+CREATE TABLE IF NOT EXISTS repairParts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS donationProducts (
     id INT PRIMARY KEY,
     charity_nipc CHAR(9) NOT NULL,
@@ -189,132 +193,107 @@ CREATE TABLE IF NOT EXISTS donationProducts (
     FOREIGN KEY (donor_nipc) REFERENCES entities(nipc)
 );
 
-CREATE TABLE IF NOT EXISTS charityProjects_products (
-    charityProject INT,
-    product INT,
-
-    PRIMARY KEY (charityProject, product),
-
-    FOREIGN KEY (charityProject) REFERENCES charityProjects(id),
-    FOREIGN KEY (product) REFERENCES products(id)
-);
-
 CREATE TABLE IF NOT EXISTS transactions (
-    store INT,
-    numSeq INT,
-    date DATE,
-    client INT NOT NULL,
-    employee INT NOT NULL,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    client VARCHAR(255) NOT NULL,
+    transaction_value DECIMAL(10,2) NOT NULL,
+    date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (store, numSeq),
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (client) REFERENCES clients(id),
-    FOREIGN KEY (employee) REFERENCES employees(id)
+    FOREIGN KEY (client) REFERENCES clients(email)
 );
 
 CREATE TABLE IF NOT EXISTS sales (
+    transaction_id INT PRIMARY KEY,
+    is_online BOOLEAN NOT NULL,
+    paypal_order_number VARCHAR(255) UNIQUE,
     store INT,
-    numSeq INT,
-    value DECIMAL(10,2) NOT NULL,
-    deliveryCost DECIMAL(10,2) NOT NULL,
+    employee INT,
 
-    PRIMARY KEY (store, numSeq),
-    CONSTRAINT ck_sales_value check (value >= 0),
-    FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq)
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (employee) REFERENCES employees(id),
+
+    -- If online sale then there is no store or employee overseeing
+    -- the sale.
+    CONSTRAINT chk_online_store_employee CHECK (
+        (is_online = TRUE AND store IS NULL AND employee IS NULL) 
+        OR (is_online = FALSE)
+    ),
+
+    -- If online transaction the paypal order number must not be null
+    CONSTRAINT chk_online_paypal_order_number CHECK (
+        (is_online = TRUE AND paypal_order_number IS NOT NULL) 
+        OR (is_online = FALSE)
+    )
 );
 
--- um cliente pode comprar vários dispositivos de uma vez
-CREATE TABLE IF NOT EXISTS sales_products (
-    store INT,
-    sale INT,
-    product INT,
+CREATE TABLE IF NOT EXISTS soldProducts (
+    product_id INT NOT NULL,
+    sale_id INT NOT NULL,
 
-    PRIMARY KEY (sale, product),
-
-    FOREIGN KEY (store, sale) REFERENCES sales(store, numSeq),
-    FOREIGN KEY (product) REFERENCES saleProducts(id)
+    PRIMARY KEY(product_id, sale_id),
+    FOREIGN KEY (sale_id) REFERENCES sales(transaction_id),
+    FOREIGN KEY (product_id) REFERENCES saleProducts(id)
 );
 
 CREATE TABLE IF NOT EXISTS repairs (
-    store INT,
-    numSeq INT,
-    description VARCHAR(255),
-    repairProduct INT NOT NULL,
+    transaction_id INT PRIMARY KEY,
+    product_id INT NOT NULL,
+    store INT NOT NULL,
+    employee INT NOT NULL,
 
-    PRIMARY KEY (store, numSeq),
-    FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq),
-    FOREIGN KEY (repairProduct) REFERENCES repairProducts(id)
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
+    FOREIGN KEY (product_id) REFERENCES repairProducts(id),
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (employee) REFERENCES employees(id)
 );
-
-CREATE TABLE IF NOT EXISTS parts (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS repairs_parts (
-    store INT,
-    repair INT,
-    part INT,
-    value DECIMAL(10,2), -- já existe no repairCosts, está aqui também por conveniencia
-
-    PRIMARY KEY (repair, part),
-
-    CONSTRAINT ck_repairs_parts_value check (value >= 0),
-    FOREIGN KEY (store, repair) REFERENCES repairs(store, numSeq),
-    FOREIGN KEY (part) REFERENCES parts(id)
-);
-
-CREATE TABLE IF NOT EXISTS repairCosts (
-    part INT,
-    product INT,
-    value DECIMAL(10,2) NOT NULL,
-
-    PRIMARY KEY (part, product),
-
-    CONSTRAINT ck_repairCosts_value check (value >= 0),
-    FOREIGN KEY (part) REFERENCES parts(id),
-    FOREIGN KEY (product) REFERENCES products(id)
-);
-
-CREATE TABLE IF NOT EXISTS diagnosed (
-    employee INT,
-    store INT,
-    repair INT,
-
-    PRIMARY KEY (employee, repair),
-
-    FOREIGN KEY (employee) REFERENCES employees(id),
-    FOREIGN KEY (store, repair) REFERENCES repairs(store, numSeq)
-);
-
 
 CREATE TABLE IF NOT EXISTS donations (
-    store INT,
-    numSeq INT,
-    date DATE NOT NULL,
-    donationProduct INT NOT NULL,
-    charityProject INT NOT NULL,
+    transaction_id INT PRIMARY KEY,
+    product_id INT NOT NULL,
+    store INT NOT NULL,
+    employee INT NOT NULL,
+    charity INT NOT NULL,
 
-    PRIMARY KEY (store, numSeq),
-    FOREIGN KEY (store, numSeq) REFERENCES transactions(store, numSeq),
-    FOREIGN KEY (donationProduct) REFERENCES donationProducts(id),
-    FOREIGN KEY (charityProject) REFERENCES charityProjects(id)
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
+    FOREIGN KEY (product_id) REFERENCES donationProducts(id),
+    FOREIGN KEY (store) REFERENCES entities(id),
+    FOREIGN KEY (employee) REFERENCES employees(id),
+    FOREIGN KEY (charity) REFERENCES entities(id)
 );
 
 CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    interested_user INT,
-    watched_product INT,
-    minPrice DECIMAL(10,2),
-    maxPrice DECIMAL(10,2),
-    minYear YEAR,
-    maxYear YEAR,
+    interested_user VARCHAR(255) NOT NULL,
+    brand VARCHAR(255) NOT NULL,
+    product_model VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    max_price DECIMAL(10,2),
+    color VARCHAR(255),
+    graphics_card VARCHAR(255),
+    os VARCHAR(255),
+    processor VARCHAR(255),
+    product_condition ENUM('Like New', 'Excellent', 'Good'),
+    ram_memory VARCHAR(255),
+    screen VARCHAR(255),
+    storage VARCHAR(255),
+    year YEAR,
+    date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT ck_interests_pricePositive check (minPrice >= 0),
-    CONSTRAINT ck_interests_price check (minPrice <= maxPrice),
-    CONSTRAINT ck_interests_year check (minYear <= maxYear),
-    FOREIGN KEY (interested_user) REFERENCES clients(id),
-    FOREIGN KEY (watched_product) REFERENCES products(id)
+    FOREIGN KEY (interested_user) REFERENCES clients(email),
+    FOREIGN KEY (category) REFERENCES categories(category)
+);
+
+CREATE TABLE IF NOT EXISTS wishlist (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    wishlisted_product INT NOT NULL,
+    interested_user VARCHAR(255) NOT NULL,
+    date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_wishlisted_product_interested_user 
+    UNIQUE (wishlisted_product, interested_user),
+    FOREIGN KEY (interested_user) REFERENCES clients(email),
+    FOREIGN KEY (wishlisted_product) REFERENCES saleProducts(id)
 );
 
 CREATE TABLE IF NOT EXISTS reports (

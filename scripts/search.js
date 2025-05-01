@@ -20,10 +20,19 @@ let recentSearches = JSON.parse(localStorage.getItem("recentSearches")) ||
 function populateRecentSearches(listElement, container) {
     listElement.innerHTML = '';
 
+    if (recentSearches.length < 3) {
+        recentSearches.push(['Apple', 'Android', 'Windows'].find(option => !recentSearches.includes(option)));
+    }
+
     recentSearches.forEach(search => {
         const listItem = document.createElement("li");
         const link = document.createElement("a");
-        link.textContent = search;
+        link.innerHTML = `
+        <span class="d-flex justify-content-between align-items-center">
+          <span class="text-truncate">${search}</span>
+          ${['Apple', 'Android', 'Windows'].includes(search) ? "" : 
+            '<i class="btn-close close-icon" style="scale: 0.8"></i>'}
+        </span>`;
 
         link.addEventListener("click", function (event) {
             event.preventDefault();
@@ -34,6 +43,19 @@ function populateRecentSearches(listElement, container) {
             localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
 
             window.location.href = `/search?is=${encodeURIComponent(search)}`;
+        });
+
+        // Handle "x" icon click separately
+        link.querySelector(".close-icon")?.addEventListener("click", function (event) {
+            if (event.target.classList.contains('close-icon')) {
+                event.preventDefault();
+                event.stopPropagation(); // Prevent the parent link click
+
+                recentSearches = recentSearches.filter(item => item !== search);
+                localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
+
+                populateRecentSearches(listElement, container); // Refresh UI
+            }
         });
 
         listItem.appendChild(link);
@@ -69,6 +91,7 @@ function setupSearchForm({
     const container = document.getElementById(containerId);
     const list = document.getElementById(listId);
     const button = form.querySelector("button[type=submit]");
+    const searchIcon = form.querySelector("span");
     const inputDefaultStyle = input.style;
     const buttonDefaultStyle = button.style;
 
@@ -80,7 +103,7 @@ function setupSearchForm({
     // Show recent searches on focus
     input.addEventListener("focus", function () {
         populateRecentSearches(list, container);
-        input.style.borderBottomLeftRadius = 'unset';
+        searchIcon.style.borderBottomLeftRadius = 'unset';
         button.style.borderBottomRightRadius = 'unset';
     });
 
@@ -88,7 +111,7 @@ function setupSearchForm({
     input.addEventListener("blur", function () {
         setTimeout(() => {
             container.style.display = 'none';
-            input.style = inputDefaultStyle;
+            searchIcon.style = inputDefaultStyle;
             button.style = buttonDefaultStyle;
         }, 200);
     });

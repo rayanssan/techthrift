@@ -1,3 +1,13 @@
+@media (1200px <= width <= 1400px) {
+  #featuredContainer {
+    zoom: 0.86;
+  }
+}
+@media (1000px <= width <= 1200px) {
+  #featuredContainer {
+    zoom: 0.72;
+  }
+}
 @media (max-width: 1200px) {
   #search-form {
     display: none !important;
@@ -5,10 +15,22 @@
   #search-form-mobile {
     display: flex !important;
   }
+  #username p {
+    display: none !important;
+  }
+  #username img {
+    margin: 0 !important;
+  }
 }
 @media (max-width: 768px) {
   .main-banner #main-banner-brand {
     display: none;
+  }
+  #featuredContainer div {
+    height: 105px !important;
+  }
+  #featuredContainer img {
+    height: 225px !important;
   }
   #filtersContainer button[data-bs-target="#filtersCollapse"] {
     display: unset !important;
@@ -27,5 +49,13 @@
   }
   #filtersContainer div input[type=range] {
     width: 100%;
+  }
+}
+@media (max-width: 500px) {
+  #featuredContainer div {
+    height: 85px !important;
+  }
+  #featuredContainer img {
+    height: 180px !important;
   }
 }/*# sourceMappingURL=mediaqueries.css.map */

@@ -34,11 +34,14 @@
         <div class="container">
             <div class="row align-items-center gap-3">
                 <!-- Header Elements -->
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center gap-2">
                     <a id="header-brand" href="/homepage">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
                     <form id="search-form" class="input-group flex-grow-1">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
                         <input id="search-input" type="text" class="form-control"
                             placeholder="Search for electronics..." aria-label="Search">
                         <button class="btn btn-dark" type="submit">Search</button>
@@ -56,23 +59,23 @@
                     align-items-center gap-1 ms-auto">
                         <a href="/authentication" id="username" class="border 
                     rounded py-1 px-3 nav-link d-flex 
-                        align-items-center">
+                        align-items-center btn btn-light">
                             <i class="fas fa-user-alt m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">···</p>
                         </a>
                         <a href="/stores" class="border 
                         rounded py-1 px-3 nav-link d-flex 
-                        align-items-center">
+                        align-items-center btn btn-light">
                             <i class="fas fa-store m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Stores</p>
                         </a>
-                        <a href="#" id="wishlist" class="border rounded 
-                        py-1 px-3 nav-link d-flex align-items-center">
+                        <a href="/wishlist" id="wishlist" class="border rounded 
+                        py-1 px-3 nav-link d-flex align-items-center btn btn-light">
                             <i class="fas fa-heart m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Wishlist</p>
                         </a>
                         <a href="/cart" class="border rounded 
-                        py-1 px-3 nav-link d-flex align-items-center">
+                        py-1 px-3 nav-link d-flex align-items-center btn btn-light">
                             <i class="fas fa-shopping-cart m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Cart</p>
                         </a>
@@ -80,6 +83,9 @@
                 </div>
 
                 <form id="search-form-mobile" class="input-group flex-grow-1">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
                     <input id="search-input-mobile" type="text" class="form-control"
                         placeholder="Search for electronics..." aria-label="Search">
                     <button class="btn btn-dark" type="submit">Search</button>
@@ -181,16 +187,19 @@
                         </select>
                         <!-- Year -->
                         <!-- Price Range -->
-                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <div class="col-12 col-md-auto d-flex flex-wrap align-items-center px-2 gap-2 mb-2">
                             <label for="maxPrice" class="me-2">Max Price</label>
                             <input type="range" id="maxPrice" class="mb-0 border">
                             <span id="maxPriceValue" class="fw-bold text-primary">€5000</span>
                         </div>
                         <!-- Price Range -->
                         <!-- Sorting -->
-                        <div class="col-12 col-md-auto mb-2">
+                        <div class="input-group flex-row col-12 w-auto col-md-auto mb-2">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-funnel"></i>
+                            </span>
                             <select id="sortDropdown" class="form-select">
-                                <option value="">Sort By</option>
+                                <option value="newest" selected>Newest first</option>
                                 <option value="price-asc">Price: Low to High</option>
                                 <option value="price-desc">Price: High to Low</option>
                                 <option value="condition">Condition</option>
@@ -207,10 +216,12 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div id="paginationControls" class="d-flex justify-content-center mt-4">
-                <button id="paginationPrevPage" class="btn btn-secondary me-2" disabled>Previous</button>
-                <span id="paginationPageIndicator" class="align-self-center">Page 1</span>
-                <button id="paginationNextPage" class="btn btn-secondary ms-2">Next</button>
+            <div id="paginationControls" class="d-flex justify-content-center align-items-center mt-4 gap-2">
+                <button id="paginationPrevPage" class="btn btn-secondary" disabled>
+                    <i class="fa fa-angle-left"></i></button>
+                <div id="paginationPages" class="d-flex gap-2"></div>
+                <button id="paginationNextPage" class="btn btn-secondary">
+                    <i class="fa fa-angle-right"></i></button>
             </div>
         </div>
     </section>
@@ -422,8 +433,9 @@
                 <div class="d-flex justify-content-between py-4 border-top">
                     <div>
                         <i class="fab fa-lg fa-cc-visa text-dark"></i>
-                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
                         <i class="fab fa-lg fa-cc-mastercard text-dark"></i>
+                        <i class="fab fa-lg fa-cc-amex text-dark"></i>
+                        <i class="fab fa-lg fa-cc-apple-pay text-dark"></i>
                         <i class="fab fa-lg fa-cc-paypal text-dark"></i>
                     </div>
                     <p class="mb-0">
@@ -436,9 +448,11 @@
     <!-- Footer -->
     <!-- Scripts -->
     <script src="../scripts/auth.js"></script>
+    <script src="../scripts/ui.js"></script>
     <script src="../scripts/search.js"></script>
     <script src="../scripts/loadCategories.js"></script>
     <script src="../scripts/fetchProducts.js"></script>
+    <script src="../scripts/filters.js"></script>
     <script src="../scripts/wishlist.js"></script>
     <script src="../scripts/footerLinks.js"></script>
     <!-- Scripts -->

@@ -7,18 +7,39 @@ import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
+import https from 'https';
+import fs from 'fs';
 const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
+app.use(express.json());
+
+// Set up HTTPS server
+const serverPem = fs.readFileSync(path.join(__dirname, 'certificates/server.pem'), 'utf8');
+const credentials = { key: serverPem, cert: serverPem };
 
 dbReady.then((isConnected) => {
     if (isConnected) {
         app.use(dbConnection);
         app.use(ttApi);
 
+        // Handle non-existent routes
+        app.use((req, res) => {
+            const errorPagePath = path.join(__dirname, 'html/404.html');
+            res.status(404).sendFile(errorPagePath, (err) => {
+                if (err) {
+                    console.error('Error serving 404.html:', err);
+                    res.status(500).send('Internal Server Error');
+                }
+            });
+        });
+
+        // https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
+        //     console.log(`Server is running on https://0.0.0.0:${PORT}`);
+        // });
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server is running on http://0.0.0.0:${PORT}`);
+            console.log(`Server is running on https://0.0.0.0:${PORT}`);
         });
     } else {
         exec('node resources/dbCreate.js', (err, stdout, stderr) => {
@@ -92,6 +113,17 @@ app.get('/cart', (req, res) => {
     });
 });
 
+// Wishlist
+app.get('/wishlist', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/wishlist.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving wishlist.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 // Stores
 app.get('/stores', (req, res) => {
     const pagePath = path.join(__dirname, 'html/storesList.html');
@@ -136,45 +168,45 @@ app.get('/authentication', (req, res) => {
     });
 });
 
-// Admin Dashboard
-app.get('/adminDashboard', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminDashboard.html');
+// Employee Dashboard
+app.get('/dashboardEmployee', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/dashboardEmployee.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving adminDashboard.html:', err);
+            console.error('Error serving dashboardEmployee.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
 });
 
-// Admin Products
-app.get('/adminProducts', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminProducts.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminProducts.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Users
-app.get('/adminUsers', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminUsers.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminadminUsers.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Orders
+// Admin Orders // to remove
 app.get('/adminOrders', (req, res) => {
     const pagePath = path.join(__dirname, 'html/adminOrders.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving adminadminOrders.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Store Dashboard
+app.get('/dashboardStore', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/dashboardStore.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving dashboardStore.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Charity Dashboard
+app.get('/dashboardCharity', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/dashboardCharity.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving dashboardCharity.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -189,6 +221,6 @@ app.get("/geocode", async (req, res) => {
         res.json(data);
     } catch (err) {
         console.log(err);
-		res.status(500).send(err.message);
+        res.status(500).send(err.message);
     }
 });

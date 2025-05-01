@@ -25,6 +25,10 @@ body {
     justify-content: center;
 }
 
+header #recent-searches-wrapper#recent-searches-wrapper #recent-searches#recent-searches {
+    z-index: 100;
+}
+
 figure {
     span {
         width: 70px;
@@ -61,6 +65,7 @@ figure {
 }
 
 .product-link,
+.featured-link,
 #productCarousel {
     img {
         aspect-ratio: 1;
@@ -231,6 +236,10 @@ select {
         border-color: #007bff;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
+
+    &:hover {
+        background-color: rgba(169, 169, 169, 0.5);
+    }
 }
 
 // Price slider styling
@@ -243,7 +252,7 @@ select {
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
-    height: 17px;
+    height: 10px;
     background: white;
     border-radius: 10px;
     outline: none;
@@ -253,19 +262,37 @@ input[type="range"] {
     &::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
-        width: 15px;
-        height: 15px;
+        width: 23px;
+        height: 23px;
         background: #007bff;
         border-radius: 50%;
         cursor: pointer;
     }
 
     &::-moz-range-thumb {
-        width: 15px;
-        height: 15px;
+        -moz-appearance: none;
+        appearance: none;
+        width: 23px;
+        height: 23px;
         background: #007bff;
         border-radius: 50%;
         cursor: pointer;
+    }
+
+    &::-webkit-slider-thumb:hover {
+        background-color: #0063cc;
+    }
+
+    &::-moz-range-thumb:hover {
+        background-color: #0063cc;
+    }
+
+    &::-webkit-slider-thumb:active {
+        background-color: #004288;
+    }
+
+    &::-moz-range-thumb:active {
+        background-color: #004288;
     }
 }
 

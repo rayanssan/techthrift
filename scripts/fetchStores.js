@@ -68,6 +68,16 @@ async function renderStores() {
                     const response = await fetch(`/geocode?q=${lat},${lon}`);
                     const reverseData = await response.json();
                     displayAddress = reverseData[0]?.display_name || `${lat}, ${lon}`;
+                    await fetch('/ttuser/store/edit', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: store.id,
+                            address: displayAddress
+                        }),
+                    });
                 } else {
                     // Regular address
                     displayAddress = `${store.address}, ${store.city}, ${store.country}`;

@@ -3,7 +3,9 @@
 // Initial settings for product pagination
 let currentPage = 1;
 const productsPerPage = 12;
-let products = [];
+const maxVisiblePages = 3;
+let products = []; // Can be filtered
+let allProducts = []; // Has all products
 
 /**
  * Renders the products dynamically, showing a maximum of 12 per page.
@@ -54,13 +56,52 @@ function renderProducts() {
  * @function updatePaginationControls
  */
 function updatePaginationControls() {
-    document.getElementById('paginationPageIndicator').textContent = `Page ${currentPage}`;
-
-    // Disable "Previous" button if on first page
     document.getElementById('paginationPrevPage').disabled = currentPage === 1;
+    const totalPages = Math.ceil(products.length / productsPerPage);
+    document.getElementById('paginationNextPage').disabled = currentPage === totalPages;
 
-    // Disable "Next" button if on last page
-    document.getElementById('paginationNextPage').disabled = currentPage * productsPerPage >= products.length;
+    function renderPagination() {
+        const paginationPages = document.getElementById('paginationPages');
+        paginationPages.innerHTML = ''; // Clear previous buttons
+
+        const totalPages = Math.ceil(products.length / productsPerPage);
+        const startPage = Math.max(1, currentPage - 1);
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        // Adjust near the end
+        let realStart = startPage;
+        if (endPage - startPage < maxVisiblePages - 1 && totalPages >= maxVisiblePages) {
+            realStart = Math.max(1, totalPages - maxVisiblePages + 1);
+        }
+
+        // Render numbered page buttons
+        for (let i = realStart; i <= Math.min(totalPages, realStart + maxVisiblePages - 1); i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = `btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                updatePaginationControls();
+                renderProducts();
+            });
+            paginationPages.appendChild(pageButton);
+        }
+
+        // Add ellipsis if needed
+        if (endPage < totalPages) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '•••';
+            ellipsis.className = 'align-self-center text-secondary px-1';
+            paginationPages.appendChild(ellipsis);
+        } 
+        if (currentPage >= 3 && totalPages > 3) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '•••';
+            ellipsis.className = 'align-self-center text-secondary px-1';
+            paginationPages.prepend(ellipsis);
+        }
+    }
+    renderPagination();
 }
 
 // Load many products if in the homepage
@@ -82,6 +123,9 @@ if (document.body.id === "homepage") {
         try {
             const response = await fetch('/tt');
             products = await response.json();
+            // Sort from newest to oldest
+            products.sort((a, b) => new Date(b.date_inserted) - new Date(a.date_inserted));
+
             if (products.length > 0) {
                 renderProducts();
             } else {
@@ -124,6 +168,7 @@ if (document.body.id === "homepage") {
     });
     // Load one single product's information if in a product's page
 } else if (document.body.id === "productPage") {
+    let loggedInUser;
 
     /**
      * Fetches a single product from the TechThrift database using the product ID from the URL.
@@ -149,6 +194,7 @@ if (document.body.id === "homepage") {
             const response = await fetch(`/tt/product/${id}`);
             const product = await response.json();
             const productContainer = document.getElementById('product-info');
+            productContainer.innerHTML = ``;
 
             // Technical Specifications
             const specs = {
@@ -235,26 +281,35 @@ if (document.body.id === "homepage") {
                             <h2><a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
                                 <i class="fa fa-angle-left fs-3"></i>
                             </a>${product.name}</h2>
-                            <p class="fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            <h5 class="fw-bold">€${product.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
                             <p>${product.description}</p>
                             <!-- Product condition -->
                             <p class="mb-0 d-flex align-items-center gap-1">
-                                <strong>Condition:</strong> <span class="badge ${product.product_condition === 'Like New' ? 'bg-success' :
+                                <strong>Condition:</strong> <i class="fa-solid fa-sparkles"></i> <span class="badge ${product.product_condition === 'Like New' ? 'bg-success' :
                     product.product_condition === 'Excellent' ? 'bg-primary' : 'bg-dark'
                 } fs-6">${product.product_condition} </span>
                             </p>
                             <div class="d-flex align-items-end pt-3 px-0 pb-0">
-                                ${localStorage.getItem('cartProducts') && localStorage.getItem('cartProducts').includes(product.id) ?
-                    `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">In your cart</a>` : `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">Add to cart</a>`}
+                                ${localStorage.getItem('cartProducts') &&
+                                JSON.parse(localStorage.getItem('cartProducts')).includes(product.id) ?
+                                `<a id="add-to-cart-button" class="btn btn-success me-2 shadow disabled">
+                                <i class="fa-solid fa-cart-arrow-down"></i> In your cart</a>` :
+                                `<a id="add-to-cart-button" class="btn btn-primary me-2 shadow">
+                                <i class="fas fa-cart-plus"></i> Add to cart</a>`}
                                 <a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
+                                    <span id="wishlist-count" class="text-secondary">0</span>
                                 </a>
                             </div>
                             ${technicalSpecsSection}
                             <!-- Store -->
-                            <p class="mb-2"><strong>Sold by:</strong> <a href="/store?is=${product.store_nipc}">${product.store}</a></p>
+                            <div class="bg-white shadow border-0 rounded w-100 p-2 d-inline-block mb-2">
+                                <i class="fas fa-store m-1"></i>
+                                <strong>Sold by:</strong> 
+                                <a href="/store?is=${product.store_nipc}">${product.store}</a>
+                            </div>
                             <!-- Date added -->
-                            <p><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
+                            <p class="mt-2"><strong>Uploaded on:</strong> ${new Date(product.date_inserted).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>
@@ -276,6 +331,104 @@ if (document.body.id === "homepage") {
                 this.classList.add("disabled");
                 window.location.href = "/cart";
             });
+
+            let wishlistEntryId;
+
+            const fetchWishlistCount = () => {
+                fetch(`/ttuser/wishlist/count/${product.id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const count = data.count || 0;
+                        document.getElementById("wishlist-count").textContent = count;
+                    })
+                    .catch(err => {
+                        console.error("Error fetching wishlist count:", err);
+                    });
+            }
+            fetchWishlistCount();
+
+            // Check if product is in user's wishlist
+            const checkWishlist = () => {
+                if (loggedInUser) {
+                    fetch(`/ttuser/wishlist/${loggedInUser.email}`)
+                        .then(res => res.json())
+                        .then(wishlistItems => {
+                            const isInWishlist = wishlistItems.some(
+                                item => item.wishlisted_product === product.id);
+
+                            wishlistItems.forEach(item => {
+                                if (item.wishlisted_product === product.id) {
+                                    wishlistEntryId = item.id;
+                                }
+                            });
+
+                            const button = document.getElementById('add-to-wishlist-button')
+                            const icon = button.querySelector('i');
+                            const count = button.querySelector('span');
+                            if (isInWishlist) {
+                                button.classList.add('wishlisted');
+                                count.classList.replace('text-secondary', 'text-white')
+                                icon.classList.replace('text-secondary', 'text-white');
+                                button.style.backgroundColor = "navy";
+                            } else {
+                                button.classList.remove('wishlisted');
+                                count.classList.replace('text-white', 'text-secondary')
+                                icon.classList.replace('text-white', 'text-secondary');
+                                button.style.backgroundColor = "unset";
+                            }
+                        })
+                        .catch(err => console.error('Failed to fetch wishlist:', err));
+                }
+            }
+            checkWishlist();
+
+            // Add event listener for "❤️" button
+            document.getElementById('add-to-wishlist-button').addEventListener('click', function () {
+                const button = this;
+                const isWishlisted = button.classList.contains('wishlisted');
+
+                // Signal alterations to the wishlist
+                document.getElementById("wishlist").style.backgroundColor = "rgba(0, 0, 128, 0.7)";
+                document.getElementById("wishlist").classList.add("text-white");
+                setTimeout(function () {
+                    document.getElementById("wishlist").style.backgroundColor = "";
+                    document.getElementById("wishlist").classList.remove("text-white");
+                }, 500);
+
+                if (!isWishlisted) {
+                    fetch('/ttuser/wishlist', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            wishlisted_product: product.id,
+                            interested_user: loggedInUser.email
+                        })
+                    }).then(response => {
+                        if (!response.ok) throw new Error('Failed to add to wishlist');
+                        checkWishlist();
+                        fetchWishlistCount();
+                    }).catch(err => {
+                        console.error(err);
+                        checkWishlist();
+                        fetchWishlistCount();
+                    });
+
+                } else {
+                    fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
+                        method: 'DELETE'
+                    }).then(response => {
+                        if (!response.ok) throw new Error('Failed to remove from wishlist');
+                        checkWishlist();
+                        fetchWishlistCount();
+                    }).catch(err => {
+                        console.error(err);
+                        checkWishlist();
+                        fetchWishlistCount();
+                    });
+                }
+            });
+
+            // check if item in wishlist and style already if so
         } catch (error) {
             console.log("Error fetching product:", error);
             const productContainer = document.getElementById('product-info');
@@ -287,38 +440,45 @@ if (document.body.id === "homepage") {
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        fetchOneSellingProduct().then(() => {
-            this.querySelectorAll(".carousel-item").forEach(item => {
-                item.addEventListener("click", () => {
-                    const imageSrc = item.querySelector("img").src;
-                    let modalEl = document.getElementById("image-popup");
-                
-                    // If modal doesn't exist, create it once
-                    if (!modalEl) {
-                      modalEl = document.createElement("div");
-                      modalEl.className = "modal fade";
-                      modalEl.id = "image-popup";
-                      modalEl.tabIndex = -1;
-                      modalEl.innerHTML = `
-                        <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
-                          <div class="modal-content border-0 text-center rounded bg-white m-auto">
-                            <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
-                            data-bs-dismiss="modal" aria-label="Close"></button>
-                            <img class="img-fluid p-3 border-top shadow-lg" 
-                            style="margin-top: 3.5rem;">
-                          </div>
-                        </div>
-                      `;
-                      document.body.appendChild(modalEl);
+        window.addEventListener('userAuthenticated', (event) => {
+            loggedInUser = event.detail;
+            fetchOneSellingProduct().then(() => {
+                this.querySelectorAll(".carousel-item").forEach(item => {
+                    item.addEventListener("click", () => {
+                        const imageSrc = item.querySelector("img").src;
+                        let modalEl = document.getElementById("image-popup");
+
+                        // If modal doesn't exist, create it once
+                        if (!modalEl) {
+                            modalEl = document.createElement("div");
+                            modalEl.className = "modal fade";
+                            modalEl.id = "image-popup";
+                            modalEl.tabIndex = -1;
+                            modalEl.innerHTML = `
+                            <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
+                            <div class="modal-content border-0 text-center rounded bg-white m-auto">
+                                <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
+                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                <img class="img-fluid p-3 border-top shadow-lg" 
+                                style="margin-top: 3.5rem;">
+                            </div>
+                            </div>`;
+                            document.body.appendChild(modalEl);
+                        }
+
+                        // Set image src dynamically
+                        modalEl.querySelector("img").src = imageSrc;
+
+                        // Show modal via Bootstrap's API
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                    });
+                });
+                if (loggedInUser == null) {
+                    if (document.getElementById('add-to-wishlist-button')) {
+                        document.getElementById('add-to-wishlist-button').style.display = 'none';
                     }
-                
-                    // Set image src dynamically
-                    modalEl.querySelector("img").src = imageSrc;
-                
-                    // Show modal via Bootstrap's API
-                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modal.show();
-                  });
+                }
             });
         });
     });
@@ -342,11 +502,18 @@ if (document.body.id === "homepage") {
         try {
             // Get category from URL
             const urlParam = new URLSearchParams(window.location.search);
-            const category = urlParam.get('is');
+            let category = urlParam.get('is');
 
             // Set title of the current page
             document.title += " - " + category;
-            document.getElementById("category-indicator").textContent = category;
+            document.getElementById("category-indicator").innerHTML = `
+            <a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                <i class="fa fa-angle-left fs-3"></i>
+            </a>${category}`;
+
+            if (category.toLowerCase() === "more") {
+                category = "Other";
+            }
 
             // Fetch products for the given category
             const urls = [`/tt?category=${encodeURIComponent(category)}`];
@@ -429,10 +596,35 @@ if (document.body.id === "homepage") {
             // Get search query from URL
             const urlParam = new URLSearchParams(window.location.search);
             const search = urlParam.get('is');
+            const isFeaturedSearch = urlParam.get('featured');
 
             // Set title of the current page
             document.title += " - " + search;
-            document.getElementById("search-indicator").textContent = `Search results for "${search}"`;
+            if (!isFeaturedSearch) {
+                document.getElementById("search-indicator").innerHTML = `
+                <a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                <i class="fa fa-angle-left fs-3"></i>
+                </a>Search results for "${search}"`;
+            } else {
+                const brandBanner = `
+                <div class="main-banner text-white shadow bg-white text-center">
+                    <img alt="${search} logo" 
+                    src="../media/images/featured/${urlParam.get('featuredImage')}"
+                    style="
+                        height: 50vw;
+                        max-height: 336px;
+                        object-fit: cover;
+                        margin: auto;
+                    ">
+                </div>`;
+
+                const nav = document.querySelector("nav");
+                nav.insertAdjacentHTML("afterend", brandBanner);
+                document.getElementById("search-indicator").innerHTML = `
+                <a onclick="window.history.back()" class="btn btn-link text-decoration-none ps-0">
+                <i class="fa fa-angle-left fs-3"></i>
+                </a>${search} Products`;
+            }
 
             const urls = [
                 `/tt?name=${encodeURIComponent(search)}`,
@@ -455,9 +647,10 @@ if (document.body.id === "homepage") {
             });
 
             products = Array.from(uniqueProducts.values()); // Convert Map back to an array
-            document.getElementById("search-indicator").insertAdjacentHTML('afterend', `
-                <span>${products.length} products found.</span>
-            `);
+            if (!isFeaturedSearch) {
+                document.getElementById("search-indicator").insertAdjacentHTML('afterend',
+                    `<span>${products.length} products found.</span>`);
+            }
 
             if (products.length > 0) {
                 renderProducts();
@@ -524,7 +717,7 @@ if (document.body.id === "homepage") {
             cartPrice += parseFloat(product.price);
         });
         const prices = {
-            'shipping': shippingPrice == 0 ? 'Free' : shippingPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+            'shipping': shippingPrice == 0 ? 'Free' : shippingPrice.toFixed(2).replace(".", ","),
             'cart': cartPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
             'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
@@ -604,17 +797,18 @@ if (document.body.id === "homepage") {
 
         paginatedProducts.forEach(product => {
             const productCard = `
-            <div id="productid-${product.id}" class="w-100 d-flex mb-auto">
-                <div class="card border-0 w-100 my-2 shadow h-100 flex-row">
+            <div id="productid-${product.id}" class="w-100 d-flex card border-0 w-100 my-2 shadow h-100 flex-column mb-auto">
                 <!-- Button to remove product from cart -->
-                    <button class="btn-close p-2 btn-sm 
-                    position-absolute end-0 m-2 remove-product" 
-                    aria-label="Close" data-product-id="${product.id}"></button>
+                <button class="btn-close btn-sm
+                p-3 ms-auto remove-product" 
+                aria-label="Close" data-product-id="${product.id}"></button>
+                <hr class="mt-0 text-secondary">
+                <div class="d-flex flex-row">
                     <img onclick='location.href="/product?is=${product.id}"'
                     alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img"
                     style="width: 25%; aspect-ratio: 1;
                     object-fit: contain;cursor: pointer;">
-                    <div class="card-body d-flex flex-column">
+                    <div class="card-body overflow-hidden pt-0 d-flex flex-column">
                         <a class="mb-2 text-truncate text-decoration-none link-opacity-75-hover fs-5"
                         href="/product?is=${product.id}">${product.name} <i class="fa fa-angle-right" 
                         style="vertical-align: text-bottom;"></i></a>
@@ -658,224 +852,6 @@ if (document.body.id === "homepage") {
             });
         });
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchCartProducts();
-    });
-
-}
-
-if (["homepage", "categoryPage", "searchPage"].includes(document.body.id) &&
-    document.getElementById("filtersContainer")) {
-    document.addEventListener("DOMContentLoaded", () => {
-        const filterBrand = document.getElementById("filterBrand");
-        const filterCondition = document.getElementById("filterCondition");
-        const filterColor = document.getElementById("filterColor");
-        const filterYear = document.getElementById("filterYear");
-        const maxPrice = document.getElementById("maxPrice");
-        const maxPriceValue = document.getElementById("maxPriceValue");
-        const sortDropdown = document.getElementById("sortDropdown");
-        const filtersContainer = document.getElementById("filtersContainer");
-
-        let allProducts = [];
-        let filteredProducts = [];
-        let filtersOffsetTop = filtersContainer.offsetTop;
-
-        /**
-         * Fetches product data and populates the filter dropdowns (brand, condition, color, year)
-         * based on the current page context (category page, search page, or general listing).
-         * Also sets the maximum price filter based on available products.
-         *
-         * @async
-         * @function populateFilterOptions
-         * @returns {Promise<void>}
-         */
-        async function populateFilterOptions() {
-            try {
-                let endpoint = '/tt';
-                if (document.body.id === "categoryPage") {
-                    const urlParam = new URLSearchParams(window.location.search);
-                    const category = urlParam.get('is');
-                    endpoint = `/tt?category=${encodeURIComponent(category)}`;
-                    if (category == "Accessories") {
-                        // Include categories that fall under Accessories
-                        const accessoryCategories = ["Audio", "Smartwatches", "Accessories"];
-                        // Fetch all categories separately and merge
-                        const fetches = await Promise.all(
-                            accessoryCategories.map(cat =>
-                                fetch(`/tt?category=${encodeURIComponent(cat)}`).then(res => res.json())
-                            )
-                        );
-                        allProducts = fetches.flat();
-                    } else {
-                        const response = await fetch(endpoint);
-                        allProducts = await response.json();
-                    }
-                } else if (document.body.id === "searchPage") {
-                    const urlParam = new URLSearchParams(window.location.search);
-                    const search = urlParam.get('is');
-                    endpoint = `/tt?name=${encodeURIComponent(search)}`;
-                    const response = await fetch(endpoint);
-                    allProducts = await response.json();
-                } else {
-                    const response = await fetch(endpoint);
-                    allProducts = await response.json();
-                }
-
-                filteredProducts = [...allProducts];
-                products = [...filteredProducts];
-
-                const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))].sort();
-                const colors = [...new Set(allProducts.map(p => p.color).filter(Boolean))].sort();
-                const years = [...new Set(allProducts.map(p => p.year).filter(Boolean))].sort();
-                const conditions = [...new Set(allProducts.map(p => p.product_condition).filter(Boolean))].sort();
-
-                populateDropdown(filterBrand, brands, "All Brands");
-                populateDropdown(filterCondition, conditions, "All Conditions");
-                populateDropdown(filterColor, colors, "All Colors");
-                populateDropdown(filterYear, years, "All Years");
-
-                const maxProductPrice = Math.max(...allProducts.map(p => p.price), 0);
-                maxPrice.max = Math.ceil(maxProductPrice * 1.1);
-                maxPrice.value = maxPrice.max;
-                maxPriceValue.textContent = `€${maxPrice.value}`;
-            } catch (error) {
-                const productContainer = document.getElementById('product-list');
-                productContainer.innerHTML = `<div class="container my-4">
-                <p class="text-center fw-bold display-4">Sorry, an error happened. ☹️</p>
-                <p class="text-center">Please try refreshing the page.</p>
-                </div>`;
-                console.error('Error fetching products:', error);
-            }
-        }
-
-        /**
-         * Populates a given select element with provided options and sets a default label.
-         *
-         * @function populateDropdown
-         * @param {HTMLSelectElement} selectElement - The dropdown to populate.
-         * @param {string[]} items - List of unique items to add as options.
-         * @param {string} defaultText - Text for the default (empty) option.
-         */
-        function populateDropdown(selectElement, items, defaultText) {
-            selectElement.innerHTML = `<option value="">${defaultText}</option>`;
-            items.forEach(item => {
-                const option = document.createElement("option");
-                option.value = item;
-                option.textContent = item;
-                selectElement.appendChild(option);
-            });
-        }
-
-        /**
-         * Applies selected filter values (brand, condition, color, year, max price)
-         * to the list of all products and updates the filteredProducts and products arrays.
-         * Triggers sorting and re-renders products. 
-         * Shows a friendly message if no matches are found.
-         * Also handles pagination visibility.
-         *
-         * @function applyFilters
-         */
-        function applyFilters() {
-            try {
-                const brand = filterBrand.value;
-                const condition = filterCondition.value;
-                const color = filterColor.value;
-                const year = filterYear.value;
-                const price = parseFloat(maxPrice.value);
-                const maxAllowedPrice = parseFloat(maxPrice.max);
-
-                filteredProducts = allProducts.filter(product => {
-                    const matchesBrand = !brand || product.brand === brand;
-                    const matchesCondition = !condition || product.product_condition === condition;
-                    const matchesColor = !color || product.color === color;
-                    const matchesYear = !year || String(product.year) === year;
-                    const matchesPrice = price >= maxAllowedPrice || product.price <= price;
-
-                    return matchesBrand && matchesCondition && matchesColor && matchesYear && matchesPrice;
-                });
-
-                applySorting(false);
-                products = [...filteredProducts];
-                currentPage = 1;
-                renderProducts();
-
-                if (products.length === 0) {
-                    document.getElementById('product-list').innerHTML = `<div class="container my-4">
-                    <p class="text-center fw-bold display-4">No products found.</p>
-                    <p class="text-center">Try adjusting your filters.</p>
-                    </div>`;
-                    document.getElementById("paginationControls").classList.replace("d-flex", "d-none");
-                } else if (document.getElementById("paginationControls").classList.contains("d-none")) {
-                    document.getElementById("paginationControls").classList.replace("d-none", "d-flex");
-                }
-            } catch (error) {
-                const productContainer = document.getElementById('product-list');
-                productContainer.innerHTML = `<div class="container my-4">
-                <p class="text-center fw-bold display-4">Sorry, an error happened. ☹️</p>
-                <p class="text-center">Please try refreshing the page.</p>
-                </div>`;
-                console.error('Error fetching products:', error);
-            }
-        }
-
-        /**
-         * Sorts the filteredProducts array based on the selected sort criteria:
-         * - "price-asc": ascending by price
-         * - "price-desc": descending by price
-         * - "condition": custom condition ranking
-         *
-         * Optionally re-renders products if `shouldRender` is true.
-         *
-         * @function applySorting
-         * @param {boolean} [shouldRender=true] - Whether to re-render products after sorting.
-         */
-        function applySorting(shouldRender = true) {
-            if (sortDropdown.value === "price-asc") {
-                filteredProducts.sort((a, b) => a.price - b.price);
-            } else if (sortDropdown.value === "price-desc") {
-                filteredProducts.sort((a, b) => b.price - a.price);
-            } else if (sortDropdown.value === "condition") {
-                const conditionOrder = ["Like New", "Excellent", "Good", "Needs Repair"];
-                filteredProducts.sort((a, b) =>
-                    conditionOrder.indexOf(a.product_condition) -
-                    conditionOrder.indexOf(b.product_condition)
-                );
-            }
-
-            if (shouldRender) {
-                products = [...filteredProducts];
-                currentPage = 1;
-                renderProducts();
-            }
-        }
-
-        sortDropdown.addEventListener("change", () => applySorting());
-
-        [filterBrand, filterCondition, filterColor, filterYear].forEach(filter => {
-            filter.addEventListener("change", applyFilters);
-        });
-
-        maxPrice.addEventListener("input", () => {
-            maxPriceValue.textContent = `€${maxPrice.value}`;
-        });
-
-        maxPrice.addEventListener("change", () => {
-            applyFilters();
-        });
-
-        window.addEventListener("scroll", () => {
-            if (window.innerWidth > 768) {
-                if (window.scrollY > filtersOffsetTop) {
-                    filtersContainer.classList.add("fixed-top", "bg-white", "shadow-sm", "p-3");
-                    document.body.classList.add("pt-5");
-                } else {
-                    filtersContainer.classList.remove("fixed-top", "bg-white", "shadow-sm", "p-3");
-                    document.body.classList.remove("pt-5");
-                }
-            }
-        });
-
-        populateFilterOptions();
-    });
+    
+    window.fetchCartProducts = fetchCartProducts;
 }

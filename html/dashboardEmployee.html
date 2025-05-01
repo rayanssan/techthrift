@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechThrift - Employee Dashboard</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+    <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <!-- Sidebar Script -->
+    <script src="../scripts/sidebar.js"></script>
+    <!-- Sidebar Script -->
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles/stylesheet.css">
+    <!-- Stylesheets -->
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../media/images/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="../media/images/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../media/images/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="TechThrift" />
+    <link rel="manifest" href="../media/images/favicon/site.webmanifest" />
+    <!-- Favicons -->
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="p-3 bg-white border-bottom">
+        <div class="d-flex justify-content-between container">
+            <div class="row align-items-center gap-3">
+                <!-- Left elements -->
+                <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
+                    <a id="header-brand" href="/dashboardEmployee">
+                        <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
+                    </a>
+                </div>
+                <!-- Left elements -->
+            </div>
+            <a href="/authentication" id="username" class="border 
+            rounded py-1 px-3 nav-link d-flex h-auto
+            align-self-center
+            align-items-center btn btn-light">
+                <i class="fas fa-user-alt m-1 me-md-2"></i>
+                <p class="d-none d-md-block mb-0">···</p>
+            </a>
+        </div>
+    </header>
+    <!-- Header -->
+
+    <!-- Employee Dashboard -->
+    <div class="container mt-3" style="min-height: 100vh;">
+        <div class="container pt-2 px-2 pb-1">
+            <h2 class="pt-3">TechThrift - Employee Dashboard</h2>
+            <h5>&lt;name of the store&gt;</h5>
+            <p>I am: &lt;name of the employee&gt; - &lt;internal number of the employee&gt;</p>
+        </div>
+        <hr>
+        <div class="container p-2">
+            <h4 class="pb-2">Actions</h4>
+            <div class="d-flex gap-3">
+                <button class="btn btn-primary"> <i class="fas fa-plus-circle me-2"></i>Register new product</button>
+                <button class="btn btn-primary">  <i class="fas fa-tags me-2"></i> Set product for sale</button>
+                <button class="btn btn-primary"> <i class="fas fa-tools me-2"></i> Register new repair order</button>
+                <button class="btn btn-primary"> <i class="fas fa-hand-holding-heart me-2"></i> Set product for donation</button>
+            </div>
+        </div>
+        <hr>
+        <div class="container p-2">
+            <h4 class="pb-2">Search Products</h4>
+            <form class="input-group flex-grow-1">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input id="search-input" type="text" class="form-control" placeholder="Search products..."
+                    aria-label="Search">
+                <button class="btn btn-dark" type="submit">Search</button>
+            </form>
+        </div>
+        <hr>
+        <div class="container p-2">
+            <h4 class="pb-2">Search Repair Parts</h4>
+            <form class="input-group flex-grow-1">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                    <i class="fas fa-tools ms-1 text-muted"></i>
+                </span>
+                <input id="search-input" type="text" class="form-control" placeholder="Search repair parts..."
+                    aria-label="Search">
+                <button class="btn btn-dark" type="submit">Search</button>
+            </form>
+        </div>
+        <hr>
+        <div class="container p-2">
+            <h4 class="pb-2">Search Transactions</h4>
+            <form class="input-group flex-grow-1">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                    <i class="fas fa-receipt ms-1 text-muted"></i>
+                </span>
+                <input id="search-input" type="text" class="form-control" placeholder="Search transactions..."
+                    aria-label="Search">
+                <button class="btn btn-dark" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+    <!-- Employee Dashboard -->
+
+    <!-- Footer -->
+    <footer class="mt-5 border-top" style="background-color: #f5f5f5;">
+        <div class="">
+            <div class="container">
+                <div class="d-flex justify-content-between py-4">
+                    <p class="mb-0">
+                        © 2025 Copyright: TechThrift.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer -->
+
+    <!-- Scripts -->
+    <script src="../scripts/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+</body>
+
+</html>
