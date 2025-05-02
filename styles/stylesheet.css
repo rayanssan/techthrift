@@ -78,6 +78,12 @@ body {
   -o-object-fit: cover;
      object-fit: cover;
 }
+#header-brand img:hover {
+  filter: brightness(2);
+}
+#header-brand img:active {
+  filter: unset;
+}
 
 #categories-nav {
   flex-wrap: wrap;

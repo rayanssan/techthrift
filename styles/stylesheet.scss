@@ -18,6 +18,13 @@ body {
         height: 40px;
         object-fit: cover;
     }
+
+    img:hover {
+        filter: brightness(2);
+    }
+    img:active {
+        filter: unset;
+    }
 }
 
 #categories-nav {
