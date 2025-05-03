@@ -303,7 +303,7 @@ if (document.body.id === "homepage") {
                                     <i class="fas fa-cart-plus"></i> Add to cart
                                 </a>`)}
                                 ${product.availability === 0 ? "" :
-                    `<a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
+                    `<a id="add-to-wishlist-button" class="btn btn-light border shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                     <span id="wishlist-count" class="text-secondary">0</span>
                                 </a>`}
@@ -384,7 +384,7 @@ if (document.body.id === "homepage") {
                                     button.classList.remove('wishlisted');
                                     count.classList.replace('text-white', 'text-secondary')
                                     icon.classList.replace('text-white', 'text-secondary');
-                                    button.style.backgroundColor = "unset";
+                                    button.style.backgroundColor = "white";
                                 }
                             }
                         })

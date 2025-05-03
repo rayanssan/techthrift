@@ -225,6 +225,12 @@ figure {
     }
 }
 
+#add-to-wishlist-button {
+    &:hover { 
+        filter: brightness(0.8); 
+    }
+}
+
 // Dropdown styling
 select {
     appearance: none;
