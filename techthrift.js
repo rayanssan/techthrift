@@ -35,9 +35,12 @@ dbReady.then((isConnected) => {
             });
         });
 
-        https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
-            console.log(`Server is running on https://0.0.0.0:${PORT}`);
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
+        // https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
+        //    console.log(`Server is running on https://0.0.0.0:${PORT}`);
+        // });
     } else {
         exec('node resources/dbCreate.js', (err, stdout, stderr) => {
             if (err) {
