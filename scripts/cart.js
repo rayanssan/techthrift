@@ -89,7 +89,7 @@ window.addEventListener('userAuthenticated', (event) => {
                                         client: loggedInUser.email,
                                         transaction_value: parseFloat(totalPrice),
                                         is_online: true,
-                                        paypal_order_number: details.id,
+                                        order_number: details.id,
                                         shipping_address: shippingAddress.address,
                                         shipping_postal_code: shippingAddress.postal_code,
                                         shipping_city: shippingAddress.city,

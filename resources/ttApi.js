@@ -1902,7 +1902,7 @@ router.get('/tttransaction/sales', (req, res) => {
         SELECT 
             t.*, 
             s.is_online, 
-            s.paypal_order_number,
+            s.order_number,
             s.employee,
             s.store,
             s.shipping_address,
@@ -1927,7 +1927,7 @@ router.get('/tttransaction/sales', (req, res) => {
                     transaction_value: row.transaction_value,
                     date_inserted: row.date_inserted,
                     is_online: row.is_online,
-                    paypal_order_number: row.paypal_order_number,
+                    order_number: row.order_number,
                     overseeing_employee: row.employee,
                     store_of_sale: row.store,
                     shipping_address: row.shipping_address,
@@ -1967,7 +1967,7 @@ router.get('/tttransaction/sales', (req, res) => {
 
 // Add sale transaction
 router.post('/tttransaction/sales/add', (req, res) => {
-    const { client, transaction_value, is_online, paypal_order_number, 
+    const { client, transaction_value, is_online, order_number, 
         employee, store, shipping_address, shipping_postal_code, 
         shipping_city, shipping_country, products } = req.body;
 
@@ -1982,7 +1982,7 @@ router.post('/tttransaction/sales/add', (req, res) => {
     `;
 
     const saleQuery = `
-        INSERT INTO sales (transaction_id, is_online, paypal_order_number, employee, store, 
+        INSERT INTO sales (transaction_id, is_online, order_number, employee, store, 
         shipping_address, shipping_postal_code, shipping_city, shipping_country)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
@@ -2006,7 +2006,7 @@ router.post('/tttransaction/sales/add', (req, res) => {
         const transactionId = result.insertId;
 
         db.query(saleQuery,
-            [transactionId, is_online, paypal_order_number, employee, store, shipping_address,
+            [transactionId, is_online, order_number, employee, store, shipping_address,
                 shipping_postal_code, shipping_city, shipping_country || null], (err) => {
                 if (err) {
                     console.error(err);
@@ -2044,7 +2044,7 @@ router.post('/tttransaction/sales/add', (req, res) => {
 
                         // Insert into sales
                         dbR.query(saleQuery,
-                            [transactionId, is_online, paypal_order_number, employee, store, shipping_address,
+                            [transactionId, is_online, order_number, employee, store, shipping_address,
                                 shipping_postal_code, shipping_city, shipping_country || null], (err) => {
                                 if (err) {
                                     console.error(err);

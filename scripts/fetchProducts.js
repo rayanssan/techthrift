@@ -29,7 +29,7 @@ function renderProducts() {
         <div onclick="window.location.href = 'product?is=${product.id}';"
         id="productid-${product.id}" class="col-lg-3 col-md-6 col-sm-6 d-flex mb-auto product-link">
             <div class="card w-100 my-2 shadow h-100">
-                <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top">
+                <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top p-2">
                 <div class="card-body d-flex flex-column">
                     <h6 class="card-title text-truncate">${product.name} <i class="fa fa-angle-right"></i></h6>
                     <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
@@ -250,7 +250,7 @@ if (document.body.id === "homepage") {
                                         <div class="carousel-item ${index === 0 ? 'active' : ''}">
                                             <img src="../media/images/products/${image}" 
                                             alt="Product Image ${order}" 
-                                            class="d-block w-100 img-fluid" />
+                                            class="d-block w-100 img-fluid p-2" />
                                         </div>
                                     `).join('')}
                                 </div>          

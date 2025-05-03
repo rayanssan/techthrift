@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS entities ( -- Stores and Charities
     city VARCHAR(255),
     country VARCHAR(255),
 
-    FOREIGN KEY (id) REFERENCES clients(id)
+    FOREIGN KEY (id) REFERENCES clients(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TRIGGER check_entity_client_fields
@@ -49,8 +49,8 @@ CREATE TABLE IF NOT EXISTS employees (
     store CHAR(9) NOT NULL,
     internal_number INT UNIQUE,
 
-    FOREIGN KEY (id) REFERENCES clients(id),
-    FOREIGN KEY (store) REFERENCES entities(nipc)
+    FOREIGN KEY (id) REFERENCES clients(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (store) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TRIGGER ensure_store_entity_type
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS entityHours (
     hours CHAR(11), -- HH:MM-HH:MM
 
     PRIMARY KEY (entity, day),
-    FOREIGN KEY (entity) REFERENCES entities(id)
+    FOREIGN KEY (entity) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS charityProjects (
     description VARCHAR(255),
     endDate DATE,
 
-    FOREIGN KEY (charity) REFERENCES entities(id)
+    FOREIGN KEY (charity) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS products (
     brand VARCHAR(255),
     model_code VARCHAR(255),
     color VARCHAR(255),
-    weight DECIMAL(5,2), -- must in kg
+    weight DECIMAL(5,2), -- Must be in kg
     dimensions VARCHAR(255),
     processor VARCHAR(255),
     screen VARCHAR(255),
@@ -131,8 +131,8 @@ CREATE TABLE IF NOT EXISTS products (
     os VARCHAR(255),
     year YEAR,
 
-    FOREIGN KEY (store_nipc) REFERENCES entities(nipc),
-    FOREIGN KEY (category) REFERENCES categories(category)
+    FOREIGN KEY (store_nipc) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (category) REFERENCES categories(category) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS productImages (
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS productImages (
     image_order INT NOT NULL,
 
     PRIMARY KEY (product, image_order),
-    FOREIGN KEY (product) REFERENCES products(id),
+    FOREIGN KEY (product) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE,
     CHECK (image_order >= 1 AND image_order <= 5)
 );
 
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS saleProducts (
     price DECIMAL(10,2) NOT NULL,
 
     CONSTRAINT ck_saleProducts_price check (price >= 0),
-    FOREIGN KEY (id) REFERENCES products(id)
+    FOREIGN KEY (id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS repairProducts (
@@ -159,9 +159,9 @@ CREATE TABLE IF NOT EXISTS repairProducts (
     client_nif CHAR(9),
     client_nic CHAR(9),
 
-    FOREIGN KEY (id) REFERENCES products(id),
-    FOREIGN KEY (client_nif) REFERENCES clients(nif),
-    FOREIGN KEY (client_nic) REFERENCES clients(nic)
+    FOREIGN KEY (id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (client_nif) REFERENCES clients(nif) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (client_nic) REFERENCES clients(nic) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS repairParts (
@@ -177,11 +177,11 @@ CREATE TABLE IF NOT EXISTS donationProducts (
     donor_nic CHAR(9),
     donor_nipc CHAR(9),
   
-    FOREIGN KEY (id) REFERENCES products(id),
-    FOREIGN KEY (charity_nipc) REFERENCES entities(nipc),
-    FOREIGN KEY (donor_nif) REFERENCES clients(nif),
-    FOREIGN KEY (donor_nic) REFERENCES clients(nic),
-    FOREIGN KEY (donor_nipc) REFERENCES entities(nipc)
+    FOREIGN KEY (id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (charity_nipc) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (donor_nif) REFERENCES clients(nif) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (donor_nic) REFERENCES clients(nic) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (donor_nipc) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
@@ -190,13 +190,13 @@ CREATE TABLE IF NOT EXISTS transactions (
     transaction_value DECIMAL(10,2) NOT NULL,
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (client) REFERENCES clients(email)
+    FOREIGN KEY (client) REFERENCES clients(email) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS sales (
     transaction_id INT PRIMARY KEY,
     is_online BOOLEAN NOT NULL,
-    paypal_order_number VARCHAR(255) UNIQUE,
+    order_number VARCHAR(255),
     store INT,
     employee INT,
     shipping_address VARCHAR(255) NOT NULL,
@@ -204,20 +204,13 @@ CREATE TABLE IF NOT EXISTS sales (
     shipping_city VARCHAR(255) NOT NULL,
     shipping_country CHAR(2) NOT NULL,
 
-    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (employee) REFERENCES employees(id),
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (store) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (employee) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE CASCADE,
 
-    -- If online sale then there is no store or employee overseeing
-    -- the sale.
-    CONSTRAINT chk_online_store_employee CHECK (
-        (is_online = TRUE AND store IS NULL AND employee IS NULL) 
-        OR (is_online = FALSE)
-    ),
-
-    -- If online transaction the paypal order number must not be null
-    CONSTRAINT chk_online_paypal_order_number CHECK (
-        (is_online = TRUE AND paypal_order_number IS NOT NULL) 
+    -- If online transaction the order number must not be null
+    CONSTRAINT chk_online_order_number CHECK (
+        (is_online = TRUE AND order_number IS NOT NULL) 
         OR (is_online = FALSE)
     )
 );
@@ -227,8 +220,8 @@ CREATE TABLE IF NOT EXISTS soldProducts (
     sale_id INT NOT NULL,
 
     PRIMARY KEY(product_id, sale_id),
-    FOREIGN KEY (sale_id) REFERENCES sales(transaction_id),
-    FOREIGN KEY (product_id) REFERENCES saleProducts(id)
+    FOREIGN KEY (sale_id) REFERENCES sales(transaction_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES saleProducts(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS repairs (
@@ -237,10 +230,10 @@ CREATE TABLE IF NOT EXISTS repairs (
     store INT NOT NULL,
     employee INT NOT NULL,
 
-    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
-    FOREIGN KEY (product_id) REFERENCES repairProducts(id),
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (employee) REFERENCES employees(id)
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES repairProducts(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (store) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (employee) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS donations (
@@ -250,11 +243,11 @@ CREATE TABLE IF NOT EXISTS donations (
     employee INT NOT NULL,
     charity INT NOT NULL,
 
-    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
-    FOREIGN KEY (product_id) REFERENCES donationProducts(id),
-    FOREIGN KEY (store) REFERENCES entities(id),
-    FOREIGN KEY (employee) REFERENCES employees(id),
-    FOREIGN KEY (charity) REFERENCES entities(id)
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES donationProducts(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (store) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (employee) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (charity) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS interests (
@@ -275,8 +268,8 @@ CREATE TABLE IF NOT EXISTS interests (
     year YEAR,
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (interested_user) REFERENCES clients(email),
-    FOREIGN KEY (category) REFERENCES categories(category)
+    FOREIGN KEY (interested_user) REFERENCES clients(email) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (category) REFERENCES categories(category) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS wishlist (
@@ -287,8 +280,8 @@ CREATE TABLE IF NOT EXISTS wishlist (
 
     CONSTRAINT uq_wishlisted_product_interested_user 
     UNIQUE (wishlisted_product, interested_user),
-    FOREIGN KEY (interested_user) REFERENCES clients(email),
-    FOREIGN KEY (wishlisted_product) REFERENCES saleProducts(id)
+    FOREIGN KEY (interested_user) REFERENCES clients(email) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (wishlisted_product) REFERENCES saleProducts(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS reports (
