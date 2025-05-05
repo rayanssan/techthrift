@@ -60,6 +60,8 @@
             <div class="d-flex justify-content-between align-items-center mb-4" id="top-buttons">
                 <h2>Product List</h2>
                 <div>
+                    <button class="btn btn-light" id="register-sale">Add Selected</button>
+
                     <button class="btn btn-light" id="delete-selected">Delete Selected</button>
                     <button class="btn btn-success" onclick="showAddProductForm()">Add Product</button>
                 </div>
@@ -82,6 +84,7 @@
                 </div>
             </div>
 
+           <!-- Table to select products -->
             <div class="table-responsive" id="product-table">
                 <div class="rounded-3 border overflow-hidden">
                     <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
@@ -100,6 +103,34 @@
                     </table>
                 </div>
             </div>
+
+
+            <!-- Modal to display selected products -->
+            <div id="sale-modal" class="modal fade" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Register Sale</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <input type="text" id="sale-product-id" class="form-control" placeholder="Enter Product ID">
+                                <button type="button" class="btn btn-outline-primary mt-2">Add</button>
+                            </div>
+                            <ul id="sale-product-list" class="list-group my-3">
+                                <p class="text-muted">Products will appear here.</p>
+                            </ul>
+                            <div><strong>Total:</strong> <span id="sale-total-price">€0.00</span></div>
+                            <div id="paypal" class="d-none my-4"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <!-- Reset button dynamically added via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <div id="add-product-form" class="d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -158,6 +189,134 @@
     </div>
 
     <script>
+let productList = []; // Don't reset on modal open
+let totalPrice = 0;
+
+document.getElementById("register-sale").addEventListener("click", () => {
+    const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
+    const list = document.querySelector('#sale-product-list');
+    list.innerHTML = '';
+
+    selectedProducts.forEach((checkbox) => {
+        const row = checkbox.closest('tr');
+        const productId = row.getAttribute('data-product-id');
+
+        if (productList.some(p => p.id === productId)) return; // Avoid duplicates
+
+        const name = row.querySelector('.product-name')?.textContent || row.cells[2].textContent;
+        const priceText = row.querySelector('.product-price')?.textContent || row.cells[3].textContent;
+        const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+
+        const product = { id: productId, name, price };
+        productList.push(product);
+        totalPrice += price;
+    });
+
+    if (productList.length === 0) {
+        list.innerHTML = '<p class="text-muted">No products selected.</p>';
+    } else {
+        productList.forEach((product) => {
+            const item = document.createElement('li');
+            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <img src="../media/images/products/${product.id}" alt="Product Image" class="me-2" style="width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem;">
+                    <div>
+                        <strong>${product.name}</strong><br>
+                        <small>ID: ${product.id}</small>
+                    </div>
+                </div>
+                <span>€${product.price.toFixed(2)}</span>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    document.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
+    document.getElementById('paypal').classList.remove('d-none');
+
+    const modal = new bootstrap.Modal(document.getElementById('sale-modal'));
+    modal.show();
+
+    const footer = document.querySelector("#sale-modal .modal-footer");
+    if (!footer.querySelector('.btn-outline-danger')) {
+        const resetBtn = document.createElement("button");
+        resetBtn.type = "button";
+        resetBtn.className = "btn btn-outline-danger";
+        resetBtn.textContent = "Reset Product Sale";
+        footer.appendChild(resetBtn);
+
+        resetBtn.addEventListener("click", () => {
+            productList = [];
+            totalPrice = 0;
+            list.innerHTML = `<p class="text-muted">Products will appear here.</p>`;
+            document.querySelector("#sale-total-price").textContent = "€0.00";
+            document.getElementById("paypal").innerHTML = "";
+            document.getElementById("paypal").classList.add("d-none");
+            renderPayPal();
+        });
+    }
+
+    const body = document.querySelector("#sale-modal .modal-body");
+    const addBtn = body.querySelector('.btn-outline-primary');
+    const input = body.querySelector('#sale-product-id');
+
+    if (!addBtn.dataset.bound) {
+        addBtn.dataset.bound = 'true';
+        addBtn.addEventListener('click', async () => {
+            const productId = input.value.trim();
+            if (!productId) return;
+
+            try {
+                const res = await fetch(`/tt/product/${productId}`);
+                if (!res.ok) throw new Error('Product not found');
+
+                const product = await res.json();
+                if (productList.some(p => p.id === product.id)) {
+                    alert("Product already added.");
+                    return;
+                }
+                if (!product.availability) {
+                    alert("This product is not available for sale.");
+                    return;
+                }
+
+                productList.push(product);
+                totalPrice += parseFloat(product.price || 0);
+
+                if (list.querySelector('.text-muted')) {
+                    list.querySelector('.text-muted').remove();
+                }
+
+                const item = document.createElement('li');
+                item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                item.innerHTML = `
+                   <div class="d-flex align-items-center">
+                        <img src="../media/images/products/${product.images["1"]}" 
+                        alt="Product Image" class="me-2" 
+                        style="width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem; zoom: 1.2;">
+                        <div>
+                            <strong>${product.name}</strong><br>
+                            <small>ID: ${product.id}</small>
+                        </div>
+                    </div>
+                    <span>€${parseFloat(product.price).toFixed(2)}</span>
+                `;
+                list.appendChild(item);
+
+                body.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
+                input.value = '';
+                document.getElementById('paypal').classList.replace('d-none', 'd-block');
+            } catch (err) {
+                alert(err.message || 'Failed to fetch product');
+            }
+        });
+    }
+});
+
+
+
+
         function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
             if (!container) return;
@@ -191,54 +350,74 @@
             }
         }
 
-        async function fetchAdminProducts(filters = {}) {
-            try {
-                const params = new URLSearchParams(filters);
-                const response = await fetch(`/tt/product?${params.toString()}`);
-                const products = await response.json();
+        let selectedProductIds = [];
 
-                const priceResponse = await fetch('/tt');
-                const priceData = await priceResponse.json();
-                const priceMap = {};
-                priceData.forEach(item => priceMap[item.id] = item.price);
+// Function to fetch products and populate the table
+async function fetchAdminProducts(filters = {}) {
+    try {
+        const params = new URLSearchParams(filters);
+        const response = await fetch(`/tt/product?${params.toString()}`);
+        const products = await response.json();
 
-                const productContainer = document.getElementById('product-list');
-                productContainer.innerHTML = '';
+        const priceResponse = await fetch('/tt');
+        const priceData = await priceResponse.json();
+        const priceMap = {};
+        priceData.forEach(item => priceMap[item.id] = item.price);
 
-                products.forEach(product => {
-                    const price = priceMap[product.id];
-                    const productRow = document.createElement('tr');
+        const productContainer = document.getElementById('product-list');
+        productContainer.innerHTML = '';
 
-                    // Add hover cursor
-                    productRow.classList.add('cursor-pointer');
+        products.forEach(product => {
+            const price = priceMap[product.id];
+            const productRow = document.createElement('tr');
 
-                    // Row click: ignore checkbox clicks
-                    productRow.addEventListener('click', (event) => {
-                        if (event.target.type !== 'checkbox') {
-                            viewProductDetails(product.id);
-                        }
-                    });
+            // Add hover cursor
+            productRow.classList.add('cursor-pointer');
+            productRow.dataset.productId = product.id; // Store product ID in the row
 
-                    productRow.innerHTML = `
-                        <td><input type="checkbox" class="product-checkbox"></td>
-                        <td>${product.id}</td>
-                        <td>${product.name}</td>
-                        <td>$${price !== null && price !== undefined ? price : 'N/A'}</td>
-                        <td>${product.category || 'N/A'}</td>
-                        <td>${product.product_condition || 'N/A'}</td>
-                        <td>${product.availability ? 'Available' : 'Unavailable'}</td>
-                    `;
+            // Row click: ignore checkbox clicks
+            productRow.addEventListener('click', (event) => {
+                if (event.target.type !== 'checkbox') {
+                    viewProductDetails(product.id);
+                }
+            });
 
-                    productContainer.appendChild(productRow);
-                });
-             
-                animateListItems('#product-list');
+            // Product checkbox selection
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.classList.add('product-checkbox');
+            checkbox.addEventListener('change', (event) => {
+                const productId = product.id;
+                if (event.target.checked) {
+                    // Add to selected products
+                    selectedProductIds.push(productId);
+                } else {
+                    // Remove from selected products
+                    selectedProductIds = selectedProductIds.filter(id => id !== productId);
+                }
+            });
 
+            productRow.dataset.productId = product.id;
 
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            }
-        }
+            productRow.innerHTML = `
+                <td><input type="checkbox" class="product-checkbox"></td>
+                <td>${product.id}</td>
+                <td class="product-name">${product.name}</td>
+                <td class="product-price">€${price !== null && price !== undefined ? parseFloat(price).toFixed(2) : '0.00'}</td>
+                <td>${product.category || 'N/A'}</td>
+                <td>${product.product_condition || 'N/A'}</td>
+                <td>${product.availability ? 'Available' : 'Unavailable'}</td>
+            `;
+
+            productContainer.appendChild(productRow);
+        });
+
+        animateListItems('#product-list');
+    } catch (error) {
+        console.error('Error fetching products:', error);
+    }
+}
+
 
 
         function showAddProductForm() {
