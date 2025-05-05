@@ -29,8 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
             id: "register-sale",
             modalId: "modal-register-sale",
             title: "Register Product Sale",
-            fields: [],
-            submitText: "Submit Sale"
+            fields: []
         },
         {
             id: "set-product-for-sale",
@@ -344,21 +343,16 @@ document.addEventListener("DOMContentLoaded", () => {
             body.innerHTML = `
                 <div class="row">
                     <div class="col-md-7 border-end">
-                        <!-- Placeholder for future summary/receipt -->
-                        <div class="p-2">
+                        <ul class="list-group mb-3" id="sale-product-list">
                             <p class="text-muted">Products will appear here.</p>
-                        </div>
+                            <!-- Appended product items will appear here -->
+                        </ul>
                     </div>
                     <div class="col-md-5">
                         <div class="mb-3 d-flex">
                             <input type="text" class="form-control me-2" id="sale-product-id" placeholder="Enter Product ID">
                             <button type="button" class="btn btn-outline-primary">Add</button>
                         </div>
-    
-                        <ul class="list-group mb-3" id="sale-product-list">
-                            <!-- Appended product items will appear here -->
-                        </ul>
-    
                         <hr class="text-secondary">
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -366,13 +360,97 @@ document.addEventListener("DOMContentLoaded", () => {
                             <p id="sale-total-price" class="mb-0 fw-bold">€0.00</p>
                         </div>
     
-                        <div id="paypal" class="mt-3"></div>
+                        <div id="paypal" class="mt-3 d-none"></div>
                     </div>
                 </div>
             `;
+            document.getElementById("register-sale").addEventListener("click", () => {
+                // Create the reset sale button
+                const resetBtn = document.createElement("button");
+                resetBtn.type = "button";
+                resetBtn.className = "btn btn-outline-danger";
+                resetBtn.textContent = "Reset Product Sale";
+                // Append it to the modal footer
+                body.parentElement.querySelector(".modal-footer").appendChild(resetBtn);
+                resetBtn.addEventListener("click", () => {
+                    // Clear product list
+                    const list = body.querySelector('#sale-product-list');
+                    list.innerHTML = `<p class="text-muted">Products will appear here.</p>`;
+                
+                    // Reset total
+                    body.querySelector("#sale-total-price").textContent = "€0.00";
+                    totalPrice = 0;
+                    productList = [];
+                    document.getElementById("paypal").innerHTML = "";
+                    document.getElementById("paypal").classList.add("d-none");
+                    renderPayPal();
+                });
+            }, {once: true});
+
+            let productList = [];
+            let totalPrice = 0;
+
+            // Add click event for the "Add" button
+            body.querySelector('.btn-outline-primary').addEventListener('click', async () => {
+                const input = body.querySelector('#sale-product-id');
+                const productId = input.value.trim();
+
+                if (!productId) return;
+
+                try {
+                    const res = await fetch(`/tt/product/${productId}`);
+                    if (!res.ok) throw new Error('Product not found');
+
+                    const product = await res.json();
+
+                    // Avoid duplicates
+                    if (productList.some(p => p.id === product.id)) {
+                        alert("Product already added.");
+                        return;
+                    }
+                    if (!product.availability) {
+                        alert("This product is not available for sale.");
+                        return;
+                    }
+
+                    productList.push(product);
+                    totalPrice += parseFloat(product.price || 0);
+
+                    // Append to UI
+                    const list = body.querySelector('#sale-product-list');
+                    if (list.querySelector('.text-muted')) {
+                        list.querySelector('.text-muted').remove();
+                    }
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    item.innerHTML = `
+                       <div class="d-flex align-items-center">
+                            <img src="../media/images/products/${product.images["1"]}" 
+                            alt="Product Image" class="me-2" 
+                            style="width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem; zoom: 1.2;">
+                            <div>
+                                <strong>${product.name}</strong><br>
+                                <small>ID: ${product.id}</small>
+                            </div>
+                        </div>
+                        <span>€${parseFloat(product.price).toFixed(2)}</span>
+                    `;
+                    list.appendChild(item);
+
+                    // Update total
+                    body.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
+
+                    // Clear input
+                    input.value = '';
+
+                    document.getElementById('paypal').classList.replace('d-none', 'd-block');
+                } catch (err) {
+                    alert(err.message || 'Failed to fetch product');
+                }
+            });
+
             /* PayPal */
 
-            let totalPrice = body.querySelector("#sale-total-price").innerText.replace("€", "").trim();
             const renderPayPal = () => paypal.Buttons({
                 style: {
                     layout: 'vertical',
@@ -383,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return actions.order.create({
                         purchase_units: [{
                             amount: {
-                                value: totalPrice === 0 ? totalPrice : "1.00"
+                                value: String(totalPrice)
                             }
                         }]
                     });
@@ -523,11 +601,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Footer
         const footer = document.createElement("div");
         footer.className = "modal-footer";
-        const submitBtn = document.createElement("button");
-        submitBtn.type = "submit";
-        submitBtn.className = "btn btn-primary";
-        submitBtn.textContent = submitText;
-        footer.appendChild(submitBtn);
+        if (submitText) {
+            const submitBtn = document.createElement("button");
+            submitBtn.type = "submit";
+            submitBtn.className = "btn btn-primary";
+            submitBtn.textContent = submitText;
+            footer.appendChild(submitBtn);
+        }
 
         // Assemble
         form.appendChild(header);

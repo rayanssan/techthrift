@@ -441,7 +441,7 @@ if (document.body.id === "homepage") {
 
             // check if item in wishlist and style already if so
         } catch (error) {
-            console.log("Error fetching product:", error);
+            console.log("Product doesn't exist");
             const productContainer = document.getElementById('product-info');
             productContainer.innerHTML = `<div class="container my-4">
                 <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Back to Homepage</a>

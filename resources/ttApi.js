@@ -183,14 +183,14 @@ router.get('/tt/product/:id', (req, res) => {
 
                 if (isSaleProduct) {
                     query = `
-                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
-                FROM products
-                JOIN saleProducts ON products.id = saleProducts.id
-                LEFT JOIN productImages ON products.id = productImages.product
-                JOIN entities ON products.store_nipc = entities.nipc
-                JOIN clients ON entities.id = clients.id
-                WHERE products.id = ?;
-            `;
+                    SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
+                    FROM products
+                    JOIN saleProducts ON products.id = saleProducts.id
+                    LEFT JOIN productImages ON products.id = productImages.product
+                    JOIN entities ON products.store_nipc = entities.nipc
+                    JOIN clients ON entities.id = clients.id
+                    WHERE products.id = ?;
+                    `;
                 }
 
                 // Execute the final query
@@ -221,8 +221,8 @@ router.get('/tt/product/:id', (req, res) => {
             isSaleProduct = result.length > 0;
 
             // Based on whether it's a sale product, modify the main query
-            let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
-                    products.id = productImages.product WHERE id = ?`;
+            let query = `SELECT * FROM products LEFT JOIN productImages ON 
+                    products.id = productImages.product WHERE products.id = ?`;
             let params = [id];
 
             if (isSaleProduct) {
@@ -234,7 +234,7 @@ router.get('/tt/product/:id', (req, res) => {
                 JOIN entities ON products.store_nipc = entities.nipc
                 JOIN clients ON entities.id = clients.id
                 WHERE products.id = ?;
-            `;
+                `;
             }
 
             // Execute the final query
@@ -252,9 +252,11 @@ router.get('/tt/product/:id', (req, res) => {
                 });
 
                 // Build the response object
+                const { image_path, product: productId, image_order, ...filteredProduct } = product;
+
                 const response = {
-                    ...product, // product info
-                    images: images // image info
+                    ...filteredProduct,
+                    images: images
                 };
 
                 res.json(response);
