@@ -78,6 +78,12 @@ body {
   -o-object-fit: cover;
      object-fit: cover;
 }
+#header-brand img:hover {
+  filter: brightness(2);
+}
+#header-brand img:active {
+  filter: unset;
+}
 
 #categories-nav {
   flex-wrap: wrap;
@@ -287,6 +293,10 @@ figure span i {
   max-width: 160px;
 }
 
+#add-to-wishlist-button:hover {
+  filter: brightness(0.8);
+}
+
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -405,21 +415,6 @@ button[data-bs-target="#filtersCollapse"] {
   display: none;
 }
 
-#cartPage .form-control {
-  height: 40px;
-}
-#cartPage .StripeElement.form-control {
-  align-content: center;
-}
-#cartPage #card-payment-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  display: none;
+#cartPage apple-pay-button:hover {
+  filter: brightness(0.8);
 }/*# sourceMappingURL=stylesheet.css.map */

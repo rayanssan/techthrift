@@ -1,7 +1,7 @@
 "use strict";
 
-const domain = "dev-l8ytlq131pzoy67u.us.auth0.com";
-const clientId = "L1fWb50rJ2E6mPWVuJsynrqskjQ7454Q";
+const domain = "dev-1qdq127lj6aekksz.us.auth0.com";
+const clientId = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
 const redirectUri = window.location.origin + "/authentication";
 
 async function login() {

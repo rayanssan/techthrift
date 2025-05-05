@@ -15,8 +15,11 @@
     <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
     <!-- Font Awesome -->
     <!-- PayPal API -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT&components=buttons,applepay"></script>
     <!-- PayPal API -->
+    <script crossorigin
+    src="https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js"
+    ></script>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <!-- Stylesheets -->
@@ -33,14 +36,19 @@
 <body id="cartPage">
 
     <!-- Header -->
-    <header class="p-3 bg-white border-bottom">
+    <header class="p-3 border-bottom bg-white">
         <div class="d-flex justify-content-between container">
             <div class="row align-items-center gap-3">
                 <!-- Left elements -->
-                <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
-                    <a id="header-brand" href="/homepage">
+                <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
+                    <a onclick="location.replace(document.referrer)" class="btn pt-1 btn-link text-decoration-none p-0">
+                        <i class="fa fa-angle-left fs-3"></i>
+                    </a>
+                    <a id="header-brand" href="/homepage" class="ms-1 pe-3 me-3" 
+                    style="border-right: 1px solid lightgray;">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
                     </a>
+                    <h4 class="mb-1 ps-1">Your Cart</h4>
                 </div>
                 <!-- Left elements -->
             </div>
@@ -53,18 +61,14 @@
             </a>
         </div>
     </header>
+   
     <!-- Header -->
 
     <!-- Cart & Payment Sidebar -->
     <div id="paymentInterface" class="container-fluid">
         <div class="row min-vh-100">
             <!-- Cart Section (Left) -->
-            <div id="cart-section" class="col-md-7 mb-4 d-flex flex-column">
-                <header class="text-start p-4 pb-2">
-                    <h3><a onclick="location.replace(document.referrer)" class="btn btn-link text-decoration-none ps-0">
-                            <i class="fa fa-angle-left fs-3"></i>
-                        </a>Your Cart</h3>
-                </header>
+            <div id="cart-section" class="col-md-7 pb-4 d-flex flex-column">
                 <div id="product-list">
                     <!-- Cart products will be injected here dynamically -->
                 </div>
@@ -87,8 +91,11 @@
 
                 <!-- Shipping and Payment -->
                 <div class="card shadow-sm p-4">
-                    <h5 class="mb-3">Payment</h5>
+                    <h5 class="mb-3">Payment and Shipping</h5>
                     <!-- Payment options -->
+                    <apple-pay-button class="btn p-0 mb-3" buttonstyle="black" type="plain" locale="en-PT"
+                    style="--apple-pay-button-height: 3.2rem; --apple-pay-button-border-radius: 10px;"
+                    ></apple-pay-button>
                     <div id="paypal">
                     </div>
                     <!-- Payment options -->

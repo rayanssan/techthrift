@@ -10,17 +10,15 @@ window.addEventListener('userAuthenticated', (event) => {
               <p class="text-center fs-5">Sign in to continue with payment!</p>
               <a href="\authentication" class="btn btn-primary w-100">Sign in</a>`;
             }
+            document.querySelector("apple-pay-button").remove();
             return;
         }
 
         if (document.querySelector("#paypal")) {
-            // Parse price
-            let totalPrice = document.querySelector("#total-price").
-                innerText.split(" ")[1].replace("€", "").replace(",", "").trim();
 
             /* PayPal */
 
-            paypal.Buttons({
+            const renderPayPal = () => paypal.Buttons({
                 style: {
                     layout: 'vertical',
                     borderRadius: 10,
@@ -91,7 +89,7 @@ window.addEventListener('userAuthenticated', (event) => {
                                         client: loggedInUser.email,
                                         transaction_value: parseFloat(totalPrice),
                                         is_online: true,
-                                        paypal_order_number: details.id,
+                                        order_number: details.id,
                                         shipping_address: shippingAddress.address,
                                         shipping_postal_code: shippingAddress.postal_code,
                                         shipping_city: shippingAddress.city,
@@ -102,11 +100,11 @@ window.addEventListener('userAuthenticated', (event) => {
                                     })
                                 }).then(response => {
                                     if (!response.ok) throw new Error("Failed to store transaction.");
-                                    // Clear local storage
-                                    localStorage.clear("cartProducts");
+                                    // Clear cartProducts
+                                    localStorage.removeItem("cartProducts");
                                     // Show success
                                     document.getElementById("paymentInterface").innerHTML = `
-                                    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+                                    <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">
                                         <div class="text-success mb-4">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
                                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 1 0-1.16-.96L7.477 8.417 5.383 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647z"/>
@@ -133,6 +131,146 @@ window.addEventListener('userAuthenticated', (event) => {
                         });
                 }
             }).render('#paypal'); // Render inside the PayPal div
+
+            // Parse price
+            let totalPriceElem = document.querySelector("#total-price");
+            let shippingPriceElem = document.querySelector("#shipping-price");
+
+            let totalPrice = totalPriceElem.
+                innerText.split(" ")[1].replace("€", "").replace(",", "").trim();
+
+            let shippingPrice = shippingPriceElem.
+                innerText.split(" ")[1].replace("€", "").replace(",", ".").trim();
+
+            const observer = new MutationObserver(() => {
+                totalPrice = parseFloat(totalPriceElem.innerText.split(" ")[1].replace("€", "").replace(",", "").trim());
+                shippingPrice = parseFloat(shippingPriceElem.innerText.split(" ")[1].replace("€", "").replace(",", ".").trim());
+                document.getElementById("paypal").innerHTML = "";
+                renderPayPal();
+            });
+
+            // Observe changes to the price text content
+            observer.observe(totalPriceElem, { childList: true, subtree: true, characterData: true });
+            observer.observe(shippingPriceElem, { childList: true, subtree: true, characterData: true });
+
+            renderPayPal();
+
+            /* Apple Pay */
+
+            function onApplePayButtonClicked() {
+
+                if (!ApplePaySession) {
+                    return;
+                }
+
+                // Define ApplePayPaymentRequest
+                const request = {
+                    "countryCode": "PT",
+                    "currencyCode": "EUR",
+                    "merchantCapabilities": [
+                        "supports3DS"
+                    ],
+                    "supportedNetworks": [
+                        "visa",
+                        "masterCard",
+                        "amex",
+                        "discover"
+                    ],
+                    requiredShippingContactFields: ["postalAddress"],
+                    shippingMethods: [
+                        {
+                            label: "Shipping",
+                            detail: "Delivers in 5–7 days",
+                            amount: shippingPrice,
+                            identifier: "standard"
+                        },
+                    ],
+                    "total": {
+                        "label": "TechThrift Demo (Card is not charged)",
+                        "type": "final",
+                        "amount": totalPrice
+                    }
+                };
+                console.log(request);
+
+                // Create ApplePaySession
+                const session = new ApplePaySession(3, request);
+
+                session.onvalidatemerchant = async event => {
+                    // Call your own server to request a new merchant session.
+                    // const merchantSession = await validateMerchant();
+                    // session.completeMerchantValidation(merchantSession);
+                };
+
+                session.onpaymentmethodselected = event => {
+                    // Define ApplePayPaymentMethodUpdate based on the selected payment method.
+                    // No updates or errors are needed, pass an empty object.
+                    const update = {};
+                    session.completePaymentMethodSelection(update);
+                };
+
+                session.onshippingmethodselected = event => {
+                    // Define ApplePayShippingMethodUpdate based on the selected shipping method.
+                    // No updates or errors are needed, pass an empty object. 
+                    const update = {};
+                    session.completeShippingMethodSelection(update);
+                };
+
+                session.onshippingcontactselected = event => {
+                    // Define ApplePayShippingContactUpdate based on the selected shipping contact.
+                    const update = {};
+                    session.completeShippingContactSelection(update);
+                };
+
+                session.onpaymentauthorized = event => {
+                    // Define ApplePayPaymentAuthorizationResult
+                    const result = {
+                        "status": ApplePaySession.STATUS_SUCCESS
+                    };
+                    const paymentReference = event.payment.token.transactionIdentifier;
+
+                    // Clear cartProducts
+                    localStorage.removeItem("cartProducts");
+                    // Show success
+                    document.getElementById("paymentInterface").innerHTML = `
+                    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+                        <div class="text-success mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 1 0-1.16-.96L7.477 8.417 5.383 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-center mb-3">Your order is on its way!</h2>
+                        <p class="text-muted mb-4">Order Code: <code>${paymentReference}</code></p>
+                        <p class="text-center mb-4">Thank you for your purchase!</p>
+                        <a href="/" class="btn btn-success btn-lg">Thrift More</a>
+                    </div>`;
+                    session.completePayment(result);
+                };
+
+                session.oncouponcodechanged = event => {
+                    // Define ApplePayCouponCodeUpdate
+                    const newTotal = calculateNewTotal(event.couponCode);
+                    const newLineItems = calculateNewLineItems(event.couponCode);
+                    const newShippingMethods = calculateNewShippingMethods(event.couponCode);
+                    const errors = calculateErrors(event.couponCode);
+
+                    session.completeCouponCodeChange({
+                        newTotal: newTotal,
+                        newLineItems: newLineItems,
+                        newShippingMethods: newShippingMethods,
+                        errors: errors,
+                    });
+                };
+
+                session.oncancel = event => {
+                    // Payment canceled by WebKit
+                };
+
+                session.begin();
+            }
+            document.querySelector("apple-pay-button").addEventListener("click", () =>
+                onApplePayButtonClicked()
+            );
         }
     });
 });

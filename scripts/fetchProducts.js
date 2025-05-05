@@ -29,7 +29,7 @@ function renderProducts() {
         <div onclick="window.location.href = 'product?is=${product.id}';"
         id="productid-${product.id}" class="col-lg-3 col-md-6 col-sm-6 d-flex mb-auto product-link">
             <div class="card w-100 my-2 shadow h-100">
-                <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top">
+                <img alt="Product Image" src="../media/images/products/${product.image}" class="card-img-top p-2">
                 <div class="card-body d-flex flex-column">
                     <h6 class="card-title text-truncate">${product.name} <i class="fa fa-angle-right"></i></h6>
                     <p class="badge mb-2 d-flex ${product.product_condition === 'Like New' ? 'bg-success' :
@@ -250,7 +250,7 @@ if (document.body.id === "homepage") {
                                         <div class="carousel-item ${index === 0 ? 'active' : ''}">
                                             <img src="../media/images/products/${image}" 
                                             alt="Product Image ${order}" 
-                                            class="d-block w-100 img-fluid" />
+                                            class="d-block w-100 img-fluid p-2" />
                                         </div>
                                     `).join('')}
                                 </div>          
@@ -303,7 +303,7 @@ if (document.body.id === "homepage") {
                                     <i class="fas fa-cart-plus"></i> Add to cart
                                 </a>`)}
                                 ${product.availability === 0 ? "" :
-                    `<a id="add-to-wishlist-button" class="btn btn-light border icon-hover shadow">
+                    `<a id="add-to-wishlist-button" class="btn btn-light border shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                     <span id="wishlist-count" class="text-secondary">0</span>
                                 </a>`}
@@ -384,7 +384,7 @@ if (document.body.id === "homepage") {
                                     button.classList.remove('wishlisted');
                                     count.classList.replace('text-white', 'text-secondary')
                                     icon.classList.replace('text-white', 'text-secondary');
-                                    button.style.backgroundColor = "unset";
+                                    button.style.backgroundColor = "white";
                                 }
                             }
                         })
@@ -441,7 +441,7 @@ if (document.body.id === "homepage") {
 
             // check if item in wishlist and style already if so
         } catch (error) {
-            console.log("Error fetching product:", error);
+            console.log("Product doesn't exist");
             const productContainer = document.getElementById('product-info');
             productContainer.innerHTML = `<div class="container my-4">
                 <a href="/homepage" class="btn btn-primary mb-3 btn-sm me-2">Back to Homepage</a>
@@ -732,8 +732,8 @@ if (document.body.id === "homepage") {
             'cart': cartPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
             'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
-        document.getElementById('shipping-price').textContent = `Shipping: 
-                €${prices.shipping}`;
+        document.getElementById('shipping-price').innerHTML = `Shipping: 
+                €${prices.shipping} - Delivers in 5–7 days <i class="fas fa-shipping-fast"></i>`;
         document.getElementById('total-price').innerHTML = `
                     <strong>
                         Total: €${prices.total}
@@ -772,8 +772,8 @@ if (document.body.id === "homepage") {
                 await calculatePrices();
             } else {
                 const productContainer = document.getElementById('product-list');
-                productContainer.innerHTML = `<div class="container my-4">
-                <p class="text-center fw-bold display-4">Nothing in the cart yet.</p>
+                productContainer.innerHTML = `<div class="container my-4 pt-5">
+                <p class="text-center fw-bold display-4">Nothing in your cart yet.</p>
                 <p class="text-center">Time to go thrifting!<br><br>
                         <a href="/homepage" class="btn btn-primary">Shop now</a>
                 </p>
@@ -806,20 +806,25 @@ if (document.body.id === "homepage") {
         const end = start + productsPerPage;
         const paginatedProducts = products.slice(start, end);
 
+        let pCount = 1;
         paginatedProducts.forEach(product => {
             const productCard = `
             <div id="productid-${product.id}" class="w-100 d-flex card border-0 w-100 my-2 shadow flex-column mb-auto">
                 <!-- Button to remove product from cart -->
-                <button class="btn-close btn-sm
-                p-3 ms-auto remove-product" 
-                aria-label="Close" data-product-id="${product.id}"></button>
-                <hr class="mt-0 text-secondary">
+                <div class="d-flex align-items-center flex-row">
+                    <p class="px-3 mb-0 text-start text-secondary">${pCount++}</p>
+                    <button class="btn-close btn-sm
+                    p-3 ms-auto remove-product" 
+                    aria-label="Close" data-product-id="${product.id}"></button>
+                </div>
+                <hr class="my-0 text-secondary">
                 <div class="d-flex flex-row">
                     <img onclick='location.href="/product?is=${product.id}"'
-                    alt="Product Image" src="../media/images/products/${product.images['1']}" class="card-img"
+                    alt="Product Image" src="../media/images/products/${product.images['1']}" 
+                    class="card-img rounded-0 border-end p-2"
                     style="width: 25%; aspect-ratio: 1;
                     object-fit: contain;cursor: pointer;">
-                    <div class="card-body overflow-hidden pt-0 d-flex flex-column">
+                    <div class="card-body overflow-hidden d-flex flex-column">
                         <a class="mb-2 text-truncate text-decoration-none link-opacity-75-hover fs-5"
                         href="/product?is=${product.id}">${product.name} <i class="fa fa-angle-right" 
                         style="vertical-align: text-bottom;"></i></a>
@@ -833,33 +838,35 @@ if (document.body.id === "homepage") {
             </div>`;
 
             productContainer.innerHTML += productCard;
-            // Event listeners for button to remove products from the cart
-            document.querySelectorAll('.remove-product').forEach(button => {
-                button.addEventListener('click', async function () {
-                    const productId = button.getAttribute('data-product-id');
+        });
 
-                    // Remove the product ID from the cart in localStorage
-                    let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
-                    cartProducts = cartProducts.filter(id => id != productId);
-                    products = products.filter(p => p.id != productId);
-                    localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+        // Event listeners for button to remove products from the cart
+        document.querySelectorAll('.remove-product').forEach(button => {
+            button.addEventListener('click', async function () {
+                const productId = button.getAttribute('data-product-id');
 
-                    // Remove the product card from the interface
-                    const productCard = document.getElementById(`productid-${productId}`);
-                    productCard.remove();
-                    await calculatePrices();
-                    if (JSON.parse(localStorage.getItem('cartProducts')).length == 0) {
-                        const productContainer = document.getElementById('product-list');
-                        productContainer.innerHTML = `<div class="container my-4">
-                <p class="text-center fw-bold display-4">Nothing in the cart yet.</p>
-                <p class="text-center">Time to go thrifting!<br><br>
-                        <a href="/homepage" class="btn btn-primary">Shop now</a>
-                </p>
-                </div>`;
-                        document.getElementById('cart-section').parentElement.classList.add('justify-content-center');
-                        document.getElementById('payment-section').remove();
-                    }
-                });
+                // Remove the product ID from the cart in localStorage
+                let cartProducts = JSON.parse(localStorage.getItem('cartProducts')) || [];
+                cartProducts = cartProducts.filter(id => id != productId);
+                products = products.filter(p => p.id != productId);
+                localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+
+                // Remove the product card from the interface
+                const productCard = document.getElementById(`productid-${productId}`);
+                productCard.remove();
+                await calculatePrices();
+                renderCartProducts();
+                if (JSON.parse(localStorage.getItem('cartProducts')).length == 0) {
+                    const productContainer = document.getElementById('product-list');
+                    productContainer.innerHTML = `<div class="container my-4 pt-5">
+            <p class="text-center fw-bold display-4">Nothing in your cart yet.</p>
+            <p class="text-center">Time to go thrifting!<br><br>
+                    <a href="/homepage" class="btn btn-primary">Shop now</a>
+            </p>
+            </div>`;
+                    document.getElementById('cart-section').parentElement.classList.add('justify-content-center');
+                    document.getElementById('payment-section').remove();
+                }
             });
         });
     }
