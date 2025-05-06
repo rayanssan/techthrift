@@ -1969,7 +1969,7 @@ router.get('/tttransaction/sales', (req, res) => {
 
 // Add sale transaction
 router.post('/tttransaction/sales/add', (req, res) => {
-    const { client, transaction_value, is_online, order_number, 
+    let { client, transaction_value, is_online, order_number, 
         employee, store, shipping_address, shipping_postal_code, 
         shipping_city, shipping_country, products } = req.body;
 
@@ -2006,6 +2006,9 @@ router.post('/tttransaction/sales/add', (req, res) => {
         }
 
         const transactionId = result.insertId;
+        if (order_number == "APPLE-PAY-") {
+            order_number += transactionId;
+        }
 
         db.query(saleQuery,
             [transactionId, is_online, order_number, employee, store, shipping_address,

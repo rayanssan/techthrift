@@ -15,7 +15,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 app.use(express.json());
 
-// Set up HTTPS server
 const serverPem = fs.readFileSync(path.join(__dirname, 'haproxy.pem'), 'utf8');
 const credentials = { key: serverPem, cert: serverPem };
 
@@ -35,12 +34,15 @@ dbReady.then((isConnected) => {
             });
         });
 
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server is running on http://0.0.0.0:${PORT}`);
-        });
-        // https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
-        //    console.log(`Server is running on https://0.0.0.0:${PORT}`);
-        // });
+        if (process.argv[2] == "-https") {
+            https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
+                console.log(`Server is running on https://0.0.0.0:${PORT}`);
+            });
+        } else {
+            app.listen(PORT, '0.0.0.0', () => {
+                console.log(`Server is running on http://0.0.0.0:${PORT}`);
+            });
+        }
     } else {
         exec('node resources/dbCreate.js', (err, stdout, stderr) => {
             if (err) {
@@ -49,11 +51,18 @@ dbReady.then((isConnected) => {
             }
             console.log(stdout);
             console.log('Connected to the TechThrift database.');
-            console.log(`Server is running on http://0.0.0.0:${PORT}`);
             // Restart the techthrift.js script after dbCreate.js is executed
-            exec('node techthrift.js', () => {
-                process.exit(0); // Exit the current process after restarting    
-            });
+            if (process.argv[2] == "-https") {
+                console.log(`Server is running on https://0.0.0.0:${PORT}`);
+                exec('node techthrift.js -https', () => {
+                    process.exit(0); // Exit the current process after restarting    
+                });
+            } else {
+                console.log(`Server is running on http://0.0.0.0:${PORT}`);
+                exec('node techthrift.js', () => {
+                    process.exit(0); // Exit the current process after restarting    
+                });
+            }
         })
     }
 });

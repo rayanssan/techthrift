@@ -17,9 +17,11 @@
     <!-- PayPal API -->
     <script src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT&components=buttons,applepay"></script>
     <!-- PayPal API -->
+    <!-- Apple Pay API -->
     <script crossorigin
     src="https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js"
     ></script>
+    <!-- Apple Pay API -->
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <!-- Stylesheets -->
@@ -34,7 +36,7 @@
 </head>
 
 <body id="cartPage">
-
+    
     <!-- Header -->
     <header class="p-3 border-bottom bg-white">
         <div class="d-flex justify-content-between container">
@@ -66,7 +68,7 @@
 
     <!-- Cart & Payment Sidebar -->
     <div id="paymentInterface" class="container-fluid">
-        <div class="row min-vh-100">
+        <div class="row">
             <!-- Cart Section (Left) -->
             <div id="cart-section" class="col-md-7 pb-4 d-flex flex-column">
                 <div id="product-list">
@@ -78,13 +80,19 @@
             <!-- Payment Sidebar Section (Right) -->
             <div id="payment-section" class="col-md-5 bg-white d-flex flex-column justify-content-start p-3 shadow">
                 <div class="card shadow-sm p-4 mb-4">
-                    <h5 class="mb-3">Price</h5>
+                    <h5 class="mb-3">Price Summary</h5>
                     <!-- Price Summary -->
-                    <p id="shipping-price">
-                        <!-- Shipping price will be calculated and injected here dynamically -->
+                    <p class="d-flex justify-content-between">
+                        <span><i class="fas fa-shipping-fast"></i> Shipping <small>(delivers in 5–7 days)</small>:</span>
+                        <span id="shipping-price">
+                            <!-- Shipping price will be calculated and injected here dynamically -->
+                        </span>
                     </p>
-                    <h5 id="total-price" class="mb-1">
-                        <!-- Total price will be calculated and injected here dynamically -->
+                    <h5 class="mb-1 d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="total-price">
+                            <!-- Total price will be calculated and injected here dynamically -->
+                        </strong>
                     </h5>
                 </div>
                 <!-- Price Summary -->

@@ -50,6 +50,15 @@
   #filtersContainer div input[type=range] {
     width: 100%;
   }
+  #cartPage {
+    overflow: auto !important;
+  }
+  #cartPage #payment-section,
+  #cartPage #cart-section {
+    max-height: unset !important;
+    min-height: unset !important;
+    overflow: unset !important;
+  }
 }
 @media (max-width: 500px) {
   #featuredContainer div {
@@ -415,6 +424,15 @@ button[data-bs-target="#filtersCollapse"] {
   display: none;
 }
 
+#cartPage {
+  overflow: hidden;
+}
+#cartPage #payment-section,
+#cartPage #cart-section {
+  min-height: calc(100vh - 73px);
+  max-height: calc(100vh - 73px);
+  overflow: auto;
+}
 #cartPage apple-pay-button:hover {
   filter: brightness(0.8);
 }/*# sourceMappingURL=stylesheet.css.map */

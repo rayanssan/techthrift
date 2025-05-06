@@ -732,12 +732,8 @@ if (document.body.id === "homepage") {
             'cart': cartPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
             'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
-        document.getElementById('shipping-price').innerHTML = `Shipping: 
-                €${prices.shipping} - Delivers in 5–7 days <i class="fas fa-shipping-fast"></i>`;
-        document.getElementById('total-price').innerHTML = `
-                    <strong>
-                        Total: €${prices.total}
-                    </strong>`;
+        document.getElementById('shipping-price').innerHTML = `€${prices.shipping}`;
+        document.getElementById('total-price').innerHTML = `€${prices.total}`;
         return prices;
     }
 
@@ -804,10 +800,10 @@ if (document.body.id === "homepage") {
 
         const start = (currentPage - 1) * productsPerPage;
         const end = start + productsPerPage;
-        const paginatedProducts = products.slice(start, end);
+        const cartProducts = products.slice(start, end);
 
         let pCount = 1;
-        paginatedProducts.forEach(product => {
+        cartProducts.forEach(product => {
             const productCard = `
             <div id="productid-${product.id}" class="w-100 d-flex card border-0 w-100 my-2 shadow flex-column mb-auto">
                 <!-- Button to remove product from cart -->
