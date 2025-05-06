@@ -1969,8 +1969,8 @@ router.get('/tttransaction/sales', (req, res) => {
 
 // Add sale transaction
 router.post('/tttransaction/sales/add', (req, res) => {
-    let { client, transaction_value, is_online, order_number, 
-        employee, store, shipping_address, shipping_postal_code, 
+    let { client, transaction_value, is_online, order_number,
+        employee, store, shipping_address, shipping_postal_code,
         shipping_city, shipping_country, products } = req.body;
 
     if (!client || !transaction_value ||
@@ -2013,75 +2013,75 @@ router.post('/tttransaction/sales/add', (req, res) => {
         db.query(saleQuery,
             [transactionId, is_online, order_number, employee, store, shipping_address,
                 shipping_postal_code, shipping_city, shipping_country || null], (err) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send({ error: err.message });
-                }
-
-                // Insert sold products
-                if (products.length === 0) {
-                    return res.status(400).send({ error: 'No products provided' });
-                }
-
-                const soldProductsData = products.map(productId => [productId, transactionId]);
-
-                db.query(soldProductsQuery, [soldProductsData], (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).send({ error: err.message });
                     }
 
-                    // Update availability of sold products
-                    products.forEach(productId => {
-                        db.query(productsQuery, [productId], (err) => {
-                            if (err) console.error('Product update error:', err.message);
-                        });
-                    });
+                    // Insert sold products
+                    if (products.length === 0) {
+                        return res.status(400).send({ error: 'No products provided' });
+                    }
 
-                    // Update replica
-                    dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
+                    const soldProductsData = products.map(productId => [productId, transactionId]);
+
+                    db.query(soldProductsQuery, [soldProductsData], (err) => {
                         if (err) {
                             console.error(err);
                             return res.status(500).send({ error: err.message });
                         }
 
-                        const transactionId = result.insertId;
+                        // Update availability of sold products
+                        products.forEach(productId => {
+                            db.query(productsQuery, [productId], (err) => {
+                                if (err) console.error('Product update error:', err.message);
+                            });
+                        });
 
-                        // Insert into sales
-                        dbR.query(saleQuery,
-                            [transactionId, is_online, order_number, employee, store, shipping_address,
-                                shipping_postal_code, shipping_city, shipping_country || null], (err) => {
-                                if (err) {
-                                    console.error(err);
-                                    return res.status(500).send({ error: err.message });
-                                }
+                        // Update replica
+                        dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
+                            if (err) {
+                                console.error(err);
+                                return res.status(500).send({ error: err.message });
+                            }
 
-                                // Insert sold products
-                                if (products.length === 0) {
-                                    return res.status(400).send({ error: 'No products provided' });
-                                }
+                            const transactionId = result.insertId;
 
-                                const soldProductsData = products.map(productId => [productId, transactionId]);
+                            // Insert into sales
+                            dbR.query(saleQuery,
+                                [transactionId, is_online, order_number, employee, store, shipping_address,
+                                    shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+                                        if (err) {
+                                            console.error(err);
+                                            return res.status(500).send({ error: err.message });
+                                        }
 
-                                dbR.query(soldProductsQuery, [soldProductsData], (err) => {
-                                    if (err) {
-                                        console.error(err);
-                                        return res.status(500).send({ error: err.message });
-                                    }
+                                        // Insert sold products
+                                        if (products.length === 0) {
+                                            return res.status(400).send({ error: 'No products provided' });
+                                        }
 
-                                    // Update availability of sold products
-                                    products.forEach(productId => {
-                                        dbR.query(productsQuery, [productId], (err) => {
-                                            if (err) console.error('Product update error:', err.message);
+                                        const soldProductsData = products.map(productId => [productId, transactionId]);
+
+                                        dbR.query(soldProductsQuery, [soldProductsData], (err) => {
+                                            if (err) {
+                                                console.error(err);
+                                                return res.status(500).send({ error: err.message });
+                                            }
+
+                                            // Update availability of sold products
+                                            products.forEach(productId => {
+                                                dbR.query(productsQuery, [productId], (err) => {
+                                                    if (err) console.error('Product update error:', err.message);
+                                                });
+                                            });
                                         });
                                     });
-                                });
-                            });
-                    });
+                        });
 
-                    res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+                        res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+                    });
                 });
-            });
     });
 });
 
@@ -2179,6 +2179,25 @@ router.get('/tttransaction/shipping/update/:newCost', (req, res) => {
             }
         });
         res.status(200).send('Shipping costs successfully updated');
+    });
+});
+
+// Add notification to user (FOR TESTING ONLY, WILL BE REMOVED)
+// Instead use `/ttuser/client/edit/:id`
+router.get('/ttuser/client/addNotification/:email', (req, res) => {
+    const email = req.params.email;
+    const query =
+        `UPDATE clients SET unread_notifications = COALESCE(unread_notifications, 0) + 1 WHERE email = ?`;
+
+    db.execute(query, [email], function (err, results) {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Internal server error.' });
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'Client not found.' });
+        }
+        res.status(200).json({ message: 'Unread notifications count updated successfully.' });
     });
 });
 

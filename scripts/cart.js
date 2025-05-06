@@ -10,7 +10,9 @@ window.addEventListener('userAuthenticated', (event) => {
               <p class="text-center fs-5">Sign in to continue with payment!</p>
               <a href="\authentication" class="btn btn-primary w-100">Sign in</a>`;
             }
-            document.querySelector("apple-pay-button").remove();
+            if (document.querySelector("apple-pay-button")) {
+                document.querySelector("apple-pay-button").remove();
+            }
             return;
         }
 

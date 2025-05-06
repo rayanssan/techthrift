@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS clients (
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
     dob DATE,
-    read_notifications INT,
     unread_notifications INT
 ); 
 

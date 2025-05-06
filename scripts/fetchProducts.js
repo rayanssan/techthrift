@@ -303,7 +303,8 @@ if (document.body.id === "homepage") {
                                     <i class="fas fa-cart-plus"></i> Add to cart
                                 </a>`)}
                                 ${product.availability === 0 ? "" :
-                    `<a id="add-to-wishlist-button" class="btn btn-light border shadow">
+                    `<a id="add-to-wishlist-button" 
+                                class="btn btn-light border shadow">
                                     <i class="fas fa-heart fa-lg text-secondary px-1"></i>
                                     <span id="wishlist-count" class="text-secondary">0</span>
                                 </a>`}
