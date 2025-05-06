@@ -159,14 +159,20 @@ app.get('/partners', (req, res) => {
 
 // Authentication
 app.get('/authentication', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/authentication.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving authentication.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
+    const auth0Domain = 'dev-1qdq127lj6aekksz.us.auth0.com'; 
+    const clientID = 'iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a'; 
+    const redirectUri = 'http://www.techthrift.duckdns.org/authentication'; // callback final após login
+
+    const loginUrl = `https://${auth0Domain}/authorize` +
+        `?response_type=code` +
+        `&client_id=${clientID}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&scope=openid profile email`;
+
+    res.redirect(loginUrl);
 });
+
+
 
 // Employee Dashboard
 app.get('/dashboardEmployee', (req, res) => {
