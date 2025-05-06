@@ -226,17 +226,21 @@ document.getElementById("register-sale").addEventListener("click", () => {
                         <small>ID: ${product.id}</small>
                     </div>
                 </div>
-                <span>€${product.price.toFixed(2)}</span>
+                <span>€${parseFloat(product.price).toFixed(2)}</span>
             `;
             list.appendChild(item);
         });
     }
 
+    
+
     document.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
     document.getElementById('paypal').classList.remove('d-none');
 
-    const modal = new bootstrap.Modal(document.getElementById('sale-modal'));
+    const modalElement = document.getElementById('sale-modal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.show();
+
 
     const footer = document.querySelector("#sale-modal .modal-footer");
     if (!footer.querySelector('.btn-outline-danger')) {
