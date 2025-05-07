@@ -59,7 +59,7 @@ window.addEventListener('userAuthenticated', (event) => {
       if (!wishlistButton) return;
 
       // Check if unread notifications exist
-      if (userUnreadNotifications !== 0) {
+      if (userUnreadNotifications && userUnreadNotifications !== 0) {
         if (document.body.id != "wishlistPage") {
           wishlistButton.classList.add("text-danger");
         }

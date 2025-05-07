@@ -14,6 +14,7 @@ const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 app.use(express.json());
+export const exposeApi = process.argv.includes('-exposeApi');
 
 const serverPem = fs.readFileSync(path.join(__dirname, 'haproxy.pem'), 'utf8');
 const credentials = { key: serverPem, cert: serverPem };
@@ -34,7 +35,7 @@ dbReady.then((isConnected) => {
             });
         });
 
-        if (process.argv[2] == "-https") {
+        if (process.argv.includes("-https")) {
             https.createServer(credentials, app).listen(PORT, '0.0.0.0', () => {
                 console.log(`Server is running on https://0.0.0.0:${PORT}`);
             });
@@ -52,7 +53,7 @@ dbReady.then((isConnected) => {
             console.log(stdout);
             console.log('Connected to the TechThrift database.');
             // Restart the techthrift.js script after dbCreate.js is executed
-            if (process.argv[2] == "-https") {
+            if (process.argv.includes("-https")) {
                 console.log(`Server is running on https://0.0.0.0:${PORT}`);
                 exec('node techthrift.js -https', () => {
                     process.exit(0); // Exit the current process after restarting    
