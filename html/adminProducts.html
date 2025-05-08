@@ -143,51 +143,138 @@
                         <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
                     </div>
                 </div>
-
+            
                 <form id="productForm" enctype="multipart/form-data">
                     <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Product Images</label>
-                            <div id="dropzone" class="border border-secondary rounded p-0 text-center position-relative" style="height: auto;">
-                                <!-- This will be replaced dynamically -->
-                            </div>
-                            
-                            
-                            
-                        </div>
-                        <div class="col-md-8">
+                        <!-- SPLIT: TWO-COLUMN LAYOUT -->
+                        <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input type="text" name="name" class="form-control" required>
+                                <label for="product-name" class="form-label">Product Name</label>
+                                <input type="text" id="product-name" name="name" class="form-control" required>
                             </div>
+
                             <div class="mb-3">
-                                <label class="form-label">Store NIPC</label>
-                                <input type="text" name="store_nipc" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Condition</label>
-                                <input type="text" name="condition" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Availability</label>
-                                <select name="availability" class="form-select">
-                                    <option value="true">Available</option>
-                                    <option value="false">Unavailable</option>
+                                <label for="product-condition" class="form-label">Condition</label>
+                                <select id="product-condition" name="condition" class="form-select" required>
+                                    <option>Like New</option>
+                                    <option>Excellent</option>
+                                    <option>Good</option>
+                                    <option>Needs Repair</option>
                                 </select>
                             </div>
+            
                             <div class="mb-3">
-                                <label class="form-label">Category</label>
-                                <input type="text" name="category" class="form-control">
+                                <label for="product-availability" class="form-label">Availability</label>
+                                <select id="product-availability" name="availability" class="form-select" required>
+                                    <option>Available</option>
+                                    <option>Not Available</option>
+                                </select>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-category" class="form-label">Category</label>
+                                <select id="product-category" name="category" class="form-select" required>
+                                    <option>Smartphones</option>
+                                    <option>Laptops & PCs</option>
+                                    <option>Smartwatches</option>
+                                    <option>Gaming</option>
+                                    <option>TVs & Monitors</option>
+                                    <option>Audio</option>
+                                    <option>Tablets</option>
+                                    <option>Cameras</option>
+                                    <option>Accessories</option>
+                                    <option>Home Appliances</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-brand" class="form-label">Brand</label>
+                                <input type="text" id="product-brand" name="brand" class="form-control" required>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-model-code" class="form-label">Model Code</label>
+                                <input type="text" id="product-model-code" name="model_code" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-color" class="form-label">Color</label>
+                                <input type="text" id="product-color" name="color" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-weight" class="form-label">Weight (kg)</label>
+                                <input type="number" id="product-weight" name="weight" class="form-control" step="0.01">
+                            </div>
+                        </div>
+            
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="product-dimensions" class="form-label">Dimensions</label>
+                                <input type="text" id="product-dimensions" name="dimensions" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-processor" class="form-label">Processor</label>
+                                <input type="text" id="product-processor" name="processor" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-screen" class="form-label">Screen</label>
+                                <input type="text" id="product-screen" name="screen" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-ram" class="form-label">RAM Memory</label>
+                                <input type="text" id="product-ram" name="ram" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-graphics" class="form-label">Graphics Card</label>
+                                <input type="text" id="product-graphics" name="graphics" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-storage" class="form-label">Storage</label>
+                                <input type="text" id="product-storage" name="storage" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-keyboard" class="form-label">Keyboard</label>
+                                <input type="text" id="product-keyboard" name="keyboard" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-os" class="form-label">Operating System</label>
+                                <input type="text" id="product-os" name="os" class="form-control">
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="product-year" class="form-label">Manufacture Year</label>
+                                <input type="number" id="product-year" name="manufacture_year" class="form-control">
                             </div>
                         </div>
                     </div>
+            
+                    <!-- FULL WIDTH: DESCRIPTION -->
                     <div class="mb-3 mt-4">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" rows="5" class="form-control"></textarea>
+                        <label for="product-description" class="form-label">Description</label>
+                        <textarea id="product-description" name="description" rows="5" class="form-control" placeholder="Enter Description" required></textarea>
                     </div>
-                    
+            
+                    <!-- FULL WIDTH: IMAGE UPLOAD -->
+                    <div class="mb-4">
+                        <label for="product-images" class="form-label">Product Images</label>
+                        <div id="product-images" class="border border-secondary rounded p-3">
+                            <!-- Image upload inputs are dynamically inserted here -->
+                        </div>
+                    </div>
                 </form>
             </div>
+            
+            </div>
+            
         </div>
     </div>
 
@@ -541,69 +628,58 @@ async function fetchAdminProducts(filters = {}) {
 
 
 
-        function showAddProductForm() {
-            document.getElementById('product-table').classList.add('d-none');
-            document.getElementById('filters-row').classList.add('d-none');
-            document.getElementById('top-buttons').classList.add('d-none');
-            document.getElementById('add-product-form').classList.remove('d-none');
+function showAddProductForm() {
+    document.getElementById('product-table').classList.add('d-none');
+    document.getElementById('filters-row').classList.add('d-none');
+    document.getElementById('top-buttons').classList.add('d-none');
+    document.getElementById('add-product-form').classList.remove('d-none');
 
-            // Reset form
-            const form = document.getElementById('productForm');
-            form.reset();
-            [...form.elements].forEach(el => el.disabled = false);
+    // Reset form
+    const form = document.getElementById('productForm');
+    form.reset();
+    [...form.elements].forEach(el => el.disabled = false);
 
-            // Reset buttons
-            const cancelBtn = document.querySelector('#add-product-form .btn-light');
-            const submitBtn = document.querySelector('#add-product-form .btn-success');
+    // Reset buttons
+    const cancelBtn = document.querySelector('#add-product-form .btn-light');
+    const submitBtn = document.querySelector('#add-product-form .btn-success');
 
-            cancelBtn.textContent = 'Cancel';
-            submitBtn.classList.remove('d-none');
+    cancelBtn.textContent = 'Cancel';
+    submitBtn.classList.remove('d-none');
 
-            // Reset dropzone
-            const dropzone = document.getElementById('dropzone');
-            dropzone.innerHTML = `
-            <input type="file" id="fileInput" name="images" accept="image/*" multiple class="d-none">
-            <div id="dropzone-box" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center text-muted p-4" style="
-                border: 2px dashed #ced4da;
-                border-radius: .5rem;
-                min-height: 240px;
-                cursor: pointer;
-                transition: background-color 0.2s;
-            ">
-                <i class="bi bi-upload fs-1 mb-2"></i>
-                <p class="m-0">Click or drag images to upload</p>
-            </div>
-            <div id="preview-container" class="d-flex flex-wrap gap-2 mt-3 justify-content-center"></div>
-        `;
-        const fileInput = document.getElementById('fileInput');
-        const dropzoneBox = document.getElementById('dropzone-box');
-        const previewContainer = document.getElementById('preview-container');
+    // Replace image upload area with basic input rows
+    const dropzone = document.getElementById('product-images');
+    dropzone.innerHTML = `
+        <div class="mb-2"><small class="text-muted">Upload up to 5 images and optionally set their order.</small></div>
+        <div id="image-input-group" class="d-flex flex-column gap-2"></div>
+    `;
 
-        // Hook events after dropzone is inserted
-        dropzoneBox.addEventListener('click', () => fileInput.click());
+    const imageInputGroup = document.getElementById('image-input-group');
+    for (let i = 1; i <= 5; i++) {
+        const row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2";
 
-        fileInput.addEventListener('change', (e) => {
-            updatePreview(e.target.files);
-        });
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.name = "images[]";
+        fileInput.className = "form-control";
 
-        dropzoneBox.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzoneBox.classList.add('bg-light');
-        });
+        const orderInput = document.createElement("input");
+        orderInput.type = "number";
+        orderInput.min = "1";
+        orderInput.max = "5";
+        orderInput.placeholder = "Order";
+        orderInput.name = "orders[]";
+        orderInput.className = "form-control";
+        orderInput.style.maxWidth = "100px";
 
-        dropzoneBox.addEventListener('dragleave', () => {
-            dropzoneBox.classList.remove('bg-light');
-        });
+        row.appendChild(fileInput);
+        row.appendChild(orderInput);
+        imageInputGroup.appendChild(row);
+    }
+}
 
-        dropzoneBox.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzoneBox.classList.remove('bg-light');
-            fileInput.files = e.dataTransfer.files;
-            updatePreview(e.dataTransfer.files);
-        });
 
-       
-        }
 
 
         function hideAddProductForm() {
@@ -614,170 +690,182 @@ async function fetchAdminProducts(filters = {}) {
         }
 
         async function viewProductDetails(id) {
-            try {
-                const res = await fetch(`/tt/product/${id}`);
-                if (!res.ok) {
-                    return alert('Failed to fetch product details.');
+    try {
+        const res = await fetch(`/tt/product/${id}`);
+        if (!res.ok) {
+            return alert('Failed to fetch product details.');
+        }
+
+        const product = await res.json();
+        showAddProductForm(); // Reuse the product form layout
+
+        // === Fill form fields ===
+        const form = document.getElementById('productForm');
+        if (form.elements['name']) form.elements['name'].value = product.name || '';
+        if (form.elements['store_nipc']) form.elements['store_nipc'].value = product.store_nipc || '';
+        if (form.elements['product_condition']) form.elements['product_condition'].value = product.product_condition || '';
+        if (form.elements['availability']) form.elements['availability'].value = product.availability ? 'true' : 'false';
+        if (form.elements['description']) form.elements['description'].value = product.description || '';
+        if (form.elements['category']) form.elements['category'].value = product.category || '';
+        if (form.elements['brand']) form.elements['brand'].value = product.brand || '';
+        if (form.elements['model_code']) form.elements['model_code'].value = product.model_code || '';
+        if (form.elements['color']) form.elements['color'].value = product.color || '';
+        if (form.elements['weight']) form.elements['weight'].value = product.weight || '';
+        if (form.elements['dimensions']) form.elements['dimensions'].value = product.dimensions || '';
+        if (form.elements['processor']) form.elements['processor'].value = product.processor || '';
+        if (form.elements['screen']) form.elements['screen'].value = product.screen || '';
+        if (form.elements['ram_memory']) form.elements['ram_memory'].value = product.ram_memory || '';
+        if (form.elements['graphics_card']) form.elements['graphics_card'].value = product.graphics_card || '';
+        if (form.elements['storage']) form.elements['storage'].value = product.storage || '';
+        if (form.elements['keyboard']) form.elements['keyboard'].value = product.keyboard || '';
+        if (form.elements['os']) form.elements['os'].value = product.os || '';
+        if (form.elements['year']) form.elements['year'].value = product.year || '';
+
+
+
+        // === Disable fields (read-only mode) ===
+        [...form.elements].forEach(el => el.disabled = true);
+
+        // === Adjust buttons ===
+        const cancelBtn = document.querySelector('#add-product-form .btn-light');
+        const submitBtn = document.querySelector('#add-product-form .btn-success');
+        cancelBtn.textContent = 'Back';
+        submitBtn.classList.add('d-none');
+
+        // === Setup image preview ===
+        const dropzone = document.getElementById('product-images');
+        dropzone.innerHTML = '';
+
+        const images = product.images || {};
+        const imageBasePath = "../media/images/products/";
+        const selectedImages = [];
+        const allThumbnails = [];
+
+        Object.entries(images).forEach(([order, filename]) => {
+            if (filename) {
+                allThumbnails.push({ order, filename });
+                if (order !== 'null' && order !== null && order !== '' && !isNaN(order)) {
+                    selectedImages.push(filename);
                 }
+            }
+        });
 
-                const product = await res.json();
-                showAddProductForm();
+        if (selectedImages.length > 0) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'w-100';
 
-                // Fill form fields
-                const form = document.getElementById('productForm');
-                form.elements['name'].value = product.name || '';
-                form.elements['store_nipc'].value = product.store_nipc || '';
-                form.elements['condition'].value = product.product_condition || '';
-                form.elements['availability'].value = product.availability ? 'true' : 'false';
-                form.elements['description'].value = product.description || '';
-                form.elements['category'].value = product.category || '';
+            // === Carousel ===
+            const carouselWrapper = document.createElement('div');
+            carouselWrapper.className = 'position-relative mb-3';
+            carouselWrapper.style.height = '280px';
 
-                // Disable fields (view-only)
-                [...form.elements].forEach(el => el.disabled = true);
+            const carousel = document.createElement('div');
+            carousel.id = 'product-carousel';
+            carousel.className = 'carousel slide h-100';
+            carousel.setAttribute('data-bs-ride', 'carousel');
 
-                // Update buttons
-                const cancelBtn = document.querySelector('#add-product-form .btn-light');
-                const submitBtn = document.querySelector('#add-product-form .btn-success');
-                cancelBtn.textContent = 'Back';
-                submitBtn.classList.add('d-none');
+            const inner = document.createElement('div');
+            inner.className = 'carousel-inner h-100 w-100 bg-white rounded text-center overflow-hidden';
+            inner.style.position = 'relative';
 
-                // Prepare dropzone image area
-                const dropzone = document.getElementById('dropzone');
-                dropzone.innerHTML = '';
+            selectedImages.forEach((filename, index) => {
+                const item = document.createElement('div');
+                item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                item.style.height = '100%';
 
-                const images = product.images || {};
-                const imageBasePath = "../media/images/products/";
-                const selectedImages = [];
-                const allThumbnails = [];
+                const img = document.createElement('img');
+                img.src = imageBasePath + filename;
+                img.className = 'img-fluid h-100';
+                img.style.objectFit = 'contain';
+                img.style.cursor = 'zoom-in';
 
-                Object.entries(images).forEach(([order, filename]) => {
-                    if (filename) {
-                        allThumbnails.push({ order, filename });
-                        if (order !== 'null' && order !== null && order !== '' && !isNaN(order)) {
-                            selectedImages.push(filename);
-                        }
+                img.addEventListener('click', () => {
+                    let modalEl = document.getElementById("image-popup");
+                    if (!modalEl) {
+                        modalEl = document.createElement("div");
+                        modalEl.className = "modal fade";
+                        modalEl.id = "image-popup";
+                        modalEl.tabIndex = -1;
+                        modalEl.innerHTML = `
+                            <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
+                                <div class="modal-content border-0 text-center rounded bg-white m-auto">
+                                    <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3"
+                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <img class="img-fluid p-3 border-top shadow-lg" style="margin-top: 3.5rem;">
+                                </div>
+                            </div>`;
+                        document.body.appendChild(modalEl);
                     }
+
+                    modalEl.querySelector("img").src = img.src;
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
                 });
 
-                if (selectedImages.length > 0) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'w-100';
+                item.appendChild(img);
+                inner.appendChild(item);
+            });
 
-                    // === Main Carousel ===
-                    const carouselWrapper = document.createElement('div');
-                    carouselWrapper.className = 'position-relative mb-3';
-                    carouselWrapper.style.height = '280px';
+            carousel.appendChild(inner);
 
-                    const carousel = document.createElement('div');
-                    carousel.id = 'product-carousel';
-                    carousel.className = 'carousel slide h-100';
-                    carousel.setAttribute('data-bs-ride', 'carousel');
-
-                    const inner = document.createElement('div');
-                    inner.className = 'carousel-inner h-100 w-100 bg-white rounded text-center overflow-hidden';
-                    inner.style.position = 'relative';
-
-                    selectedImages.forEach((filename, index) => {
-                        const item = document.createElement('div');
-                        item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                        item.style.height = '100%';
-
-                        const img = document.createElement('img');
-                        img.src = imageBasePath + filename;
-                        img.className = 'img-fluid h-100';
-                        img.style.objectFit = 'contain';
-                        img.style.maxHeight = '100%';
-                        img.style.maxWidth = '100%';
-                        img.style.objectFit = 'contain';
-                        img.style.cursor = 'zoom-in';
-
-                        img.addEventListener('click', () => {
-                            let modalEl = document.getElementById("image-popup");
-                            if (!modalEl) {
-                                modalEl = document.createElement("div");
-                                modalEl.className = "modal fade";
-                                modalEl.id = "image-popup";
-                                modalEl.tabIndex = -1;
-                                modalEl.innerHTML = `
-                                    <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
-                                        <div class="modal-content border-0 text-center rounded bg-white m-auto">
-                                            <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3"
-                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                            <img class="img-fluid p-3 border-top shadow-lg" style="margin-top: 3.5rem;">
-                                        </div>
-                                    </div>`;
-                                document.body.appendChild(modalEl);
-                            }
-
-                            modalEl.querySelector("img").src = img.src;
-                            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-                        });
-
-                        item.appendChild(img);
-                        inner.appendChild(item);
-                    });
-
-                    carousel.appendChild(inner);
-
-                    if (selectedImages.length > 1) {
-                        carousel.innerHTML += `
-                            <button class="carousel-control-prev" type="button" data-bs-target="#product-carousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#product-carousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
-                            </button>
-                        `;
-                    }
-
-                    carouselWrapper.appendChild(carousel);
-                    wrapper.appendChild(carouselWrapper);
-
-                    // === Thumbnail Row (all images) ===
-                    const thumbRow = document.createElement('div');
-                    thumbRow.id = 'thumbnail-row';
-                    thumbRow.className = 'd-flex flex-wrap gap-2 justify-content-center mt-2';
-
-                    allThumbnails.forEach(({ filename, order }) => {
-                        const thumb = document.createElement('img');
-                        thumb.src = imageBasePath + filename;
-                        thumb.className = 'rounded border';
-                        thumb.style.height = '60px';
-                        thumb.style.cursor = 'pointer';
-
-                        if (selectedImages.includes(filename)) {
-                            const slideIndex = selectedImages.indexOf(filename);
-                            thumb.dataset.bsTarget = '#product-carousel';
-                            thumb.dataset.bsSlideTo = slideIndex;
-                            if (slideIndex === 0) thumb.classList.add('border-primary', 'border-2');
-                        }
-
-                        thumbRow.appendChild(thumb);
-                    });
-
-                    wrapper.appendChild(thumbRow);
-                    dropzone.appendChild(wrapper);
-
-                    // Highlight active thumbnail
-                    document.getElementById('product-carousel').addEventListener('slid.bs.carousel', function (e) {
-                        const thumbs = thumbRow.querySelectorAll('img');
-                        thumbs.forEach(t => t.classList.remove('border-primary', 'border-2'));
-
-                        const filename = selectedImages[e.to];
-                        const activeThumb = Array.from(thumbs).find(t => t.src.includes(filename));
-                        if (activeThumb) activeThumb.classList.add('border-primary', 'border-2');
-                    });
-
-                } else {
-                    dropzone.innerHTML = `<p class="mt-5">No images available for this product</p>`;
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error fetching product details.');
+            if (selectedImages.length > 1) {
+                carousel.innerHTML += `
+                    <button class="carousel-control-prev" type="button" data-bs-target="#product-carousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#product-carousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                `;
             }
+
+            carouselWrapper.appendChild(carousel);
+            wrapper.appendChild(carouselWrapper);
+
+            // === Thumbnails ===
+            const thumbRow = document.createElement('div');
+            thumbRow.id = 'thumbnail-row';
+            thumbRow.className = 'd-flex flex-wrap gap-2 justify-content-center mt-2';
+
+            allThumbnails.forEach(({ filename, order }) => {
+                const thumb = document.createElement('img');
+                thumb.src = imageBasePath + filename;
+                thumb.className = 'rounded border';
+                thumb.style.height = '60px';
+                thumb.style.cursor = 'pointer';
+
+                if (selectedImages.includes(filename)) {
+                    const slideIndex = selectedImages.indexOf(filename);
+                    thumb.dataset.bsTarget = '#product-carousel';
+                    thumb.dataset.bsSlideTo = slideIndex;
+                    if (slideIndex === 0) thumb.classList.add('border-primary', 'border-2');
+                }
+
+                thumbRow.appendChild(thumb);
+            });
+
+            wrapper.appendChild(thumbRow);
+            dropzone.appendChild(wrapper);
+
+            // Highlight active thumbnail
+            document.getElementById('product-carousel').addEventListener('slid.bs.carousel', function (e) {
+                const thumbs = thumbRow.querySelectorAll('img');
+                thumbs.forEach(t => t.classList.remove('border-primary', 'border-2'));
+
+                const filename = selectedImages[e.to];
+                const activeThumb = Array.from(thumbs).find(t => t.src.includes(filename));
+                if (activeThumb) activeThumb.classList.add('border-primary', 'border-2');
+            });
+
+        } else {
+            dropzone.innerHTML = `<p class="mt-5">No images available for this product</p>`;
         }
+    } catch (err) {
+        console.error(err);
+        alert('Error fetching product details.');
+    }
+}
 
 
 
@@ -800,32 +888,7 @@ async function fetchAdminProducts(filters = {}) {
                 }
             });
 
-            const dropzoneBox = document.getElementById('dropzone-box');
-            const fileInput = document.getElementById('fileInput');
-            const previewContainer = document.getElementById('preview-container');
-
-            dropzoneBox.addEventListener('click', () => fileInput.click());
-
-            fileInput.addEventListener('change', (e) => {
-                updatePreview(e.target.files);
-            });
-
-            dropzoneBox.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropzoneBox.classList.add('bg-light');
-            });
-
-            dropzoneBox.addEventListener('dragleave', () => {
-                dropzoneBox.classList.remove('bg-light');
-            });
-
-            dropzoneBox.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropzoneBox.classList.remove('bg-light');
-                const files = e.dataTransfer.files;
-                fileInput.files = files;
-                updatePreview(files);
-            });
+           
 
             function updatePreview(files) {
                 previewContainer.innerHTML = '';
@@ -847,25 +910,63 @@ async function fetchAdminProducts(filters = {}) {
 
 
             document.getElementById('productForm').addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const form = e.target;
-                const formData = new FormData(form);
-                const body = {
-                    name: formData.get('name'),
-                    store_nipc: formData.get('store_nipc'),
-                    condition: formData.get('condition'),
-                    availability: formData.get('availability') === 'true',
-                    description: formData.get('description'),
-                    category: formData.get('category')
-                };
-                const response = await fetch('/tt/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const result = await response.json();
-                alert(response.ok ? 'Product added!' : 'Error: ' + result.error);
-            });
+    e.preventDefault();
+
+    const form = e.target;
+    const data = {};
+
+    const fields = [
+        'name', 'store_nipc', 'product_condition', 'availability', 'description', 'category',
+        'brand', 'model_code', 'color', 'weight', 'dimensions', 'processor',
+        'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'
+    ];
+
+    fields.forEach(field => {
+        const el = form.elements[field];
+        if (el) {
+            if (el.type === 'checkbox') {
+                data[field] = el.checked;
+            } else if (el.type === 'number') {
+                data[field] = el.value ? parseFloat(el.value) : null;
+            } else {
+                data[field] = el.value || null;
+            }
+        }
+    });
+
+    if (typeof data.availability === 'string') {
+        data.availability = data.availability === 'true';
+    }
+
+    try {
+        const res = await fetch('/tt/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            alert('Failed to add product: ' + err.error);
+            return;
+        }
+
+        alert('Product added successfully!');
+        document.getElementById('add-product-form').classList.add('d-none');
+        document.getElementById('product-table').classList.remove('d-none');
+        document.getElementById('filters-row').classList.remove('d-none');
+        document.getElementById('top-buttons').classList.remove('d-none');
+
+        // Optionally reload table
+        fetchAndDisplayProducts?.();
+
+    } catch (err) {
+        console.error(err);
+        alert('Error submitting product.');
+    }
+});
+
+
         });
     </script>
     
