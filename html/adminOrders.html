@@ -146,8 +146,19 @@
 
         <!-- You can include sellFields if needed -->
         <div id="sellFields" style="display: none;">
-            <!-- Include sell form here if applicable -->
+            <form id="register-purchase-form">
+                <div class="mb-3">
+                    <label for="purchase-product-seller-email" class="form-label">Seller Email</label>
+                    <input type="email" class="form-control" id="purchase-product-seller-email" placeholder="Enter Seller Email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="purchase-price" class="form-label">Price</label>
+                    <input type="number" class="form-control" id="purchase-price" placeholder="Enter Price" required>
+                </div>
+                
+            </form>
         </div>
+        
 
         <button type="submit" class="btn btn-primary w-100">Submit Order</button>
     </form>

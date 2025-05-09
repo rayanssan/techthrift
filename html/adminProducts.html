@@ -279,150 +279,140 @@
     </div>
 
     <script>
-let productList = []; // Don't reset on modal open
+let productList = []; // Persist across modal openings
 let totalPrice = 0;
 
-document.getElementById("register-sale").addEventListener("click", () => {
+document.getElementById("register-sale").addEventListener("click", async () => {
     const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
     const list = document.querySelector('#sale-product-list');
-    list.innerHTML = '';
 
-    selectedProducts.forEach((checkbox) => {
+    if (selectedProducts.length === 0 && productList.length === 0) {
+        list.innerHTML = '<p class="text-muted">No products selected.</p>';
+    }
+
+    for (const checkbox of selectedProducts) {
         const row = checkbox.closest('tr');
         const productId = row.getAttribute('data-product-id');
 
-        if (productList.some(p => p.id === productId)) return; // Avoid duplicates
+        if (productList.some(p => p.id === productId)) continue;
 
-        const name = row.querySelector('.product-name')?.textContent || row.cells[2].textContent;
-        const priceText = row.querySelector('.product-price')?.textContent || row.cells[3].textContent;
-        const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+        try {
+            const res = await fetch(`/tt/product/${productId}`);
+            if (!res.ok) throw new Error('Product not found');
 
-        const product = { id: productId, name, price };
-        productList.push(product);
-        totalPrice += price;
-        // AFTER forEach where products are added via checkboxes
-        if (productList.length > 0) {
-            renderPayPal();
-        }
+            const product = await res.json();
 
-    });
-
-    if (productList.length === 0) {
-        list.innerHTML = '<p class="text-muted">No products selected.</p>';
-    } else {
-        productList.forEach((product) => {
-            const item = document.createElement('li');
-            item.className = 'list-group-item d-flex justify-content-between align-items-center';
-            item.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <img src="../media/images/products/${product.id}" alt="Product Image" class="me-2" style="width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem;">
-                    <div>
-                        <strong>${product.name}</strong><br>
-                        <small>ID: ${product.id}</small>
-                    </div>
-                </div>
-                <span>€${parseFloat(product.price).toFixed(2)}</span>
-            `;
-            list.appendChild(item);
-        });
-    }
-
-    
-
-    document.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
-    document.getElementById('paypal').classList.remove('d-none');
-
-    const modalElement = document.getElementById('sale-modal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-    modal.show();
-
-
-    const footer = document.querySelector("#sale-modal .modal-footer");
-    if (!footer.querySelector('.btn-outline-danger')) {
-        const resetBtn = document.createElement("button");
-        resetBtn.type = "button";
-        resetBtn.className = "btn btn-outline-danger";
-        resetBtn.textContent = "Reset Product Sale";
-        footer.appendChild(resetBtn);
-
-        resetBtn.addEventListener("click", () => {
-            productList = [];
-            totalPrice = 0;
-            list.innerHTML = `<p class="text-muted">Products will appear here.</p>`;
-            document.querySelector("#sale-total-price").textContent = "€0.00";
-            document.getElementById("paypal").innerHTML = "";
-            document.getElementById("paypal").classList.add("d-none");
-            renderPayPal();
-        });
-    }
-
-    const body = document.querySelector("#sale-modal .modal-body");
-    const addBtn = body.querySelector('.btn-outline-primary');
-    const input = body.querySelector('#sale-product-id');
-
-    if (!addBtn.dataset.bound) {
-        addBtn.dataset.bound = 'true';
-        addBtn.addEventListener('click', async () => {
-            const productId = input.value.trim();
-            if (!productId) return;
-
-            try {
-                const res = await fetch(`/tt/product/${productId}`);
-                if (!res.ok) throw new Error('Product not found');
-
-                const product = await res.json();
-                if (productList.some(p => p.id === product.id)) {
-                    alert("Product already added.");
-                    return;
-                }
-                if (!product.availability) {
-                    alert("This product is not available for sale.");
-                    return;
-                }
-
-                productList.push(product);
-                totalPrice += parseFloat(product.price || 0);
-
-                if (list.querySelector('.text-muted')) {
-                    list.querySelector('.text-muted').remove();
-                }
-
-                const item = document.createElement('li');
-                item.className = 'list-group-item d-flex justify-content-between align-items-center';
-                item.innerHTML = `
-                   <div class="d-flex align-items-center">
-                        <img src="../media/images/products/${product.images["1"]}" 
-                        alt="Product Image" class="me-2" 
-                        style="width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem; zoom: 1.2;">
-                        <div>
-                            <strong>${product.name}</strong><br>
-                            <small>ID: ${product.id}</small>
-                        </div>
-                    </div>
-                    <span>€${parseFloat(product.price).toFixed(2)}</span>
-                `;
-                list.appendChild(item);
-
-                body.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
-                input.value = '';
-                document.getElementById('paypal').classList.replace('d-none', 'd-block');
-            } catch (err) {
-                alert(err.message || 'Failed to fetch product');
+            if (!product.availability) {
+                alert(`Product ${product.id} is not available for sale.`);
+                continue;
             }
-        });
+
+            productList.push(product);
+            totalPrice += parseFloat(product.price || 0);
+
+            appendProductToList(product);
+        } catch (err) {
+            console.error(err);
+            alert(err.message || 'Failed to fetch product.');
+        }
     }
+
+    updateTotalAndPayPal();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('sale-modal')).show();
 });
 
+function appendProductToList(product) {
+    const list = document.querySelector('#sale-product-list');
+    if (list.querySelector('.text-muted')) list.querySelector('.text-muted').remove();
+
+    const item = document.createElement('li');
+    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+    item.innerHTML = `
+        <div class="d-flex align-items-center">
+            <img src="../media/images/products/${product.images["1"] || 'default.jpg'}"
+                alt="Product Image" class="me-2"
+                style="width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem; zoom: 1.2;">
+            <div>
+                <strong>${product.name}</strong><br>
+                <small>ID: ${product.id}</small>
+            </div>
+        </div>
+        <span>€${parseFloat(product.price).toFixed(2)}</span>
+    `;
+    list.appendChild(item);
+}
+
+function updateTotalAndPayPal() {
+    document.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
+    document.getElementById('paypal').classList.replace('d-none', 'd-block');
+    renderPayPal();
+}
+
+// Reset Button Logic
+const footer = document.querySelector("#sale-modal .modal-footer");
+if (!footer.querySelector('.btn-outline-danger')) {
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "btn btn-outline-danger";
+    resetBtn.textContent = "Reset Product Sale";
+    footer.appendChild(resetBtn);
+
+    resetBtn.addEventListener("click", () => {
+        productList = [];
+        totalPrice = 0;
+        document.querySelector('#sale-product-list').innerHTML = `<p class="text-muted">Products will appear here.</p>`;
+        document.querySelector("#sale-total-price").textContent = "€0.00";
+        document.getElementById("paypal").innerHTML = "";
+        document.getElementById("paypal").classList.add("d-none");
+    });
+}
+
+// Add-by-ID Button Logic
+const body = document.querySelector("#sale-modal .modal-body");
+const addBtn = body.querySelector('.btn-outline-primary');
+const input = body.querySelector('#sale-product-id');
+
+if (!addBtn.dataset.bound) {
+    addBtn.dataset.bound = 'true';
+    addBtn.addEventListener('click', async () => {
+        const productId = input.value.trim();
+        if (!productId) return;
+
+        try {
+            const res = await fetch(`/tt/product/${productId}`);
+            if (!res.ok) throw new Error('Product not found');
+
+            const product = await res.json();
+            if (productList.some(p => p.id === product.id)) {
+                alert("Product already added.");
+                return;
+            }
+            if (!product.availability) {
+                alert("This product is not available for sale.");
+                return;
+            }
+
+            productList.push(product);
+            totalPrice += parseFloat(product.price || 0);
+            appendProductToList(product);
+            updateTotalAndPayPal();
+
+            input.value = '';
+        } catch (err) {
+            alert(err.message || 'Failed to fetch product');
+        }
+    });
+}
+
+// PayPal Render Logic
 function renderPayPal() {
     const paypalContainer = document.getElementById("paypal");
-    paypalContainer.innerHTML = ""; // Clear previous buttons
+    paypalContainer.innerHTML = "";
 
     if (!productList.length || !totalPrice || isNaN(totalPrice)) {
         paypalContainer.classList.add("d-none");
         return;
     }
-
-    paypalContainer.classList.remove("d-none");
 
     paypal.Buttons({
         style: {
@@ -430,94 +420,87 @@ function renderPayPal() {
             borderRadius: 10,
             label: 'paypal'
         },
-        createOrder: function (data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: {
-                        value: String(totalPrice.toFixed(2))
-                    }
-                }]
-            });
-        },
-        onError: function (err) {
+        createOrder: (data, actions) => actions.order.create({
+            purchase_units: [{
+                amount: {
+                    value: String(totalPrice.toFixed(2))
+                }
+            }]
+        }),
+        onError: (err) => {
             showMessage("Payment Declined", "Your payment was declined or cancelled.", "danger");
         },
-        onApprove: async function (data, actions) {
+        onApprove: async (data, actions) => {
             const cartProductIds = productList.map(p => p.id);
 
-            return fetch('/tttransaction/product-availability', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productIds: cartProductIds })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.allAvailable) {
-                    data.unavailable.forEach(id => {
-                        const item = document.querySelector(`[data-product-id="${id}"]`);
-                        if (item) item.classList.add('table-danger');
+            try {
+                const availabilityCheck = await fetch('/tttransaction/product-availability', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productIds: cartProductIds })
+                });
+
+                const checkData = await availabilityCheck.json();
+                if (!checkData.allAvailable) {
+                    checkData.unavailable.forEach(id => {
+                        const row = document.querySelector(`[data-product-id="${id}"]`);
+                        if (row) row.classList.add('table-danger');
                     });
-                    throw new Error("Some items in your cart are no longer available.");
+                    throw new Error("Some items are no longer available.");
                 }
 
-                return actions.order.capture().then(function (details) {
-                    const shipping = details.purchase_units[0].shipping;
-                    const shippingAddress = {
-                        address: (shipping.address.address_line_1 + " " + shipping.address.address_line_2).replace(" undefined", "").trim(),
-                        postal_code: shipping.address.postal_code.trim(),
-                        city: (shipping.address.admin_area_2 + " " + shipping.address.admin_area_1).replace(" undefined", "").trim(),
-                        country: shipping.address.country_code.trim()
-                    };
+                const details = await actions.order.capture();
+                const shipping = details.purchase_units[0].shipping;
+                const shippingAddress = {
+                    address: (shipping.address.address_line_1 + " " + (shipping.address.address_line_2 || "")).trim(),
+                    postal_code: shipping.address.postal_code.trim(),
+                    city: (shipping.address.admin_area_2 + " " + shipping.address.admin_area_1).trim(),
+                    country: shipping.address.country_code.trim()
+                };
 
-                    return fetch('/tttransaction/sales/add', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            client: loggedInUser.email,
-                            transaction_value: parseFloat(totalPrice),
-                            is_online: true,
-                            order_number: details.id,
-                            shipping_address: shippingAddress.address,
-                            shipping_postal_code: shippingAddress.postal_code,
-                            shipping_city: shippingAddress.city,
-                            shipping_country: shippingAddress.country,
-                            products: cartProductIds,
-                            employee: null,
-                            store: null,
-                        })
-                    }).then(response => {
-                        if (!response.ok) throw new Error("Failed to store transaction.");
-
-                        // Reset state
-                        productList = [];
-                        totalPrice = 0;
-                        document.getElementById("sale-product-list").innerHTML = "";
-                        document.querySelector("#sale-total-price").textContent = "€0.00";
-                        paypalContainer.classList.add("d-none");
-
-                        // Show confirmation
-                        document.getElementById("paymentInterface").innerHTML = `
-                            <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">
-                                <div class="text-success mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
-                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 1 0-1.16-.96L7.477 8.417 5.383 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647z"/>
-                                    </svg>
-                                </div>
-                                <h2 class="text-center mb-3">Your order is on its way!</h2>
-                                <p class="text-muted mb-4">Order Code: <code>${details.id}</code></p>
-                                <p class="text-center mb-4">Thank you for your purchase!</p>
-                                <a href="/" class="btn btn-success btn-lg">Thrift More</a>
-                            </div>`;
-                        return response.json();
-                    }).catch(err => {
-                        console.error("Error storing transaction:", err);
-                        showMessage("Purchase Error", "Payment was successful but we could not process your purchase. Please contact support.", "danger");
-                    });
+                const saleResponse = await fetch('/tttransaction/sales/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client: loggedInUser.email,
+                        transaction_value: parseFloat(totalPrice),
+                        is_online: true,
+                        order_number: details.id,
+                        shipping_address: shippingAddress.address,
+                        shipping_postal_code: shippingAddress.postal_code,
+                        shipping_city: shippingAddress.city,
+                        shipping_country: shippingAddress.country,
+                        products: cartProductIds,
+                        employee: null,
+                        store: null,
+                    })
                 });
-            }).catch(err => {
+
+                if (!saleResponse.ok) throw new Error("Failed to store transaction.");
+
+                // Reset and show success
+                productList = [];
+                totalPrice = 0;
+                document.getElementById("sale-product-list").innerHTML = "";
+                document.querySelector("#sale-total-price").textContent = "€0.00";
+                paypalContainer.classList.add("d-none");
+
+                document.getElementById("paymentInterface").innerHTML = `
+                    <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">
+                        <div class="text-success mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 1 0-1.16-.96L7.477 8.417 5.383 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-center mb-3">Your order is on its way!</h2>
+                        <p class="text-muted mb-4">Order Code: <code>${details.id}</code></p>
+                        <p class="text-center mb-4">Thank you for your purchase!</p>
+                        <a href="/" class="btn btn-success btn-lg">Thrift More</a>
+                    </div>`;
+            } catch (err) {
                 console.error(err);
-                showMessage("Purchase Unsuccessful", err.message || "One or more items are not available.", "danger");
-            });
+                showMessage("Purchase Unsuccessful", err.message || "An error occurred.", "danger");
+            }
         }
     }).render('#paypal');
 }
