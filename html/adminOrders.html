@@ -66,28 +66,26 @@
 
     <div class="d-flex">
         <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">
-            <h4 class="text-center">Admin Panel</h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="adminDashboard"><i
-                            class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark active" href="adminOrders"><i
-                            class="fas fa-shopping-cart me-2"></i>Orders</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="adminUsers"><i class="fas fa-users me-2"></i>Users</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="fas fa-cogs me-2"></i>Settings</a>
-                </li>
-            </ul>
+          <h4 class="text-center">Admin Panel</h4>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminDashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Charities</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminDonations"><i class="fas fa-hand-holding-heart me-2"></i>Donations</a>
+            </li>
+          </ul>
         </div>
-
+      
         <div class="content p-4" style="flex-grow: 1;">
             <div id="ordersTableContainer">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -116,7 +114,7 @@
 <div id="orderFormContainer" style="display: none;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Add Order</h2>
-        <button class="btn btn-danger" onclick="showOrdersTable()">Cancel</button>
+        <button class="btn btn-light me-2" onclick="showOrdersTable()">Cancel</button>
     </div>
     <ul class="nav nav-tabs" id="orderTypeTabs">
         <li class="nav-item">

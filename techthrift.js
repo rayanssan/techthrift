@@ -179,12 +179,23 @@ app.get('/adminProducts', (req, res) => {
     });
 });
 
-// Admin Users
-app.get('/adminUsers', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminUsers.html');
+// Admin Dontations
+app.get('/adminDonations', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/adminDonations.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving adminadminUsers.html:', err);
+            console.error('Error serving adminDonations.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
+// Admin Charities
+app.get('/adminCharities', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/adminCharities.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving adminCharities.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -212,50 +223,6 @@ app.get('/authentication', (req, res) => {
     });
 });
 
-
-// Admin Dashboard
-app.get('/adminDashboard', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminDashboard.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminDashboard.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Products
-app.get('/adminProducts', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminProducts.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminProducts.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Users
-app.get('/adminUsers', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminUsers.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminadminUsers.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-
-// Admin Orders
-app.get('/adminOrders', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/adminOrders.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving adminadminOrders.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
 
 // Nominatim OpenStreetMap API
 app.get("/geocode", async (req, res) => {
