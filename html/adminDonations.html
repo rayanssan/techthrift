@@ -89,35 +89,33 @@
       </div>
     </div>
   
-    <!-- Donation Form  -->
+   <!-- Donation Form  -->
 <div id="donationFormContainer" class="d-none">
-    <div class="mb-4 d-flex justify-content-between align-items-center">
-      <h2>Register New Donation</h2>
-      <div>
-        <button class="btn btn-light me-2" onclick="toggleDonationForm()">Cancel</button>
-        <button type="submit" form="register-donation" class="btn btn-success me-2">Submit Donation</button>
-        
-      </div>
+  <div class="mb-4 d-flex justify-content-between align-items-center">
+    <h2>Register New Donation</h2>
+    <div>
+      <button class="btn btn-light me-2" onclick="toggleDonationForm()">Cancel</button>
+      <!-- This button submits the form with id="register-donation" -->
+      <button type="submit" form="register-donation" class="btn btn-success me-2">Submit Donation</button>
     </div>
-    <form id="register-donation" class="p-0" onsubmit="submitDonation(event)" style="max-width: 600px;">
-      <div class="mb-3">
-        <label for="donation-product-id" class="form-label">Product ID</label>
-        <input type="text" class="form-control" id="donation-product-id" required>
-      </div>
-      <div class="mb-3">
-        <label for="donation-donor-email" class="form-label">Donor Email</label>
-        <input type="email" class="form-control" id="donation-donor-email" placeholder="Enter Donor Email" required>
-      </div>
-      <div class="mb-3">
-        <label for="donation-charity-name" class="form-label">Destination Charity Name</label>
-        <input type="text" class="form-control" id="donation-charity-name" placeholder="Enter Destination Charity Name" required>
-      </div>
-      <div class="mb-3">
-        <label for="donation-charity-project" class="form-label">Destination Charity Project</label>
-        <input type="text" class="form-control" id="donation-charity-project" placeholder="Enter Destination Charity Project" required>
-      </div>
-    </form>
   </div>
+
+  <form id="register-donation" class="p-0" onsubmit="submitDonation(event)" style="max-width: 600px;">
+    <div class="mb-3">
+      <label for="donation-product-id" class="form-label">Product ID</label>
+      <input type="number" class="form-control" id="donation-product-id" required>
+    </div>
+    <div class="mb-3">
+      <label for="donation-donor-nif" class="form-label">Donor NIF</label>
+      <input type="number" class="form-control" id="donation-donor-nif" required>
+    </div>
+    <div class="mb-3">
+      <label for="donation-charity-nipc" class="form-label">Charity NIPC</label>
+      <input type="number" class="form-control" id="donation-charity-nipc" required>
+    </div>
+  </form>
+</div>
+
   
   
   <script>
@@ -138,27 +136,29 @@
     }
   
     async function submitDonation(e) {
-      e.preventDefault();
-      const id      = document.getElementById('donation-product-id').value.trim();
-      const donor   = document.getElementById('donation-donor-email').value.trim();
-      const charity = document.getElementById('donation-charity-name').value.trim();
-      const project = document.getElementById('donation-charity-project').value.trim();
-  
-      try {
-        const res = await fetch('/tt/donation/add', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, donor, charity, project })
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Unknown error');
-        alert('Donation registered!');
-        toggleDonationForm();
-        loadDonations();  // re-fetch your donation list
-      } catch (err) {
-        alert('Failed to register donation: ' + err.message);
-      }
+    e.preventDefault();
+
+    const id = document.getElementById('donation-product-id').value.trim();
+    const donor_nif = document.getElementById('donation-donor-nif').value.trim();
+    const charity_nipc = document.getElementById('donation-charity-nipc').value.trim();
+
+    try {
+      const res = await fetch('/tt/donation/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, donor_nif, charity_nipc  })
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Unknown error');
+
+      alert('Donation registered!');
+      toggleDonationForm();
+      loadDonations();
+    } catch (err) {
+      alert('Failed to register donation: ' + err.message);
     }
+  }
   
     // On page load, fetch and render donations
     document.addEventListener('DOMContentLoaded', () => {

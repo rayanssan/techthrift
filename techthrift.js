@@ -68,6 +68,16 @@ app.get(['/homepage', '/'], (req, res) => {
         }
     });
 });
+// help
+app.get('/help', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/help.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving help.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
 
 // Product for sale
 app.get('/product', (req, res) => {
