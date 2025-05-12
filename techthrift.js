@@ -161,7 +161,7 @@ app.get('/partners', (req, res) => {
 app.get('/authentication', (req, res) => {
     const auth0Domain = 'dev-1qdq127lj6aekksz.us.auth0.com'; 
     const clientID = 'iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a'; 
-    const redirectUri = 'http://www.techthrift.duckdns.org/authentication'; // callback final após login
+    const redirectUri = 'http://www.techthrift.duckdns.org/authentication'; 
 
     const loginUrl = `https://${auth0Domain}/authorize` +
         `?response_type=code` +
