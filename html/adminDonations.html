@@ -139,14 +139,14 @@
     e.preventDefault();
 
     const id = document.getElementById('donation-product-id').value.trim();
-    const donor_nif = document.getElementById('donation-donor-nif').value.trim();
-    const charity_nipc = document.getElementById('donation-charity-nipc').value.trim();
+    const donor = document.getElementById('donation-donor-nif').value.trim();
+    const charity = document.getElementById('donation-charity-nipc').value.trim();
 
     try {
       const res = await fetch('/tt/donation/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, donor_nif, charity_nipc  })
+        body: JSON.stringify({ id, donor, charity  })
       });
 
       const json = await res.json();
