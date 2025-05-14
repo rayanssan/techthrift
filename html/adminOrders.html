@@ -66,145 +66,238 @@
 
     <div class="d-flex">
         <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">
-            <h4 class="text-center">Admin Panel</h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="adminDashboard"><i
-                            class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark active" href="adminOrders"><i
-                            class="fas fa-shopping-cart me-2"></i>Orders</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="adminUsers"><i class="fas fa-users me-2"></i>Users</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="fas fa-cogs me-2"></i>Settings</a>
-                </li>
-            </ul>
+          <h4 class="text-center">Admin Panel</h4>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminDashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Charities</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="adminDonations"><i class="fas fa-hand-holding-heart me-2"></i>Donations</a>
+            </li>
+          </ul>
         </div>
-
+      
         <div class="content p-4" style="flex-grow: 1;">
             <div id="ordersTableContainer">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Orders</h2>
                     <button class="btn btn-success" onclick="showOrderForm()">Add Order</button>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-borderless table-striped">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Type</th>
-                                <th>Details</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="order-list">
-                        </tbody>
-                    </table>
+                <div class="table-responsive" id="order-table">
+                    <div class="rounded-3 border overflow-hidden">
+                        <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-list" class="animate-list"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+        
 
-            <div id="orderFormContainer" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Add Order</h2>
-                    <button class="btn btn-danger" onclick="showOrdersTable()">Cancel</button>
-                </div>
-                <ul class="nav nav-tabs" id="orderTypeTabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="sellTab" onclick="switchOrderType('sell')">Client Sell Order</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="repairTab" onclick="switchOrderType('repair')">Product Repair Order</a>
-                    </li>
-                </ul>
-                <form id="orderForm" class="mt-3">
-                    <div id="sellFields">
-                        <input type="text" class="form-control mb-2" placeholder="Product Name">
-                        <input type="text" class="form-control mb-2" placeholder="Condition">
-                        <textarea class="form-control mb-2" placeholder="Description"></textarea>
-                        <input type="text" class="form-control mb-2" placeholder="Category">
-                        <input type="file" class="form-control mb-2">
-                        <input type="number" class="form-control mb-2" placeholder="Price">
-                    </div>
-                    <div id="repairFields" style="display: none;">
-                        <input type="text" class="form-control mb-2" placeholder="Product Name">
-                        <input type="text" class="form-control mb-2" placeholder="Condition">
-                        <textarea class="form-control mb-2" placeholder="Description"></textarea>
-                        <input type="text" class="form-control mb-2" placeholder="Category">
-                        <input type="file" class="form-control mb-2">
-                        <textarea class="form-control mb-2" placeholder="Problem Description"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Submit Order</button>
-                </form>
+            <!-- Repair Order Form -->
+<div id="orderFormContainer" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Add Order</h2>
+        <button class="btn btn-light me-2" onclick="showOrdersTable()">Cancel</button>
+    </div>
+    <ul class="nav nav-tabs" id="orderTypeTabs">
+        <li class="nav-item">
+            <a class="nav-link" id="sellTab" onclick="switchOrderType('sell')">Client Sell Order</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" id="repairTab" onclick="switchOrderType('repair')">Product Repair Order</a>
+        </li>
+    </ul>
+
+    <form id="orderForm" class="mt-3">
+        <!-- Repair Form Fields -->
+        <div id="repairFields">
+            <div class="mb-3">
+                <label for="repair-product-id" class="form-label">Product ID</label>
+                <input type="text" class="form-control" id="repair-product-id" placeholder="Enter Product ID" required>
             </div>
+            <div class="mb-3">
+                <label for="repair-description" class="form-label">Issue Description</label>
+                <textarea class="form-control" id="repair-description" placeholder="Enter Issue Description" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="repair-price" class="form-label">Repair Price</label>
+                <input type="number" class="form-control" id="repair-price" placeholder="Enter Repair Price" required>
+            </div>
+        </div>
+
+        <!-- You can include sellFields if needed -->
+        <div id="sellFields" style="display: none;">
+            <form id="register-purchase-form">
+                <div class="mb-3">
+                    <label for="purchase-product-seller-email" class="form-label">Seller Email</label>
+                    <input type="email" class="form-control" id="purchase-product-seller-email" placeholder="Enter Seller Email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="purchase-price" class="form-label">Price</label>
+                    <input type="number" class="form-control" id="purchase-price" placeholder="Enter Price" required>
+                </div>
+                
+            </form>
+        </div>
+        
+
+        <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+    </form>
+</div>
+
         </div>
     </div>
 
     <!-- Scripts -->
     <script src="../scripts/auth.js"></script>
     <script>
-        function showOrderForm() {
-            document.getElementById('ordersTableContainer').style.display = 'none';
-            document.getElementById('orderFormContainer').style.display = 'block';
+         function animateListItems(containerSelector) {
+            const container = document.querySelector(containerSelector);
+            if (!container) return;
+
+            const items = container.children;
+
+            Array.from(items).forEach((item, index) => {
+                item.classList.add('animate-item');
+                item.style.animationDelay = `${index * 70}ms`;
+            });
         }
+         // Handle showing the Add Order form
+    function showOrderForm() {
+        document.getElementById('ordersTableContainer').style.display = 'none';
+        document.getElementById('orderFormContainer').style.display = 'block';
+        switchOrderType('sell'); // Default to sell order
+    }
 
-        function showOrdersTable() {
-            document.getElementById('ordersTableContainer').style.display = 'block';
-            document.getElementById('orderFormContainer').style.display = 'none';
+    // Return to Orders Table
+    function showOrdersTable() {
+        document.getElementById('ordersTableContainer').style.display = 'block';
+        document.getElementById('orderFormContainer').style.display = 'none';
+    }
+
+    // Switch between Sell and Repair tabs
+    function switchOrderType(type) {
+        const sellFields = document.getElementById('sellFields');
+        const repairFields = document.getElementById('repairFields');
+        const sellTab = document.getElementById('sellTab');
+        const repairTab = document.getElementById('repairTab');
+
+        if (type === 'sell') {
+            sellFields.style.display = 'block';
+            repairFields.style.display = 'none';
+            sellTab.classList.add('active');
+            repairTab.classList.remove('active');
+        } else if (type === 'repair') {
+            sellFields.style.display = 'none';
+            repairFields.style.display = 'block';
+            sellTab.classList.remove('active');
+            repairTab.classList.add('active');
         }
+    }
 
-        function switchOrderType(type) {
-            document.getElementById('sellFields').style.display = type === 'sell' ? 'block' : 'none';
-            document.getElementById('repairFields').style.display = type === 'repair' ? 'block' : 'none';
-            document.getElementById('sellTab').classList.toggle('active', type === 'sell');
-            document.getElementById('repairTab').classList.toggle('active', type === 'repair');
+    // Fetch and display repair orders in the table
+    async function fetchRepairOrders() {
+        try {
+            const res = await fetch('/tt/repair');
+            const repairs = await res.json();
+            const repairList = document.getElementById('order-list');
+            repairList.innerHTML = '';
+
+            repairs.forEach(repair => {
+                const row = document.createElement('tr');
+
+                const orderIdCell = document.createElement('td');
+                orderIdCell.textContent = repair.id || 'N/A';
+                row.appendChild(orderIdCell);
+
+                const typeCell = document.createElement('td');
+                typeCell.textContent = 'Repair Order';
+                row.appendChild(typeCell);
+
+                const detailsCell = document.createElement('td');
+                detailsCell.textContent = repair.name || 'Unnamed Product';
+                row.appendChild(detailsCell);
+
+                const statusCell = document.createElement('td');
+                statusCell.textContent = repair.status ? 'Completed' : 'Pending';
+                row.appendChild(statusCell);
+
+                repairList.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Error fetching repair orders:', err);
         }
+    }
 
-        // Fetch the repair orders and populate the orders table
-        async function fetchRepairOrders() {
-            try {
-                const res = await fetch('/tt/repair');
-                const repairs = await res.json();
-                const repairList = document.getElementById('order-list');
+    // Handle form submission for repair orders
+    document.getElementById("orderForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-                repairList.innerHTML = '';  // Clear existing data
+        const isRepair = document.getElementById("repairTab").classList.contains("active");
 
-                repairs.forEach(repair => {
-                    const row = document.createElement('tr');
+        if (isRepair) {
+            const productId = document.getElementById("repair-product-id").value.trim();
+            const description = document.getElementById("repair-description").value.trim();
+            const price = document.getElementById("repair-price").value;
 
-                    const orderIdCell = document.createElement('td');
-                    orderIdCell.textContent = repair.id;  // Assuming 'id' is the order ID from the 'repairProducts' table
-                    row.appendChild(orderIdCell);
-
-                    const typeCell = document.createElement('td');
-                    typeCell.textContent = 'Repair Order';  // Static for repairs
-                    row.appendChild(typeCell);
-
-                    const detailsCell = document.createElement('td');
-                    detailsCell.textContent = repair.name;  // Example: Show product name as details
-                    row.appendChild(detailsCell);
-
-                    const statusCell = document.createElement('td');
-                    statusCell.textContent = repair.status ? 'Completed' : 'Pending';  // Assuming 'status' field exists
-                    row.appendChild(statusCell);
-
-                    repairList.appendChild(row);
-                });
-            } catch (err) {
-                console.error('Error fetching repair orders:', err);
+            if (!productId || !description || !price) {
+                alert("Please fill in all required fields.");
+                return;
             }
-        }
 
-        // Call fetchRepairOrders when the page loads
-        window.onload = function () {
-            fetchRepairOrders();
-        };
+            try {
+                const response = await fetch('/tt/repair/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: productId,
+                        description: description,
+                        price: parseFloat(price)
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Repair order added successfully.");
+                    showOrdersTable();
+                    fetchRepairOrders();
+                } else {
+                    alert("Error: " + (result.error || response.statusText));
+                }
+            } catch (err) {
+                console.error("Submit failed:", err);
+                alert("An unexpected error occurred.");
+            }
+        } else {
+            // Handle sell order submission (if needed)
+        }
+    });
+    
+
+    // Initial load
+    window.onload = function () {
+        fetchRepairOrders();
+    };
     </script>
     <!-- Scripts -->
 </body>

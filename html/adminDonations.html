@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Donations</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../styles/stylesheet.css">
+      <!-- Sidebar Script -->
+      <script src="../scripts/sidebar.js"></script>
+  <style>
+    .nav-tabs .nav-link.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 100%;
+      height: 3px;
+      background-color: rgb(114, 114, 121);
+      transition: width 0.3s ease-in-out;
+    }
+  </style>
+</head>
+
+<body>
+<header class="p-3 bg-white border-bottom">
+  <div class="d-flex justify-content-between container">
+    <div class="row align-items-center gap-3">
+      <div class="col-lg-5 col-md-12 d-flex align-items-center">
+        <a id="header-brand" href="/adminDashboard">
+          <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
+        </a>
+      </div>
+    </div>
+    <a href="/authentication" id="username" class="border rounded py-1 px-3 nav-link btn btn-light">
+      <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">···</p>
+    </a>
+  </div>
+</header>
+
+<div class="d-flex">
+  <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">
+    <h4 class="text-center">Admin Panel</h4>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="adminDashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Charities</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="adminDonations"><i class="fas fa-hand-holding-heart me-2"></i>Donations</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="content p-4" style="flex-grow: 1;">
+    <!-- Donations Table -->
+    <div id="donationsTableContainer">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Donations</h2>
+        <button class="btn btn-success" onclick="toggleDonationForm()">Register Donation</button>
+      </div>
+      <div class="table-responsive" id="donation-table">
+        <div class="rounded-3 border overflow-hidden">
+          <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Brand</th>
+                <th>Charity</th>
+                <th>Store</th>
+                <th>Project</th>
+              </tr>
+            </thead>
+            <tbody id="donation-list" class="animate-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  
+   <!-- Donation Form  -->
+<div id="donationFormContainer" class="d-none">
+  <div class="mb-4 d-flex justify-content-between align-items-center">
+    <h2>Register New Donation</h2>
+    <div>
+      <button class="btn btn-light me-2" onclick="toggleDonationForm()">Cancel</button>
+      <!-- This button submits the form with id="register-donation" -->
+      <button type="submit" form="register-donation" class="btn btn-success me-2">Submit Donation</button>
+    </div>
+  </div>
+
+  <form id="register-donation" class="p-0" onsubmit="submitDonation(event)" style="max-width: 600px;">
+    <div class="mb-3">
+      <label for="donation-product-id" class="form-label">Product ID</label>
+      <input type="number" class="form-control" id="donation-product-id" required>
+    </div>
+    <div class="mb-3">
+      <label for="donation-donor-nif" class="form-label">Donor NIF</label>
+      <input type="number" class="form-control" id="donation-donor-nif" required>
+    </div>
+    <div class="mb-3">
+      <label for="donation-charity-nipc" class="form-label">Charity NIPC</label>
+      <input type="number" class="form-control" id="donation-charity-nipc" required>
+    </div>
+  </form>
+</div>
+
+  
+  
+  <script>
+    function animateListItems(containerSelector) {
+            const container = document.querySelector(containerSelector);
+            if (!container) return;
+
+            const items = container.children;
+
+            Array.from(items).forEach((item, index) => {
+                item.classList.add('animate-item');
+                item.style.animationDelay = `${index * 70}ms`;
+            });
+        }
+    function toggleDonationForm() {
+      document.getElementById('donationsTableContainer').classList.toggle('d-none');
+      document.getElementById('donationFormContainer').classList.toggle('d-none');
+    }
+  
+    async function submitDonation(e) {
+    e.preventDefault();
+
+    const id = document.getElementById('donation-product-id').value.trim();
+    const donor = document.getElementById('donation-donor-nif').value.trim();
+    const charity = document.getElementById('donation-charity-nipc').value.trim();
+
+    try {
+      const res = await fetch('/tt/donation/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, donor, charity  })
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Unknown error');
+
+      alert('Donation registered!');
+      toggleDonationForm();
+      loadDonations();
+    } catch (err) {
+      alert('Failed to register donation: ' + err.message);
+    }
+  }
+  
+    // On page load, fetch and render donations
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDonations();
+    });
+  
+    async function loadDonations() {
+      try {
+        const res = await fetch('/tt/donation');
+        const rows = await res.json();
+        const tbody = document.getElementById('donation-list');
+        tbody.innerHTML = '';
+        rows.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.id}</td>
+            <td>${r.name}</td>
+            <td>${r.brand}</td>
+            <td>${r.charity}</td>
+            <td>${r.store}</td>
+            <td>${r.project || '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+  
+
+    
+    <!-- Scripts -->
+    <script src="../scripts/auth.js"></script>
+
+    <!-- Scripts -->
+    
+</body>
+</html>
