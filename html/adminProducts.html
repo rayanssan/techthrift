@@ -156,7 +156,7 @@
 
                             <div class="mb-3">
                                 <label for="product-condition" class="form-label">Condition</label>
-                                <select id="product-condition" name="condition" class="form-select" required>
+                                <select id="product-condition" name="product_condition" class="form-select" required>
                                     <option>Like New</option>
                                     <option>Excellent</option>
                                     <option>Good</option>
@@ -165,12 +165,10 @@
                             </div>
             
                             <div class="mb-3">
-                                <label for="product-availability" class="form-label">Availability</label>
-                                <select id="product-availability" name="availability" class="form-select" required>
-                                    <option>Available</option>
-                                    <option>Not Available</option>
-                                </select>
+                                <label for="product-availability" class="form-label">Availability (number of units)</label>
+                                <input type="number" id="product-availability" name="availability" class="form-control" required min="0">
                             </div>
+                            
             
                             <div class="mb-3">
                                 <label for="product-category" class="form-label">Category</label>
@@ -253,7 +251,7 @@
             
                             <div class="mb-3">
                                 <label for="product-year" class="form-label">Manufacture Year</label>
-                                <input type="number" id="product-year" name="manufacture_year" class="form-control">
+                                <input type="number" id="product-year" name="year" class="form-control">
                             </div>
                         </div>
                     </div>
@@ -681,6 +679,8 @@ function showAddProductForm() {
         }
 
         const product = await res.json();
+        console.log('Fetched product data:', product); // 👈 Add this line for debugging
+
         showAddProductForm(); // Reuse the product form layout
 
         // === Fill form fields ===
@@ -688,7 +688,7 @@ function showAddProductForm() {
         if (form.elements['name']) form.elements['name'].value = product.name || '';
         if (form.elements['store_nipc']) form.elements['store_nipc'].value = product.store_nipc || '';
         if (form.elements['product_condition']) form.elements['product_condition'].value = product.product_condition || '';
-        if (form.elements['availability']) form.elements['availability'].value = product.availability ? 'true' : 'false';
+        if (form.elements['availability']) form.elements['availability'].value = product.availability || '';
         if (form.elements['description']) form.elements['description'].value = product.description || '';
         if (form.elements['category']) form.elements['category'].value = product.category || '';
         if (form.elements['brand']) form.elements['brand'].value = product.brand || '';
@@ -866,12 +866,6 @@ function showAddProductForm() {
                 fetchAdminProducts(filters);
             });
 
-            document.getElementById('delete-selected').addEventListener('click', () => {
-                if (confirm('Are you sure you want to delete the selected products?')) {
-                    console.log('Deletion confirmed, but not executed.');
-                }
-            });
-
            
 
             function updatePreview(files) {
@@ -894,61 +888,147 @@ function showAddProductForm() {
 
 
             document.getElementById('productForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+                e.preventDefault();
 
-    const form = e.target;
-    const data = {};
+                const form = e.target;
+                const data = {};
 
-    const fields = [
-        'name', 'store_nipc', 'product_condition', 'availability', 'description', 'category',
-        'brand', 'model_code', 'color', 'weight', 'dimensions', 'processor',
-        'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'
-    ];
+                const fields = [
+                    'name', 'store_nipc', 'product_condition', 'availability', 'description', 'category',
+                    'brand', 'model_code', 'color', 'weight', 'dimensions', 'processor',
+                    'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'
+                ];
 
-    fields.forEach(field => {
-        const el = form.elements[field];
-        if (el) {
-            if (el.type === 'checkbox') {
-                data[field] = el.checked;
-            } else if (el.type === 'number') {
-                data[field] = el.value ? parseFloat(el.value) : null;
-            } else {
-                data[field] = el.value || null;
-            }
-        }
-    });
+                fields.forEach(field => {
+                    const el = form.elements[field];
+                    if (el) {
+                        if (el.type === 'checkbox') {
+                            data[field] = el.checked;
+                        } else if (el.type === 'number') {
+                            data[field] = el.value ? parseFloat(el.value) : null;
+                        } else {
+                            data[field] = el.value || null;
+                        }
+                    }
+                });
 
-    if (typeof data.availability === 'string') {
-        data.availability = data.availability === 'true';
-    }
+                if (typeof data.availability === 'string') {
+                    data.availability = data.availability === 'true';
+                }
 
-    try {
-        const res = await fetch('/tt/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+                try {
+                    // Submit product
+                    const res = await fetch('/tt/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
 
-        if (!res.ok) {
-            const err = await res.json();
-            alert('Failed to add product: ' + err.error);
-            return;
-        }
+                    if (!res.ok) {
+                        const err = await res.json();
+                        alert('Failed to add product: ' + err.error);
+                        return;
+                    }
 
-        alert('Product added successfully!');
-        document.getElementById('add-product-form').classList.add('d-none');
-        document.getElementById('product-table').classList.remove('d-none');
-        document.getElementById('filters-row').classList.remove('d-none');
-        document.getElementById('top-buttons').classList.remove('d-none');
+                    const addedProduct = await res.json();
 
-        // Optionally reload table
-        fetchAndDisplayProducts?.();
+                    // Collect image filenames and orders
+                    const rows = document.querySelectorAll('#image-input-group > div');
+                    const images = [];
+                    const orders = [];
 
-    } catch (err) {
-        console.error(err);
-        alert('Error submitting product.');
-    }
-});
+                    rows.forEach((row, idx) => {
+                        const fileInput = row.querySelector('input[type="file"]');
+                        const orderInput = row.querySelector('input[type="number"]');
+
+                        if (fileInput.files[0]) {
+                            const fileName = fileInput.files[0].name;
+                            const imageOrder = orderInput.value || (idx + 1);
+                            images.push(fileName);
+                            orders.push(parseInt(imageOrder));
+                        }
+                    });
+
+                    // Submit image metadata
+                    if (images.length > 0) {
+                        const imgRes = await fetch('/tt/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                product_id: addedProduct.id,
+                                images,
+                                orders
+                            })
+                        });
+
+                        if (!imgRes.ok) {
+                            const err = await imgRes.json();
+                            alert('Images upload failed: ' + err.error);
+                            return;
+                        }
+                    }
+
+                    alert('Product added successfully!');
+                    document.getElementById('add-product-form').classList.add('d-none');
+                    document.getElementById('product-table').classList.remove('d-none');
+                    document.getElementById('filters-row').classList.remove('d-none');
+                    document.getElementById('top-buttons').classList.remove('d-none');
+
+                    // Optionally reload table
+                    fetchAdminProducts();
+
+                } catch (err) {
+                    console.error(err);
+                    alert('Error submitting product.');
+                }
+            });
+            
+            document.getElementById('delete-selected').addEventListener('click', async function () {
+                const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
+
+
+                if (selectedProducts.length === 0) {
+                    alert('No products selected.');
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to delete ${selectedProducts.length} product(s)?`)) {
+                    return;
+                }
+
+                for (const checkbox of selectedProducts) {
+                    const row = checkbox.closest('tr');
+                    const productId = row?.getAttribute('data-product-id');
+
+                    if (!productId) {
+                        console.warn('Row missing data-product-id');
+                        continue;
+                    }
+
+                    try {
+                        const res = await fetch(`/tt/remove/${productId}`, { method: 'DELETE' });
+
+                        const responseText = await res.text();
+                        if (!res.ok) {
+                            console.error(`Failed to delete product ${productId}:`, responseText);
+                        } else {
+                            console.log(`Successfully deleted product ${productId}:`, responseText);
+                        }
+                    } catch (err) {
+                        console.error(`Error deleting product ${productId}:`, err);
+                    }
+                }
+
+                alert('Selected products deleted.');
+
+                if (typeof fetchAdminProducts === 'function') {
+                    console.log('Refreshing product list...');
+                    fetchAdminProducts();
+                } else {
+                    console.warn('fetchAdminProducts is not defined.');
+                }
+            });
+
 
 
         });

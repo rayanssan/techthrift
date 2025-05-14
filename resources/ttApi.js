@@ -269,6 +269,11 @@ router.get('/tt/product/:id', (req, res) => {
 router.post('/tt/add', (req, res) => {
     const newProduct = req.body;
 
+    // Temporary default for store_nipc
+    if (!newProduct.store_nipc) {
+        newProduct.store_nipc = '112233445';
+    }
+
     // Construct the fields
     const columns = [
         'name',
@@ -322,27 +327,66 @@ router.post('/tt/add', (req, res) => {
     });
 });
 
-// Remove a product
-router.delete('/tt/remove/:id', (req, res) => {
-    db.execute('DELETE FROM products WHERE id = ?', [req.params.id], function (err) {
+router.post('/tt/upload', (req, res) => {
+    const { product_id, images, orders } = req.body;
+
+    if (!product_id || !Array.isArray(images) || images.length === 0) {
+        return res.status(400).json({ error: 'Missing product_id or images.' });
+    }
+
+    const insertValues = images.map((filename, i) => [
+        product_id,
+        filename,
+        parseInt(orders[i]) || (i + 1)
+    ]);
+
+    const query = `
+        INSERT INTO productImages (product, image_path, image_order)
+        VALUES ${insertValues.map(() => '(?, ?, ?)').join(', ')}
+    `;
+
+    const flatValues = insertValues.flat();
+
+    db.execute(query, flatValues, (err) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            return res.status(500).json({ error: err.message });
         }
-        if (this.changes === 0) {
-            return res.status(404).send('Product not found');
-        }
-        // Update replica
-        dbR.execute('DELETE FROM products WHERE id = ?', [req.params.id], function (err) {
+
+        dbR.execute(query, flatValues, (err) => {
             if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            if (this.changes === 0) {
-                return res.status(404).send('Product not found');
+                return res.status(500).json({ error: err.message });
             }
         });
-        res.status(200).send('Product successfully removed');
+
+        res.status(200).json({ message: 'Image metadata inserted successfully.' });
     });
 });
+
+
+router.delete('/tt/remove/:id', (req, res) => {
+    const productId = req.params.id;
+
+    // First, delete images associated with the product
+    db.execute('DELETE FROM productImages WHERE product = ?', [productId], function (err) {
+        if (err) {
+            return res.status(500).send({ error: 'Failed to delete related images: ' + err.message });
+        }
+
+        // Then, delete the product itself
+        db.execute('DELETE FROM products WHERE id = ?', [productId], function (err) {
+            if (err) {
+                return res.status(500).send({ error: 'Failed to delete product: ' + err.message });
+            }
+
+            // Also delete from replica
+            dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => {});
+            dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => {});
+
+            res.status(200).send('Product and related images successfully removed');
+        });
+    });
+});
+
 
 // Set product up for sale
 router.post('/tt/sale/add', (req, res) => {
