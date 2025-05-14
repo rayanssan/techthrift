@@ -26,20 +26,29 @@
 </head>
 
 <body>
-<header class="p-3 bg-white border-bottom">
-  <div class="d-flex justify-content-between container">
-    <div class="row align-items-center gap-3">
-      <div class="col-lg-5 col-md-12 d-flex align-items-center">
-        <a id="header-brand" href="/adminDashboard">
-          <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
-        </a>
+    <!-- Header -->
+    <header class="p-3 border-bottom bg-white">
+      <div class="d-flex justify-content-between container">
+          <div class="row align-items-center gap-3">
+              <!-- Left elements -->
+              <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
+                  <a id="header-brand" href="/adminDashboard" class="ms-1">
+                      <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
+                  </a>
+              </div>
+              <!-- Left elements -->
+          </div>
+          <a href="/authentication" id="username" class="border 
+              rounded py-1 px-3 nav-link d-flex h-auto
+              align-self-center
+              align-items-center btn btn-light">
+              <i class="fas fa-user-alt m-1 me-md-2"></i>
+              <p class="d-none d-md-block mb-0">···</p>
+          </a>
       </div>
-    </div>
-    <a href="/authentication" id="username" class="border rounded py-1 px-3 nav-link btn btn-light">
-      <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">···</p>
-    </a>
-  </div>
-</header>
+  </header>
+  <!-- Header -->
+
 
 <div class="d-flex">
   <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">

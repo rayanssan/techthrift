@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <link rel="stylesheet" href="../styles/adminstyles.css">
     <!-- PayPal API -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT&components=buttons,applepay"></script>
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=AU12GNf0wBJuuthVz7Xw9J7oiobcBjeAVYpoxEuhpGQKtOlKVYsn3nIbTSXOgNfRTdZrONxCW1Cm6gtB&currency=EUR&locale=en_PT&components=buttons,applepay"></script>
     <!-- PayPal API -->
 
 </head>
@@ -22,43 +23,57 @@
 <body>
     <style>
         #dropzone:hover {
-    background-color: #f8f9fa;
-}
-
+            background-color: #f8f9fa;
+        }
     </style>
-    <div class="p-3 bg-white border-bottom">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a href="#" class="d-flex align-items-center">
-                <img src="../media/images/logo_hor.png" alt="Logo" height="40">
-            </a>
-            <a href="/authentication" class="btn btn-outline-dark d-flex align-items-center">
-                <i class="fas fa-user-alt me-2"></i> Sign in
+    <!-- Header -->
+    <header class="p-3 border-bottom bg-white">
+        <div class="d-flex justify-content-between container">
+            <div class="row align-items-center gap-3">
+                <!-- Left elements -->
+                <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
+                    <a id="header-brand" href="/homepage" class="ms-1">
+                        <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
+                    </a>
+                </div>
+                <!-- Left elements -->
+            </div>
+            <a href="/authentication" id="username" class="border 
+                rounded py-1 px-3 nav-link d-flex h-auto
+                align-self-center
+                align-items-center btn btn-light">
+                <i class="fas fa-user-alt m-1 me-md-2"></i>
+                <p class="d-none d-md-block mb-0">···</p>
             </a>
         </div>
-    </div>
+    </header>
+    <!-- Header -->
+
 
     <div class="d-flex">
         <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">
-          <h4 class="text-center">Admin Panel</h4>
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="adminDashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Charities</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="adminDonations"><i class="fas fa-hand-holding-heart me-2"></i>Donations</a>
-            </li>
-          </ul>
+            <h4 class="text-center">Admin Panel</h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminDashboard"><i
+                            class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Charities</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminDonations"><i
+                            class="fas fa-hand-holding-heart me-2"></i>Donations</a>
+                </li>
+            </ul>
         </div>
-      
+
 
         <div class="content p-4" style="flex-grow: 1;">
             <div class="d-flex justify-content-between align-items-center mb-4" id="top-buttons">
@@ -88,7 +103,7 @@
                 </div>
             </div>
 
-           <!-- Table to select products -->
+            <!-- Table to select products -->
             <div class="table-responsive" id="product-table">
                 <div class="rounded-3 border overflow-hidden">
                     <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
@@ -119,7 +134,8 @@
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
-                                <input type="text" id="sale-product-id" class="form-control" placeholder="Enter Product ID">
+                                <input type="text" id="sale-product-id" class="form-control"
+                                    placeholder="Enter Product ID">
                                 <button type="button" class="btn btn-outline-primary mt-2">Add</button>
                             </div>
                             <ul id="sale-product-list" class="list-group my-3">
@@ -144,7 +160,7 @@
                         <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
                     </div>
                 </div>
-            
+
                 <form id="productForm" enctype="multipart/form-data">
                     <div class="row">
                         <!-- SPLIT: TWO-COLUMN LAYOUT -->
@@ -163,13 +179,18 @@
                                     <option>Needs Repair</option>
                                 </select>
                             </div>
-            
+
                             <div class="mb-3">
-                                <label for="product-availability" class="form-label">Availability (number of units)</label>
-                                <input type="number" id="product-availability" name="availability" class="form-control" required min="0">
+                                <label for="product-availability" class="form-label">Availability</label>
+                                <select id="product-availability" name="product-availability" class="form-select"
+                                    required>
+                                    <option value="" selected disabled>Select Availability</option>
+                                    <option value="true">Available</option>
+                                    <option value="false">Unavailable</option>
+                                </select>
                             </div>
-                            
-            
+
+
                             <div class="mb-3">
                                 <label for="product-category" class="form-label">Category</label>
                                 <select id="product-category" name="category" class="form-select" required>
@@ -186,82 +207,83 @@
                                     <option>Other</option>
                                 </select>
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-brand" class="form-label">Brand</label>
                                 <input type="text" id="product-brand" name="brand" class="form-control" required>
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-model-code" class="form-label">Model Code</label>
                                 <input type="text" id="product-model-code" name="model_code" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-color" class="form-label">Color</label>
                                 <input type="text" id="product-color" name="color" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-weight" class="form-label">Weight (kg)</label>
                                 <input type="number" id="product-weight" name="weight" class="form-control" step="0.01">
                             </div>
                         </div>
-            
+
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="product-dimensions" class="form-label">Dimensions</label>
                                 <input type="text" id="product-dimensions" name="dimensions" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-processor" class="form-label">Processor</label>
                                 <input type="text" id="product-processor" name="processor" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-screen" class="form-label">Screen</label>
                                 <input type="text" id="product-screen" name="screen" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-ram" class="form-label">RAM Memory</label>
                                 <input type="text" id="product-ram" name="ram" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-graphics" class="form-label">Graphics Card</label>
                                 <input type="text" id="product-graphics" name="graphics" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-storage" class="form-label">Storage</label>
                                 <input type="text" id="product-storage" name="storage" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-keyboard" class="form-label">Keyboard</label>
                                 <input type="text" id="product-keyboard" name="keyboard" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-os" class="form-label">Operating System</label>
                                 <input type="text" id="product-os" name="os" class="form-control">
                             </div>
-            
+
                             <div class="mb-3">
                                 <label for="product-year" class="form-label">Manufacture Year</label>
                                 <input type="number" id="product-year" name="year" class="form-control">
                             </div>
                         </div>
                     </div>
-            
+
                     <!-- FULL WIDTH: DESCRIPTION -->
                     <div class="mb-3 mt-4">
                         <label for="product-description" class="form-label">Description</label>
-                        <textarea id="product-description" name="description" rows="5" class="form-control" placeholder="Enter Description" required></textarea>
+                        <textarea id="product-description" name="description" rows="5" class="form-control"
+                            placeholder="Enter Description" required></textarea>
                     </div>
-            
+
                     <!-- FULL WIDTH: IMAGE UPLOAD -->
                     <div class="mb-4">
                         <label for="product-images" class="form-label">Product Images</label>
@@ -271,62 +293,63 @@
                     </div>
                 </form>
             </div>
-            
-            </div>
-            
+
         </div>
+
+    </div>
     </div>
 
+    <script src="../scripts/auth.js"></script>
     <script>
-let productList = []; // Persist across modal openings
-let totalPrice = 0;
+        let productList = []; // Persist across modal openings
+        let totalPrice = 0;
 
-document.getElementById("register-sale").addEventListener("click", async () => {
-    const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
-    const list = document.querySelector('#sale-product-list');
+        document.getElementById("register-sale").addEventListener("click", async () => {
+            const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
+            const list = document.querySelector('#sale-product-list');
 
-    if (selectedProducts.length === 0 && productList.length === 0) {
-        list.innerHTML = '<p class="text-muted">No products selected.</p>';
-    }
-
-    for (const checkbox of selectedProducts) {
-        const row = checkbox.closest('tr');
-        const productId = row.getAttribute('data-product-id');
-
-        if (productList.some(p => p.id === productId)) continue;
-
-        try {
-            const res = await fetch(`/tt/product/${productId}`);
-            if (!res.ok) throw new Error('Product not found');
-
-            const product = await res.json();
-
-            if (!product.availability) {
-                alert(`Product ${product.id} is not available for sale.`);
-                continue;
+            if (selectedProducts.length === 0 && productList.length === 0) {
+                list.innerHTML = '<p class="text-muted">No products selected.</p>';
             }
 
-            productList.push(product);
-            totalPrice += parseFloat(product.price || 0);
+            for (const checkbox of selectedProducts) {
+                const row = checkbox.closest('tr');
+                const productId = row.getAttribute('data-product-id');
 
-            appendProductToList(product);
-        } catch (err) {
-            console.error(err);
-            alert(err.message || 'Failed to fetch product.');
-        }
-    }
+                if (productList.some(p => p.id === productId)) continue;
 
-    updateTotalAndPayPal();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('sale-modal')).show();
-});
+                try {
+                    const res = await fetch(`/tt/product/${productId}`);
+                    if (!res.ok) throw new Error('Product not found');
 
-function appendProductToList(product) {
-    const list = document.querySelector('#sale-product-list');
-    if (list.querySelector('.text-muted')) list.querySelector('.text-muted').remove();
+                    const product = await res.json();
 
-    const item = document.createElement('li');
-    item.className = 'list-group-item d-flex justify-content-between align-items-center';
-    item.innerHTML = `
+                    if (!product.availability) {
+                        alert(`Product ${product.id} is not available for sale.`);
+                        continue;
+                    }
+
+                    productList.push(product);
+                    totalPrice += parseFloat(product.price || 0);
+
+                    appendProductToList(product);
+                } catch (err) {
+                    console.error(err);
+                    alert(err.message || 'Failed to fetch product.');
+                }
+            }
+
+            updateTotalAndPayPal();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('sale-modal')).show();
+        });
+
+        function appendProductToList(product) {
+            const list = document.querySelector('#sale-product-list');
+            if (list.querySelector('.text-muted')) list.querySelector('.text-muted').remove();
+
+            const item = document.createElement('li');
+            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.innerHTML = `
         <div class="d-flex align-items-center">
             <img src="../media/images/products/${product.images["1"] || 'default.jpg'}"
                 alt="Product Image" class="me-2"
@@ -338,153 +361,153 @@ function appendProductToList(product) {
         </div>
         <span>€${parseFloat(product.price).toFixed(2)}</span>
     `;
-    list.appendChild(item);
-}
-
-function updateTotalAndPayPal() {
-    document.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
-    document.getElementById('paypal').classList.replace('d-none', 'd-block');
-    renderPayPal();
-}
-
-// Reset Button Logic
-const footer = document.querySelector("#sale-modal .modal-footer");
-if (!footer.querySelector('.btn-outline-danger')) {
-    const resetBtn = document.createElement("button");
-    resetBtn.type = "button";
-    resetBtn.className = "btn btn-outline-danger";
-    resetBtn.textContent = "Reset Product Sale";
-    footer.appendChild(resetBtn);
-
-    resetBtn.addEventListener("click", () => {
-        productList = [];
-        totalPrice = 0;
-        document.querySelector('#sale-product-list').innerHTML = `<p class="text-muted">Products will appear here.</p>`;
-        document.querySelector("#sale-total-price").textContent = "€0.00";
-        document.getElementById("paypal").innerHTML = "";
-        document.getElementById("paypal").classList.add("d-none");
-    });
-}
-
-// Add-by-ID Button Logic
-const body = document.querySelector("#sale-modal .modal-body");
-const addBtn = body.querySelector('.btn-outline-primary');
-const input = body.querySelector('#sale-product-id');
-
-if (!addBtn.dataset.bound) {
-    addBtn.dataset.bound = 'true';
-    addBtn.addEventListener('click', async () => {
-        const productId = input.value.trim();
-        if (!productId) return;
-
-        try {
-            const res = await fetch(`/tt/product/${productId}`);
-            if (!res.ok) throw new Error('Product not found');
-
-            const product = await res.json();
-            if (productList.some(p => p.id === product.id)) {
-                alert("Product already added.");
-                return;
-            }
-            if (!product.availability) {
-                alert("This product is not available for sale.");
-                return;
-            }
-
-            productList.push(product);
-            totalPrice += parseFloat(product.price || 0);
-            appendProductToList(product);
-            updateTotalAndPayPal();
-
-            input.value = '';
-        } catch (err) {
-            alert(err.message || 'Failed to fetch product');
+            list.appendChild(item);
         }
-    });
-}
 
-// PayPal Render Logic
-function renderPayPal() {
-    const paypalContainer = document.getElementById("paypal");
-    paypalContainer.innerHTML = "";
+        function updateTotalAndPayPal() {
+            document.querySelector('#sale-total-price').textContent = `€${totalPrice.toFixed(2)}`;
+            document.getElementById('paypal').classList.replace('d-none', 'd-block');
+            renderPayPal();
+        }
 
-    if (!productList.length || !totalPrice || isNaN(totalPrice)) {
-        paypalContainer.classList.add("d-none");
-        return;
-    }
+        // Reset Button Logic
+        const footer = document.querySelector("#sale-modal .modal-footer");
+        if (!footer.querySelector('.btn-outline-danger')) {
+            const resetBtn = document.createElement("button");
+            resetBtn.type = "button";
+            resetBtn.className = "btn btn-outline-danger";
+            resetBtn.textContent = "Reset Product Sale";
+            footer.appendChild(resetBtn);
 
-    paypal.Buttons({
-        style: {
-            layout: 'vertical',
-            borderRadius: 10,
-            label: 'paypal'
-        },
-        createOrder: (data, actions) => actions.order.create({
-            purchase_units: [{
-                amount: {
-                    value: String(totalPrice.toFixed(2))
-                }
-            }]
-        }),
-        onError: (err) => {
-            showMessage("Payment Declined", "Your payment was declined or cancelled.", "danger");
-        },
-        onApprove: async (data, actions) => {
-            const cartProductIds = productList.map(p => p.id);
-
-            try {
-                const availabilityCheck = await fetch('/tttransaction/product-availability', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productIds: cartProductIds })
-                });
-
-                const checkData = await availabilityCheck.json();
-                if (!checkData.allAvailable) {
-                    checkData.unavailable.forEach(id => {
-                        const row = document.querySelector(`[data-product-id="${id}"]`);
-                        if (row) row.classList.add('table-danger');
-                    });
-                    throw new Error("Some items are no longer available.");
-                }
-
-                const details = await actions.order.capture();
-                const shipping = details.purchase_units[0].shipping;
-                const shippingAddress = {
-                    address: (shipping.address.address_line_1 + " " + (shipping.address.address_line_2 || "")).trim(),
-                    postal_code: shipping.address.postal_code.trim(),
-                    city: (shipping.address.admin_area_2 + " " + shipping.address.admin_area_1).trim(),
-                    country: shipping.address.country_code.trim()
-                };
-
-                const saleResponse = await fetch('/tttransaction/sales/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        client: loggedInUser.email,
-                        transaction_value: parseFloat(totalPrice),
-                        is_online: true,
-                        order_number: details.id,
-                        shipping_address: shippingAddress.address,
-                        shipping_postal_code: shippingAddress.postal_code,
-                        shipping_city: shippingAddress.city,
-                        shipping_country: shippingAddress.country,
-                        products: cartProductIds,
-                        employee: null,
-                        store: null,
-                    })
-                });
-
-                if (!saleResponse.ok) throw new Error("Failed to store transaction.");
-
-                // Reset and show success
+            resetBtn.addEventListener("click", () => {
                 productList = [];
                 totalPrice = 0;
-                document.getElementById("sale-product-list").innerHTML = "";
+                document.querySelector('#sale-product-list').innerHTML = `<p class="text-muted">Products will appear here.</p>`;
                 document.querySelector("#sale-total-price").textContent = "€0.00";
-                paypalContainer.classList.add("d-none");
+                document.getElementById("paypal").innerHTML = "";
+                document.getElementById("paypal").classList.add("d-none");
+            });
+        }
 
-                document.getElementById("paymentInterface").innerHTML = `
+        // Add-by-ID Button Logic
+        const body = document.querySelector("#sale-modal .modal-body");
+        const addBtn = body.querySelector('.btn-outline-primary');
+        const input = body.querySelector('#sale-product-id');
+
+        if (!addBtn.dataset.bound) {
+            addBtn.dataset.bound = 'true';
+            addBtn.addEventListener('click', async () => {
+                const productId = input.value.trim();
+                if (!productId) return;
+
+                try {
+                    const res = await fetch(`/tt/product/${productId}`);
+                    if (!res.ok) throw new Error('Product not found');
+
+                    const product = await res.json();
+                    if (productList.some(p => p.id === product.id)) {
+                        alert("Product already added.");
+                        return;
+                    }
+                    if (!product.availability) {
+                        alert("This product is not available for sale.");
+                        return;
+                    }
+
+                    productList.push(product);
+                    totalPrice += parseFloat(product.price || 0);
+                    appendProductToList(product);
+                    updateTotalAndPayPal();
+
+                    input.value = '';
+                } catch (err) {
+                    alert(err.message || 'Failed to fetch product');
+                }
+            });
+        }
+
+        // PayPal Render Logic
+        function renderPayPal() {
+            const paypalContainer = document.getElementById("paypal");
+            paypalContainer.innerHTML = "";
+
+            if (!productList.length || !totalPrice || isNaN(totalPrice)) {
+                paypalContainer.classList.add("d-none");
+                return;
+            }
+
+            paypal.Buttons({
+                style: {
+                    layout: 'vertical',
+                    borderRadius: 10,
+                    label: 'paypal'
+                },
+                createOrder: (data, actions) => actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: String(totalPrice.toFixed(2))
+                        }
+                    }]
+                }),
+                onError: (err) => {
+                    showMessage("Payment Declined", "Your payment was declined or cancelled.", "danger");
+                },
+                onApprove: async (data, actions) => {
+                    const cartProductIds = productList.map(p => p.id);
+
+                    try {
+                        const availabilityCheck = await fetch('/tttransaction/product-availability', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productIds: cartProductIds })
+                        });
+
+                        const checkData = await availabilityCheck.json();
+                        if (!checkData.allAvailable) {
+                            checkData.unavailable.forEach(id => {
+                                const row = document.querySelector(`[data-product-id="${id}"]`);
+                                if (row) row.classList.add('table-danger');
+                            });
+                            throw new Error("Some items are no longer available.");
+                        }
+
+                        const details = await actions.order.capture();
+                        const shipping = details.purchase_units[0].shipping;
+                        const shippingAddress = {
+                            address: (shipping.address.address_line_1 + " " + (shipping.address.address_line_2 || "")).trim(),
+                            postal_code: shipping.address.postal_code.trim(),
+                            city: (shipping.address.admin_area_2 + " " + shipping.address.admin_area_1).trim(),
+                            country: shipping.address.country_code.trim()
+                        };
+
+                        const saleResponse = await fetch('/tttransaction/sales/add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                client: loggedInUser.email,
+                                transaction_value: parseFloat(totalPrice),
+                                is_online: true,
+                                order_number: details.id,
+                                shipping_address: shippingAddress.address,
+                                shipping_postal_code: shippingAddress.postal_code,
+                                shipping_city: shippingAddress.city,
+                                shipping_country: shippingAddress.country,
+                                products: cartProductIds,
+                                employee: null,
+                                store: null,
+                            })
+                        });
+
+                        if (!saleResponse.ok) throw new Error("Failed to store transaction.");
+
+                        // Reset and show success
+                        productList = [];
+                        totalPrice = 0;
+                        document.getElementById("sale-product-list").innerHTML = "";
+                        document.querySelector("#sale-total-price").textContent = "€0.00";
+                        paypalContainer.classList.add("d-none");
+
+                        document.getElementById("paymentInterface").innerHTML = `
                     <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">
                         <div class="text-success mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
@@ -496,13 +519,13 @@ function renderPayPal() {
                         <p class="text-center mb-4">Thank you for your purchase!</p>
                         <a href="/" class="btn btn-success btn-lg">Thrift More</a>
                     </div>`;
-            } catch (err) {
-                console.error(err);
-                showMessage("Purchase Unsuccessful", err.message || "An error occurred.", "danger");
-            }
+                    } catch (err) {
+                        console.error(err);
+                        showMessage("Purchase Unsuccessful", err.message || "An error occurred.", "danger");
+                    }
+                }
+            }).render('#paypal');
         }
-    }).render('#paypal');
-}
 
 
 
@@ -542,54 +565,54 @@ function renderPayPal() {
 
         let selectedProductIds = [];
 
-// Function to fetch products and populate the table
-async function fetchAdminProducts(filters = {}) {
-    try {
-        const params = new URLSearchParams(filters);
-        const response = await fetch(`/tt/product?${params.toString()}`);
-        const products = await response.json();
+        // Function to fetch products and populate the table
+        async function fetchAdminProducts(filters = {}) {
+            try {
+                const params = new URLSearchParams(filters);
+                const response = await fetch(`/tt/product?${params.toString()}`);
+                const products = await response.json();
 
-        const priceResponse = await fetch('/tt');
-        const priceData = await priceResponse.json();
-        const priceMap = {};
-        priceData.forEach(item => priceMap[item.id] = item.price);
+                const priceResponse = await fetch('/tt');
+                const priceData = await priceResponse.json();
+                const priceMap = {};
+                priceData.forEach(item => priceMap[item.id] = item.price);
 
-        const productContainer = document.getElementById('product-list');
-        productContainer.innerHTML = '';
+                const productContainer = document.getElementById('product-list');
+                productContainer.innerHTML = '';
 
-        products.forEach(product => {
-            const price = priceMap[product.id];
-            const productRow = document.createElement('tr');
+                products.forEach(product => {
+                    const price = priceMap[product.id];
+                    const productRow = document.createElement('tr');
 
-            // Add hover cursor
-            productRow.classList.add('cursor-pointer');
-            productRow.dataset.productId = product.id; // Store product ID in the row
+                    // Add hover cursor
+                    productRow.classList.add('cursor-pointer');
+                    productRow.dataset.productId = product.id; // Store product ID in the row
 
-            // Row click: ignore checkbox clicks
-            productRow.addEventListener('click', (event) => {
-                if (event.target.type !== 'checkbox') {
-                    viewProductDetails(product.id);
-                }
-            });
+                    // Row click: ignore checkbox clicks
+                    productRow.addEventListener('click', (event) => {
+                        if (event.target.type !== 'checkbox') {
+                            viewProductDetails(product.id);
+                        }
+                    });
 
-            // Product checkbox selection
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.classList.add('product-checkbox');
-            checkbox.addEventListener('change', (event) => {
-                const productId = product.id;
-                if (event.target.checked) {
-                    // Add to selected products
-                    selectedProductIds.push(productId);
-                } else {
-                    // Remove from selected products
-                    selectedProductIds = selectedProductIds.filter(id => id !== productId);
-                }
-            });
+                    // Product checkbox selection
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.classList.add('product-checkbox');
+                    checkbox.addEventListener('change', (event) => {
+                        const productId = product.id;
+                        if (event.target.checked) {
+                            // Add to selected products
+                            selectedProductIds.push(productId);
+                        } else {
+                            // Remove from selected products
+                            selectedProductIds = selectedProductIds.filter(id => id !== productId);
+                        }
+                    });
 
-            productRow.dataset.productId = product.id;
+                    productRow.dataset.productId = product.id;
 
-            productRow.innerHTML = `
+                    productRow.innerHTML = `
                 <td><input type="checkbox" class="product-checkbox"></td>
                 <td>${product.id}</td>
                 <td class="product-name">${product.name}</td>
@@ -599,67 +622,67 @@ async function fetchAdminProducts(filters = {}) {
                 <td>${product.availability ? 'Available' : 'Unavailable'}</td>
             `;
 
-            productContainer.appendChild(productRow);
-        });
+                    productContainer.appendChild(productRow);
+                });
 
-        animateListItems('#product-list');
-    } catch (error) {
-        console.error('Error fetching products:', error);
-    }
-}
+                animateListItems('#product-list');
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
 
 
 
-function showAddProductForm() {
-    document.getElementById('product-table').classList.add('d-none');
-    document.getElementById('filters-row').classList.add('d-none');
-    document.getElementById('top-buttons').classList.add('d-none');
-    document.getElementById('add-product-form').classList.remove('d-none');
+        function showAddProductForm() {
+            document.getElementById('product-table').classList.add('d-none');
+            document.getElementById('filters-row').classList.add('d-none');
+            document.getElementById('top-buttons').classList.add('d-none');
+            document.getElementById('add-product-form').classList.remove('d-none');
 
-    // Reset form
-    const form = document.getElementById('productForm');
-    form.reset();
-    [...form.elements].forEach(el => el.disabled = false);
+            // Reset form
+            const form = document.getElementById('productForm');
+            form.reset();
+            [...form.elements].forEach(el => el.disabled = false);
 
-    // Reset buttons
-    const cancelBtn = document.querySelector('#add-product-form .btn-light');
-    const submitBtn = document.querySelector('#add-product-form .btn-success');
+            // Reset buttons
+            const cancelBtn = document.querySelector('#add-product-form .btn-light');
+            const submitBtn = document.querySelector('#add-product-form .btn-success');
 
-    cancelBtn.textContent = 'Cancel';
-    submitBtn.classList.remove('d-none');
+            cancelBtn.textContent = 'Cancel';
+            submitBtn.classList.remove('d-none');
 
-    // Replace image upload area with basic input rows
-    const dropzone = document.getElementById('product-images');
-    dropzone.innerHTML = `
+            // Replace image upload area with basic input rows
+            const dropzone = document.getElementById('product-images');
+            dropzone.innerHTML = `
         <div class="mb-2"><small class="text-muted">Upload up to 5 images and optionally set their order.</small></div>
         <div id="image-input-group" class="d-flex flex-column gap-2"></div>
     `;
 
-    const imageInputGroup = document.getElementById('image-input-group');
-    for (let i = 1; i <= 5; i++) {
-        const row = document.createElement("div");
-        row.className = "d-flex align-items-center gap-2";
+            const imageInputGroup = document.getElementById('image-input-group');
+            for (let i = 1; i <= 5; i++) {
+                const row = document.createElement("div");
+                row.className = "d-flex align-items-center gap-2";
 
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = "image/*";
-        fileInput.name = "images[]";
-        fileInput.className = "form-control";
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "image/*";
+                fileInput.name = "images[]";
+                fileInput.className = "form-control";
 
-        const orderInput = document.createElement("input");
-        orderInput.type = "number";
-        orderInput.min = "1";
-        orderInput.max = "5";
-        orderInput.placeholder = "Order";
-        orderInput.name = "orders[]";
-        orderInput.className = "form-control";
-        orderInput.style.maxWidth = "100px";
+                const orderInput = document.createElement("input");
+                orderInput.type = "number";
+                orderInput.min = "1";
+                orderInput.max = "5";
+                orderInput.placeholder = "Order";
+                orderInput.name = "orders[]";
+                orderInput.className = "form-control";
+                orderInput.style.maxWidth = "100px";
 
-        row.appendChild(fileInput);
-        row.appendChild(orderInput);
-        imageInputGroup.appendChild(row);
-    }
-}
+                row.appendChild(fileInput);
+                row.appendChild(orderInput);
+                imageInputGroup.appendChild(row);
+            }
+        }
 
 
 
@@ -672,105 +695,105 @@ function showAddProductForm() {
         }
 
         async function viewProductDetails(id) {
-    try {
-        const res = await fetch(`/tt/product/${id}`);
-        if (!res.ok) {
-            return alert('Failed to fetch product details.');
-        }
-
-        const product = await res.json();
-        console.log('Fetched product data:', product); // 👈 Add this line for debugging
-
-        showAddProductForm(); // Reuse the product form layout
-
-        // === Fill form fields ===
-        const form = document.getElementById('productForm');
-        if (form.elements['name']) form.elements['name'].value = product.name || '';
-        if (form.elements['store_nipc']) form.elements['store_nipc'].value = product.store_nipc || '';
-        if (form.elements['product_condition']) form.elements['product_condition'].value = product.product_condition || '';
-        if (form.elements['availability']) form.elements['availability'].value = product.availability || '';
-        if (form.elements['description']) form.elements['description'].value = product.description || '';
-        if (form.elements['category']) form.elements['category'].value = product.category || '';
-        if (form.elements['brand']) form.elements['brand'].value = product.brand || '';
-        if (form.elements['model_code']) form.elements['model_code'].value = product.model_code || '';
-        if (form.elements['color']) form.elements['color'].value = product.color || '';
-        if (form.elements['weight']) form.elements['weight'].value = product.weight || '';
-        if (form.elements['dimensions']) form.elements['dimensions'].value = product.dimensions || '';
-        if (form.elements['processor']) form.elements['processor'].value = product.processor || '';
-        if (form.elements['screen']) form.elements['screen'].value = product.screen || '';
-        if (form.elements['ram_memory']) form.elements['ram_memory'].value = product.ram_memory || '';
-        if (form.elements['graphics_card']) form.elements['graphics_card'].value = product.graphics_card || '';
-        if (form.elements['storage']) form.elements['storage'].value = product.storage || '';
-        if (form.elements['keyboard']) form.elements['keyboard'].value = product.keyboard || '';
-        if (form.elements['os']) form.elements['os'].value = product.os || '';
-        if (form.elements['year']) form.elements['year'].value = product.year || '';
-
-
-
-        // === Disable fields (read-only mode) ===
-        [...form.elements].forEach(el => el.disabled = true);
-
-        // === Adjust buttons ===
-        const cancelBtn = document.querySelector('#add-product-form .btn-light');
-        const submitBtn = document.querySelector('#add-product-form .btn-success');
-        cancelBtn.textContent = 'Back';
-        submitBtn.classList.add('d-none');
-
-        // === Setup image preview ===
-        const dropzone = document.getElementById('product-images');
-        dropzone.innerHTML = '';
-
-        const images = product.images || {};
-        const imageBasePath = "../media/images/products/";
-        const selectedImages = [];
-        const allThumbnails = [];
-
-        Object.entries(images).forEach(([order, filename]) => {
-            if (filename) {
-                allThumbnails.push({ order, filename });
-                if (order !== 'null' && order !== null && order !== '' && !isNaN(order)) {
-                    selectedImages.push(filename);
+            try {
+                const res = await fetch(`/tt/product/${id}`);
+                if (!res.ok) {
+                    return alert('Failed to fetch product details.');
                 }
-            }
-        });
 
-        if (selectedImages.length > 0) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'w-100';
+                const product = await res.json();
+                console.log('Fetched product data:', product); // 👈 Add this line for debugging
 
-            // === Carousel ===
-            const carouselWrapper = document.createElement('div');
-            carouselWrapper.className = 'position-relative mb-3';
-            carouselWrapper.style.height = '280px';
+                showAddProductForm(); // Reuse the product form layout
 
-            const carousel = document.createElement('div');
-            carousel.id = 'product-carousel';
-            carousel.className = 'carousel slide h-100';
-            carousel.setAttribute('data-bs-ride', 'carousel');
+                // === Fill form fields ===
+                const form = document.getElementById('productForm');
+                if (form.elements['name']) form.elements['name'].value = product.name || '';
+                if (form.elements['store_nipc']) form.elements['store_nipc'].value = product.store_nipc || '';
+                if (form.elements['product_condition']) form.elements['product_condition'].value = product.product_condition || '';
+                if (form.elements['availability']) form.elements['availability'].value = product.availability || '';
+                if (form.elements['description']) form.elements['description'].value = product.description || '';
+                if (form.elements['category']) form.elements['category'].value = product.category || '';
+                if (form.elements['brand']) form.elements['brand'].value = product.brand || '';
+                if (form.elements['model_code']) form.elements['model_code'].value = product.model_code || '';
+                if (form.elements['color']) form.elements['color'].value = product.color || '';
+                if (form.elements['weight']) form.elements['weight'].value = product.weight || '';
+                if (form.elements['dimensions']) form.elements['dimensions'].value = product.dimensions || '';
+                if (form.elements['processor']) form.elements['processor'].value = product.processor || '';
+                if (form.elements['screen']) form.elements['screen'].value = product.screen || '';
+                if (form.elements['ram_memory']) form.elements['ram_memory'].value = product.ram_memory || '';
+                if (form.elements['graphics_card']) form.elements['graphics_card'].value = product.graphics_card || '';
+                if (form.elements['storage']) form.elements['storage'].value = product.storage || '';
+                if (form.elements['keyboard']) form.elements['keyboard'].value = product.keyboard || '';
+                if (form.elements['os']) form.elements['os'].value = product.os || '';
+                if (form.elements['year']) form.elements['year'].value = product.year || '';
 
-            const inner = document.createElement('div');
-            inner.className = 'carousel-inner h-100 w-100 bg-white rounded text-center overflow-hidden';
-            inner.style.position = 'relative';
 
-            selectedImages.forEach((filename, index) => {
-                const item = document.createElement('div');
-                item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                item.style.height = '100%';
 
-                const img = document.createElement('img');
-                img.src = imageBasePath + filename;
-                img.className = 'img-fluid h-100';
-                img.style.objectFit = 'contain';
-                img.style.cursor = 'zoom-in';
+                // === Disable fields (read-only mode) ===
+                [...form.elements].forEach(el => el.disabled = true);
 
-                img.addEventListener('click', () => {
-                    let modalEl = document.getElementById("image-popup");
-                    if (!modalEl) {
-                        modalEl = document.createElement("div");
-                        modalEl.className = "modal fade";
-                        modalEl.id = "image-popup";
-                        modalEl.tabIndex = -1;
-                        modalEl.innerHTML = `
+                // === Adjust buttons ===
+                const cancelBtn = document.querySelector('#add-product-form .btn-light');
+                const submitBtn = document.querySelector('#add-product-form .btn-success');
+                cancelBtn.textContent = 'Back';
+                submitBtn.classList.add('d-none');
+
+                // === Setup image preview ===
+                const dropzone = document.getElementById('product-images');
+                dropzone.innerHTML = '';
+
+                const images = product.images || {};
+                const imageBasePath = "../media/images/products/";
+                const selectedImages = [];
+                const allThumbnails = [];
+
+                Object.entries(images).forEach(([order, filename]) => {
+                    if (filename) {
+                        allThumbnails.push({ order, filename });
+                        if (order !== 'null' && order !== null && order !== '' && !isNaN(order)) {
+                            selectedImages.push(filename);
+                        }
+                    }
+                });
+
+                if (selectedImages.length > 0) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'w-100';
+
+                    // === Carousel ===
+                    const carouselWrapper = document.createElement('div');
+                    carouselWrapper.className = 'position-relative mb-3';
+                    carouselWrapper.style.height = '280px';
+
+                    const carousel = document.createElement('div');
+                    carousel.id = 'product-carousel';
+                    carousel.className = 'carousel slide h-100';
+                    carousel.setAttribute('data-bs-ride', 'carousel');
+
+                    const inner = document.createElement('div');
+                    inner.className = 'carousel-inner h-100 w-100 bg-white rounded text-center overflow-hidden';
+                    inner.style.position = 'relative';
+
+                    selectedImages.forEach((filename, index) => {
+                        const item = document.createElement('div');
+                        item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                        item.style.height = '100%';
+
+                        const img = document.createElement('img');
+                        img.src = imageBasePath + filename;
+                        img.className = 'img-fluid h-100';
+                        img.style.objectFit = 'contain';
+                        img.style.cursor = 'zoom-in';
+
+                        img.addEventListener('click', () => {
+                            let modalEl = document.getElementById("image-popup");
+                            if (!modalEl) {
+                                modalEl = document.createElement("div");
+                                modalEl.className = "modal fade";
+                                modalEl.id = "image-popup";
+                                modalEl.tabIndex = -1;
+                                modalEl.innerHTML = `
                             <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
                                 <div class="modal-content border-0 text-center rounded bg-white m-auto">
                                     <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3"
@@ -778,21 +801,21 @@ function showAddProductForm() {
                                     <img class="img-fluid p-3 border-top shadow-lg" style="margin-top: 3.5rem;">
                                 </div>
                             </div>`;
-                        document.body.appendChild(modalEl);
-                    }
+                                document.body.appendChild(modalEl);
+                            }
 
-                    modalEl.querySelector("img").src = img.src;
-                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
-                });
+                            modalEl.querySelector("img").src = img.src;
+                            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                        });
 
-                item.appendChild(img);
-                inner.appendChild(item);
-            });
+                        item.appendChild(img);
+                        inner.appendChild(item);
+                    });
 
-            carousel.appendChild(inner);
+                    carousel.appendChild(inner);
 
-            if (selectedImages.length > 1) {
-                carousel.innerHTML += `
+                    if (selectedImages.length > 1) {
+                        carousel.innerHTML += `
                     <button class="carousel-control-prev" type="button" data-bs-target="#product-carousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
@@ -802,54 +825,54 @@ function showAddProductForm() {
                         <span class="visually-hidden">Next</span>
                     </button>
                 `;
-            }
+                    }
 
-            carouselWrapper.appendChild(carousel);
-            wrapper.appendChild(carouselWrapper);
+                    carouselWrapper.appendChild(carousel);
+                    wrapper.appendChild(carouselWrapper);
 
-            // === Thumbnails ===
-            const thumbRow = document.createElement('div');
-            thumbRow.id = 'thumbnail-row';
-            thumbRow.className = 'd-flex flex-wrap gap-2 justify-content-center mt-2';
+                    // === Thumbnails ===
+                    const thumbRow = document.createElement('div');
+                    thumbRow.id = 'thumbnail-row';
+                    thumbRow.className = 'd-flex flex-wrap gap-2 justify-content-center mt-2';
 
-            allThumbnails.forEach(({ filename, order }) => {
-                const thumb = document.createElement('img');
-                thumb.src = imageBasePath + filename;
-                thumb.className = 'rounded border';
-                thumb.style.height = '60px';
-                thumb.style.cursor = 'pointer';
+                    allThumbnails.forEach(({ filename, order }) => {
+                        const thumb = document.createElement('img');
+                        thumb.src = imageBasePath + filename;
+                        thumb.className = 'rounded border';
+                        thumb.style.height = '60px';
+                        thumb.style.cursor = 'pointer';
 
-                if (selectedImages.includes(filename)) {
-                    const slideIndex = selectedImages.indexOf(filename);
-                    thumb.dataset.bsTarget = '#product-carousel';
-                    thumb.dataset.bsSlideTo = slideIndex;
-                    if (slideIndex === 0) thumb.classList.add('border-primary', 'border-2');
+                        if (selectedImages.includes(filename)) {
+                            const slideIndex = selectedImages.indexOf(filename);
+                            thumb.dataset.bsTarget = '#product-carousel';
+                            thumb.dataset.bsSlideTo = slideIndex;
+                            if (slideIndex === 0) thumb.classList.add('border-primary', 'border-2');
+                        }
+
+                        thumbRow.appendChild(thumb);
+                    });
+
+                    wrapper.appendChild(thumbRow);
+                    dropzone.appendChild(wrapper);
+
+                    // Highlight active thumbnail
+                    document.getElementById('product-carousel').addEventListener('slid.bs.carousel', function (e) {
+                        const thumbs = thumbRow.querySelectorAll('img');
+                        thumbs.forEach(t => t.classList.remove('border-primary', 'border-2'));
+
+                        const filename = selectedImages[e.to];
+                        const activeThumb = Array.from(thumbs).find(t => t.src.includes(filename));
+                        if (activeThumb) activeThumb.classList.add('border-primary', 'border-2');
+                    });
+
+                } else {
+                    dropzone.innerHTML = `<p class="mt-5">No images available for this product</p>`;
                 }
-
-                thumbRow.appendChild(thumb);
-            });
-
-            wrapper.appendChild(thumbRow);
-            dropzone.appendChild(wrapper);
-
-            // Highlight active thumbnail
-            document.getElementById('product-carousel').addEventListener('slid.bs.carousel', function (e) {
-                const thumbs = thumbRow.querySelectorAll('img');
-                thumbs.forEach(t => t.classList.remove('border-primary', 'border-2'));
-
-                const filename = selectedImages[e.to];
-                const activeThumb = Array.from(thumbs).find(t => t.src.includes(filename));
-                if (activeThumb) activeThumb.classList.add('border-primary', 'border-2');
-            });
-
-        } else {
-            dropzone.innerHTML = `<p class="mt-5">No images available for this product</p>`;
+            } catch (err) {
+                console.error(err);
+                alert('Error fetching product details.');
+            }
         }
-    } catch (err) {
-        console.error(err);
-        alert('Error fetching product details.');
-    }
-}
 
 
 
@@ -866,7 +889,7 @@ function showAddProductForm() {
                 fetchAdminProducts(filters);
             });
 
-           
+
 
             function updatePreview(files) {
                 previewContainer.innerHTML = '';
@@ -982,7 +1005,7 @@ function showAddProductForm() {
                     alert('Error submitting product.');
                 }
             });
-            
+
             document.getElementById('delete-selected').addEventListener('click', async function () {
                 const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
 
@@ -1033,12 +1056,7 @@ function showAddProductForm() {
 
         });
     </script>
-    
+
 </body>
 
 </html>
-
-
-
-
-

@@ -359,6 +359,7 @@ router.post('/tt/add', verifyRequestOrigin, (req, res) => {
     });
 });
 
+// Upload Images
 router.post('/tt/upload', (req, res) => {
     const { product_id, images, orders } = req.body;
 
@@ -394,7 +395,7 @@ router.post('/tt/upload', (req, res) => {
     });
 });
 
-
+// Remove Product
 router.delete('/tt/remove/:id', (req, res) => {
     const productId = req.params.id;
 
