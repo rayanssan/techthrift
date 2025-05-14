@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
   
     const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
   
-    document.querySelectorAll(['.footer-modal-link', '.learn-more-button']).forEach(link => {
+    document.querySelectorAll('.footer-modal-link').forEach(link => {
       link.addEventListener('click', function (e) {
         e.preventDefault();
         const title = this.getAttribute('data-title') || 'Info';
