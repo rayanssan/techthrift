@@ -144,21 +144,19 @@
 
         <!-- You can include sellFields if needed -->
         <div id="sellFields" style="display: none;">
-            <form id="register-purchase-form">
-                <div class="mb-3">
-                    <label for="purchase-product-seller-email" class="form-label">Seller Email</label>
-                    <input type="email" class="form-control" id="purchase-product-seller-email" placeholder="Enter Seller Email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="purchase-price" class="form-label">Price</label>
-                    <input type="number" class="form-control" id="purchase-price" placeholder="Enter Price" required>
-                </div>
-                
-            </form>
+            <div class="mb-3">
+                <label for="purchase-product-seller-email" class="form-label">Seller Email</label>
+                <input type="email" class="form-control" id="purchase-product-seller-email" name="seller_email" placeholder="Enter Seller Email" required>
+            </div>
+            <div class="mb-3">
+                <label for="purchase-price" class="form-label">Price</label>
+                <input type="number" class="form-control" id="purchase-price" name="purchase_price" placeholder="Enter Price" required>
+            </div>
         </div>
         
+        
 
-        <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+        <button type="submit" class="btn btn-primary w-100" onclick="disableHiddenFields()">Submit Order</button>
     </form>
 </div>
 
@@ -168,137 +166,156 @@
     <!-- Scripts -->
     <script src="../scripts/auth.js"></script>
     <script>
-         function animateListItems(containerSelector) {
+        function disableHiddenFields() {
+            const sellFields = document.getElementById("sellFields");
+            if (sellFields.style.display === "none") {
+                sellFields.querySelectorAll("input").forEach(input => {
+                    input.disabled = true;
+                });
+            }
+        }
+        function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
             if (!container) return;
-
+    
             const items = container.children;
-
+    
             Array.from(items).forEach((item, index) => {
                 item.classList.add('animate-item');
                 item.style.animationDelay = `${index * 70}ms`;
             });
         }
-         // Handle showing the Add Order form
-    function showOrderForm() {
-        document.getElementById('ordersTableContainer').style.display = 'none';
-        document.getElementById('orderFormContainer').style.display = 'block';
-        switchOrderType('sell'); // Default to sell order
-    }
-
-    // Return to Orders Table
-    function showOrdersTable() {
-        document.getElementById('ordersTableContainer').style.display = 'block';
-        document.getElementById('orderFormContainer').style.display = 'none';
-    }
-
-    // Switch between Sell and Repair tabs
-    function switchOrderType(type) {
-        const sellFields = document.getElementById('sellFields');
-        const repairFields = document.getElementById('repairFields');
-        const sellTab = document.getElementById('sellTab');
-        const repairTab = document.getElementById('repairTab');
-
-        if (type === 'sell') {
-            sellFields.style.display = 'block';
-            repairFields.style.display = 'none';
-            sellTab.classList.add('active');
-            repairTab.classList.remove('active');
-        } else if (type === 'repair') {
-            sellFields.style.display = 'none';
-            repairFields.style.display = 'block';
-            sellTab.classList.remove('active');
-            repairTab.classList.add('active');
-        }
-    }
-
-    // Fetch and display repair orders in the table
-    async function fetchRepairOrders() {
-        try {
-            const res = await fetch('/tt/repair');
-            const repairs = await res.json();
-            const repairList = document.getElementById('order-list');
-            repairList.innerHTML = '';
-
-            repairs.forEach(repair => {
-                const row = document.createElement('tr');
-
-                const orderIdCell = document.createElement('td');
-                orderIdCell.textContent = repair.id || 'N/A';
-                row.appendChild(orderIdCell);
-
-                const typeCell = document.createElement('td');
-                typeCell.textContent = 'Repair Order';
-                row.appendChild(typeCell);
-
-                const detailsCell = document.createElement('td');
-                detailsCell.textContent = repair.name || 'Unnamed Product';
-                row.appendChild(detailsCell);
-
-                const statusCell = document.createElement('td');
-                statusCell.textContent = repair.status ? 'Completed' : 'Pending';
-                row.appendChild(statusCell);
-
-                repairList.appendChild(row);
-            });
-        } catch (err) {
-            console.error('Error fetching repair orders:', err);
-        }
-    }
-
-    // Handle form submission for repair orders
-    document.getElementById("orderForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
-
-        const isRepair = document.getElementById("repairTab").classList.contains("active");
-
-        if (isRepair) {
-            const productId = document.getElementById("repair-product-id").value.trim();
-            const description = document.getElementById("repair-description").value.trim();
-            const price = document.getElementById("repair-price").value;
-
-            if (!productId || !description || !price) {
-                alert("Please fill in all required fields.");
-                return;
-            }
-
-            try {
-                const response = await fetch('/tt/repair/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: productId,
-                        description: description,
-                        price: parseFloat(price)
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert("Repair order added successfully.");
-                    showOrdersTable();
-                    fetchRepairOrders();
-                } else {
-                    alert("Error: " + (result.error || response.statusText));
-                }
-            } catch (err) {
-                console.error("Submit failed:", err);
-                alert("An unexpected error occurred.");
-            }
-        } else {
-            // Handle sell order submission (if needed)
-        }
-    });
     
+        // Handle showing the Add Order form
+        function showOrderForm() {
+            document.getElementById('ordersTableContainer').style.display = 'none';
+            document.getElementById('orderFormContainer').style.display = 'block';
+            switchOrderType('sell'); // Default to sell order
+        }
+    
+        // Return to Orders Table
+        function showOrdersTable() {
+            document.getElementById('ordersTableContainer').style.display = 'block';
+            document.getElementById('orderFormContainer').style.display = 'none';
+        }
+    
+        // Switch between Sell and Repair tabs
+        function switchOrderType(type) {
+            const sellFields = document.getElementById('sellFields');
+            const repairFields = document.getElementById('repairFields');
+            const sellTab = document.getElementById('sellTab');
+            const repairTab = document.getElementById('repairTab');
+    
+            if (type === 'sell') {
+                sellFields.style.display = 'block';
+                repairFields.style.display = 'none';
+                sellTab.classList.add('active');
+                repairTab.classList.remove('active');
+            } else if (type === 'repair') {
+                sellFields.style.display = 'none';
+                repairFields.style.display = 'block';
+                sellTab.classList.remove('active');
+                repairTab.classList.add('active');
+            }
+        }
+    
+        // Fetch and display repair orders in the table
+        async function fetchRepairOrders() {
+            try {
+                const res = await fetch('/tt/repair');
+                const repairs = await res.json();
+                const repairList = document.getElementById('order-list');
+                repairList.innerHTML = '';
+    
+                repairs.forEach(repair => {
+                    const row = document.createElement('tr');
+    
+                    const orderIdCell = document.createElement('td');
+                    orderIdCell.textContent = repair.id || 'N/A';
+                    row.appendChild(orderIdCell);
+    
+                    const typeCell = document.createElement('td');
+                    typeCell.textContent = 'Repair Order';
+                    row.appendChild(typeCell);
+    
+                    const detailsCell = document.createElement('td');
+                    detailsCell.textContent = repair.name || 'Unnamed Product';
+                    row.appendChild(detailsCell);
+    
+                    const statusCell = document.createElement('td');
+                    statusCell.textContent = repair.status ? 'Completed' : 'Pending';
+                    row.appendChild(statusCell);
+    
+                    repairList.appendChild(row);
+                });
+            } catch (err) {
+                console.error('Error fetching repair orders:', err);
+            }
+        }
+    
+        // Handle form submission for repair orders
+        document.getElementById("orderForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
 
-    // Initial load
-    window.onload = function () {
-        fetchRepairOrders();
-    };
+            const isRepair = document.getElementById("repairTab").classList.contains("active");
+
+            // ✅ Disable hidden required fields to prevent validation errors
+            const sellFields = document.getElementById("sellFields");
+            sellFields.querySelectorAll("input").forEach(input => {
+                input.disabled = (sellFields.style.display === "none");
+            });
+
+            if (isRepair) {
+                const productId = document.getElementById("repair-product-id").value.trim();
+                const description = document.getElementById("repair-description").value.trim();
+                const price = document.getElementById("repair-price").value;
+
+                if (!productId || !description || !price) {
+                    alert("Please fill in all required fields.");
+                    return;
+                }
+
+    
+                try {
+                    const response = await fetch('/tt/repair/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: productId,
+                            description: description,
+                            price: parseFloat(price)
+                        }),
+                    });
+    
+                    const result = await response.json();
+    
+                    if (response.ok) {
+                        alert("Repair order added successfully.");
+                        showOrdersTable();
+                        fetchRepairOrders();
+                    } else {
+                        alert("Error: " + (result.error || response.statusText));
+                    }
+                } catch (err) {
+                    console.error("Submit failed:", err);
+                    alert("An unexpected error occurred.");
+                }
+            }
+    
+            // ✅ Optional: Re-enable the sell inputs if needed (e.g., for switching tabs again)
+            sellFields.querySelectorAll("input").forEach(input => {
+        input.disabled = false;
+    });
+        });
+    
+        // Initial load
+        window.onload = function () {
+            fetchRepairOrders();
+        };
     </script>
+    
     <!-- Scripts -->
 </body>
 
