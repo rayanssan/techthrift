@@ -213,13 +213,15 @@ app.get('/adminOrders', (req, res) => {
 
 // Authentication
 app.get('/authentication', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/authentication.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving authentication.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
+    const auth0Domain = "dev-1qdq127lj6aekksz.us.auth0.com"; 
+    const clientID = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const redirectUri = `${protocol}://${host}/`;
+
+    const loginUrl = `https://${auth0Domain}/authorize?response_type=token&client_id=${clientID}&redirect_uri=${redirectUri}&scope=openid profile email&connection=Username-Password-Authentication&prompt=login`;
+
+    res.redirect(loginUrl);
 });
 
 
