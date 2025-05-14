@@ -48,58 +48,134 @@ window.addEventListener('userAuthenticated', (event) => {
     return await productsResponse.json();
   }
 
-  // Periodically check for updates
-  setInterval(async () => {
+  const fetchUserNotifications = async () => {
     try {
       // Fetch user notifications
       const resUser = await fetch(`/ttuser/client/${loggedInUser.email}`);
       const user = await resUser.json();
-      let userReadNotifications = user.read_notifications;
       let userUnreadNotifications = user.unread_notifications;
 
-      // Fetch alerts from the server
-      const resAlertsList = await fetch(`/ttuser/interest/${loggedInUser.email}`);
-      const alertsList = await resAlertsList.json();
+      let wishlistButton = document.getElementById("wishlist");
+      if (!wishlistButton) return;
 
-      for (const alert of alertsList) {
-        const products = await getProductAlertResults(alert);
+      // Check if unread notifications exist
+      if (userUnreadNotifications && userUnreadNotifications !== 0) {
+        if (document.body.id != "wishlistPage") {
+          wishlistButton.classList.add("text-danger");
+        }
+        // Check if the badge already exists
+        let badge = document.getElementById('notification-badge');
 
-        if (products.length > userReadNotifications) {
-          // New products found
-          const newNotifications = products.length - userReadNotifications;
-          userUnreadNotifications += newNotifications;
+        if (!badge) {
+          // Create badge if it doesn't exist
+          badge = document.createElement('span');
+          badge.id = 'notification-badge';
+          badge.className = 'badge ms-2 rounded-pill bg-danger';
+          badge.style.zIndex = '1000';
+          badge.style = `width: 20px;
+          padding: 0;
+          height: 20px;
+          text-align: center;
+          align-content: center;`;
 
-          await fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ unread_notifications: userUnreadNotifications })
-          });
+          wishlistButton.appendChild(badge);
+        }
 
-          // Update notification badge on wishlist button
-          const wishlistButton = document.getElementById('wishlist');
-          if (wishlistButton) {
-            wishlistButton.insertAdjacentHTML('beforeend', `
-              <span class="badge bg-danger ms-2">${userUnreadNotifications}</span>
-            `);
+        // Update badge content
+        badge.textContent = userUnreadNotifications;
+
+        if (!localStorage.getItem("hide-product-alert-notification") ||
+          userUnreadNotifications > parseInt(localStorage.getItem("hide-product-alert-notification"))
+        ) {
+          // Show notification banner in the lower right corner if not already shown
+          if (!document.getElementById('notification-banner')) {
+            const banner = document.createElement('div');
+            banner.id = 'notification-banner';
+            banner.className = 'alert alert-primary position-fixed bottom-0 end-0 m-4 shadow';
+            banner.style.zIndex = '1050';
+            banner.innerHTML = `
+          <div class="d-flex align-content-center">
+            <strong class="align-self-center">🔔 ${userUnreadNotifications == 1 ?
+                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notification&nbsp;&nbsp;` :
+                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notifications&nbsp;&nbsp;`}
+            </strong>
+            <button type="button" class="btn-close ms-2" aria-label="Close"></button>
+          </div>
+          ${document.body.id == "wishlistPage" ? "" :
+                `<a class="btn btn-primary w-100 mt-3" 
+          onclick="document.getElementById('wishlist').href+='#alerts-section';
+          document.getElementById('wishlist').click();">Check Product Alerts</a>`}`;
+            document.body.appendChild(banner);
+            banner.querySelector('.btn-close').addEventListener('click', () => {
+              localStorage.setItem("hide-product-alert-notification", userUnreadNotifications);
+              banner.remove();
+            });
+          } else {
+            const banner = document.getElementById('notification-banner');
+            banner.innerHTML = `
+          <div class="d-flex align-content-center">
+            <strong class="align-self-center">🔔 ${userUnreadNotifications == 1 ?
+                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notification&nbsp;&nbsp;` :
+                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notifications&nbsp;&nbsp;`}
+            </strong>
+            <button type="button" class="btn-close ms-2" aria-label="Close"></button>
+          </div>
+          ${document.body.id == "wishlistPage" ? "" :
+                `<a class="btn btn-primary w-100 mt-3" 
+          onclick="onclick="document.getElementById('wishlist').href+='#alerts-section';
+          document.getElementById('wishlist').click()">Check Product Alerts</a>`}`;
+            banner.querySelector('.btn-close').addEventListener('click', () => {
+              localStorage.setItem("hide-product-alert-notification", userUnreadNotifications);
+              banner.remove();
+            });
           }
-        } else if (products.length < userReadNotifications) {
-          // Products were sold or removed
-          userReadNotifications = products.length;
-
-          await fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ unread_notifications: userUnreadNotifications })
-          });
+        }
+      } else {
+        // Remove badge if no unread notifications
+        const existingBadge = document.getElementById('notification-badge');
+        if (wishlistButton.classList.contains("text-danger")) {
+          wishlistButton.classList.remove("text-danger");
+        }
+        if (existingBadge) {
+          existingBadge.remove();
         }
       }
     } catch (error) {
       console.error('Error fetching or processing alerts:', error);
     }
+  }
+  fetchUserNotifications();
+
+  // Periodically check for updates
+  setInterval(async () => {
+    await fetchUserNotifications();
   }, 5000);
 
+  document.getElementById("wishlist").addEventListener("click", () => {
+    if (localStorage.getItem("hide-product-alert-notification")) {
+      localStorage.setItem("hide-product-alert-notification", "0");
+    }
+    fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        unread_notifications: 0
+      })
+    });
+  });
 
   if (document.body.id == "wishlistPage") {
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("hide-product-alert-notification", "0");
+
+      fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unread_notifications: 0 }),
+        keepalive: true
+      });
+    });
+
     document.getElementById("create-palert-button").addEventListener("click", () => {
       // Remove any existing modal
       const existingModal = document.getElementById("productAlertFormModal");
@@ -114,185 +190,185 @@ window.addEventListener('userAuthenticated', (event) => {
 
       // Modal content
       modal.innerHTML = `
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Create a Product Alert</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <h6>Add a Product Alert</h6>
-          <p>Enter the details of a product you're looking for. We will notify you if it becomes available.</p>
-          <form id="product-alert-form">
-            <div class="row g-3">
-              <!-- Brand -->
-              <div class="col-md-6">
-                <label for="watchBrand" class="form-label">Brand</label>
-                <input list="brandOptions" class="form-control" id="watchBrand" name="brand" required
-                placeholder="e.g. Apple">
-                <datalist id="brandOptions">
-                  <option value="Apple">
-                  <option value="Samsung">
-                  <option value="Dell">
-                  <option value="HP">
-                  <option value="Lenovo">
-                  <option value="ASUS">
-                  <option value="Sony">
-                  <option value="Microsoft">
-                  <option value="Google">
-                  <option value="LG">
-                  <option value="Canon">
-                  <option value="Nikon">
-                  <option value="Xiaomi">
-                  <option value="Huawei">
-                  <option value="Acer">
-                  <option value="Razer">
-                  <option value="Bose">
-                  <option value="JBL">
-                  <option value="OnePlus">
-                  <option value="Garmin">
-                  <option value="GoPro">
-                </datalist>
-              </div>
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create a Product Alert</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <h6>Add a Product Alert</h6>
+            <p>Enter the details of a product you're looking for. We will notify you if it becomes available.</p>
+            <form id="product-alert-form">
+              <div class="row g-3">
+                <!-- Brand -->
+                <div class="col-md-6">
+                  <label for="watchBrand" class="form-label">Brand</label>
+                  <input list="brandOptions" class="form-control" id="watchBrand" name="brand" required
+                  placeholder="e.g. Apple">
+                  <datalist id="brandOptions">
+                    <option value="Apple">
+                    <option value="Samsung">
+                    <option value="Dell">
+                    <option value="HP">
+                    <option value="Lenovo">
+                    <option value="ASUS">
+                    <option value="Sony">
+                    <option value="Microsoft">
+                    <option value="Google">
+                    <option value="LG">
+                    <option value="Canon">
+                    <option value="Nikon">
+                    <option value="Xiaomi">
+                    <option value="Huawei">
+                    <option value="Acer">
+                    <option value="Razer">
+                    <option value="Bose">
+                    <option value="JBL">
+                    <option value="OnePlus">
+                    <option value="Garmin">
+                    <option value="GoPro">
+                  </datalist>
+                </div>
 
-              <!-- Condition -->
-              <div class="col-md-6">
-                <label for="watchCondition" class="form-label">Condition</label>
-                <select class="form-select" id="watchCondition" name="product_condition">
-                  <option value="" selected>Any Condition</option>
-                  <option value="Like New">Like New</option>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Good">Good</option>
-                </select>
-              </div>
+                <!-- Condition -->
+                <div class="col-md-6">
+                  <label for="watchCondition" class="form-label">Condition</label>
+                  <select class="form-select" id="watchCondition" name="product_condition">
+                    <option value="" selected>Any Condition</option>
+                    <option value="Like New">Like New</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                  </select>
+                </div>
 
-              <!-- Product Model -->
-              <div class="col-md-6">
-                <label for="productNameOrModel" class="form-label">Product Model</label>
-                <input type="text" class="form-control" id="productModel" 
-                name="product_model" placeholder="e.g. Galaxy S21" required>
-              </div>
+                <!-- Product Model -->
+                <div class="col-md-6">
+                  <label for="productNameOrModel" class="form-label">Product Model</label>
+                  <input type="text" class="form-control" id="productModel" 
+                  name="product_model" placeholder="e.g. Galaxy S21" required>
+                </div>
 
-              <!-- Maximum Price -->
-              <div class="col-md-6">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <label for="maxPrice" class="form-label mb-0">Maximum Price</label>
-                  <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox" id="noLimitCheckbox" onchange="
-                      const priceInput = document.getElementById('maxPrice');
-                      if (this.checked) {
-                        priceInput.disabled = true;
-                        priceInput.removeAttribute('required');
-                        priceInput.value = '';
-                      } else {
-                        priceInput.disabled = false;
-                        priceInput.setAttribute('required', 'required');
-                      }
-                    ">
-                    <label class="form-check-label" for="noLimitCheckbox">No limit</label>
+                <!-- Maximum Price -->
+                <div class="col-md-6">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="maxPrice" class="form-label mb-0">Maximum Price</label>
+                    <div class="form-check mb-0">
+                      <input class="form-check-input" type="checkbox" id="noLimitCheckbox" onchange="
+                        const priceInput = document.getElementById('maxPrice');
+                        if (this.checked) {
+                          priceInput.disabled = true;
+                          priceInput.removeAttribute('required');
+                          priceInput.value = '';
+                        } else {
+                          priceInput.disabled = false;
+                          priceInput.setAttribute('required', 'required');
+                        }
+                      ">
+                      <label class="form-check-label" for="noLimitCheckbox">No limit</label>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <span class="input-group-text">€</span>
+                    <input type="number" class="form-control" 
+                    id="maxPrice" name="max_price" min="1" required placeholder="e.g. 500">
                   </div>
                 </div>
-                <div class="input-group">
-                  <span class="input-group-text">€</span>
-                  <input type="number" class="form-control" 
-                  id="maxPrice" name="max_price" min="1" required placeholder="e.g. 500">
+
+                <!-- Color -->
+                <div class="col-md-6">
+                    <label for="watchColor" class="form-label">Color</label>
+                    <input type="text" class="form-control" id="watchColor" name="color"
+                        placeholder="e.g. Silver">
                 </div>
-              </div>
 
-              <!-- Color -->
-              <div class="col-md-6">
-                  <label for="watchColor" class="form-label">Color</label>
-                  <input type="text" class="form-control" id="watchColor" name="color"
-                      placeholder="e.g. Silver">
-              </div>
+                <!-- Year -->
+                <div class="col-md-6">
+                    <label for="watchYear" class="form-label">Year</label>
+                    <input type="number" class="form-control" id="watchYear" name="year" min="1979"
+                        max="${new Date().getFullYear()}" step="1" inputmode="numeric" pattern="[0-9]{4}"
+                        oninput="this.value = this.value.slice(0, 4);"
+                        onkeydown="return event.keyCode !== 69 && event.keyCode !== 190 && 
+                        event.keyCode !== 187 && event.keyCode !== 189;"
+                        onpaste="return false;" placeholder="e.g. 2023">
+                </div>
 
-              <!-- Year -->
-              <div class="col-md-6">
-                  <label for="watchYear" class="form-label">Year</label>
-                  <input type="number" class="form-control" id="watchYear" name="year" min="1979"
-                      max="${new Date().getFullYear()}" step="1" inputmode="numeric" pattern="[0-9]{4}"
-                      oninput="this.value = this.value.slice(0, 4);"
-                      onkeydown="return event.keyCode !== 69 && event.keyCode !== 190 && 
-                      event.keyCode !== 187 && event.keyCode !== 189;"
-                      onpaste="return false;" placeholder="e.g. 2023">
-              </div>
-
-              <!-- Category -->
-              <div class="col-md-6 w-100">
-                <label for="watchCategory" class="form-label">Category</label>
-                <select class="form-select" id="watchCategory" name="category" required>
-                  <option selected disabled value="">Select a category</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Category-Specific Fields -->
-            <div id="categorySpecificFields" class="row g-3 mt-1">
-              <!-- Processor -->
-              <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
-                <label for="watchProcessor" class="form-label">Processor</label>
-                <input type="text" class="form-control" id="watchProcessor" name="processor"
-                placeholder="e.g. Apple A15, Intel i5">
-              </div>
-
-              <!-- Screen -->
-              <div class="col-md-6 conditional-field"
-                data-categories="TVs & Monitors,Smartphones,Laptops & PCs,Tablets">
-                <label for="watchScreen" class="form-label">Screen Size</label>
-                <input type="text" class="form-control" id="watchScreen" name="screen"
-                placeholder="e.g. 6.1&quot;, 15.6&quot;">
-              </div>
-
-              <!-- RAM -->
-              <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
-                <label for="watchRAM" class="form-label">RAM (GB)</label>
-                <input type="number" class="form-control" id="watchRAM" name="ram_memory" min="1" max="256"
-                placeholder="e.g. 16">
-              </div>
-
-              <!-- Graphics Card -->
-              <div class="col-md-6 conditional-field" data-categories="Laptops & PCs">
-                <label for="watchGraphics" class="form-label">Graphics Card</label>
-                <input type="text" class="form-control" id="watchGraphics" name="graphics_card"
-                placeholder="e.g. NVIDIA RTX 3060">
-              </div>
-
-              <!-- Storage -->
-              <div class="col-md-6 conditional-field"
-                data-categories="Smartphones,Laptops & PCs,Tablets,Gaming">
-                <label for="watchStorage" class="form-label">Storage</label>
-                <div class="input-group">
-                  <input type="number" class="form-control" id="watchStorage" name="storage" min="1"
-                  max="999" placeholder="e.g. 256">
-                  <select class="form-select" id="storageUnit"
-                  onchange="document.getElementById('watchStorage').placeholder = this.value === 'TB' ? 'e.g. 1' : 'e.g. 256'">
-                    <option value="GB" selected>GB</option>
-                    <option value="TB">TB</option>
+                <!-- Category -->
+                <div class="col-md-6 w-100">
+                  <label for="watchCategory" class="form-label">Category</label>
+                  <select class="form-select" id="watchCategory" name="category" required>
+                    <option selected disabled value="">Select a category</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Operating System -->
-              <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
-                  <label for="watchOS" class="form-label">Operating System</label>
-                  <input list="osOptions" class="form-control" id="watchOS" name="os"
-                  placeholder="e.g. Android, Windows">
-                  <datalist id="osOptions">
-                    <option value="Android">
-                    <option value="Windows">
-                    <option value="Linux">
-                  </datalist>
-              </div>
-            </div>
+              <!-- Category-Specific Fields -->
+              <div id="categorySpecificFields" class="row g-3 mt-1">
+                <!-- Processor -->
+                <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
+                  <label for="watchProcessor" class="form-label">Processor</label>
+                  <input type="text" class="form-control" id="watchProcessor" name="processor"
+                  placeholder="e.g. Apple A15, Intel i5">
+                </div>
 
-            <!-- Submit -->
-            <div class="mt-3 d-grid">
-              <button type="submit" class="btn btn-success" disabled>Create Product Alert</button>
-            </div>
-          </form>
+                <!-- Screen -->
+                <div class="col-md-6 conditional-field"
+                  data-categories="TVs & Monitors,Smartphones,Laptops & PCs,Tablets">
+                  <label for="watchScreen" class="form-label">Screen Size</label>
+                  <input type="text" class="form-control" id="watchScreen" name="screen"
+                  placeholder="e.g. 6.1&quot;, 15.6&quot;">
+                </div>
+
+                <!-- RAM -->
+                <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
+                  <label for="watchRAM" class="form-label">RAM (GB)</label>
+                  <input type="number" class="form-control" id="watchRAM" name="ram_memory" min="1" max="256"
+                  placeholder="e.g. 16">
+                </div>
+
+                <!-- Graphics Card -->
+                <div class="col-md-6 conditional-field" data-categories="Laptops & PCs">
+                  <label for="watchGraphics" class="form-label">Graphics Card</label>
+                  <input type="text" class="form-control" id="watchGraphics" name="graphics_card"
+                  placeholder="e.g. NVIDIA RTX 3060">
+                </div>
+
+                <!-- Storage -->
+                <div class="col-md-6 conditional-field"
+                  data-categories="Smartphones,Laptops & PCs,Tablets,Gaming">
+                  <label for="watchStorage" class="form-label">Storage</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="watchStorage" name="storage" min="1"
+                    max="999" placeholder="e.g. 256">
+                    <select class="form-select" id="storageUnit"
+                    onchange="document.getElementById('watchStorage').placeholder = this.value === 'TB' ? 'e.g. 1' : 'e.g. 256'">
+                      <option value="GB" selected>GB</option>
+                      <option value="TB">TB</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Operating System -->
+                <div class="col-md-6 conditional-field" data-categories="Smartphones,Laptops & PCs,Tablets">
+                    <label for="watchOS" class="form-label">Operating System</label>
+                    <input list="osOptions" class="form-control" id="watchOS" name="os"
+                    placeholder="e.g. Android, Windows">
+                    <datalist id="osOptions">
+                      <option value="Android">
+                      <option value="Windows">
+                      <option value="Linux">
+                    </datalist>
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <div class="mt-3 d-grid">
+                <button type="submit" class="btn btn-success" disabled>Create Product Alert</button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </div>`;
+      </div>`;
 
       // Append modal to body
       document.body.appendChild(modal);
@@ -401,54 +477,46 @@ window.addEventListener('userAuthenticated', (event) => {
           // Handle product alert creation
           const products = await getProductAlertResults(watchData);
 
-          await fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ read_notifications: products.length,
-              unread_notifications: 0
-             })
-          });
-
           let modalContent = `
-        <div class="modal-header">
-          <h5 class="modal-title">Product alert created!</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">`;
+          <div class="modal-header">
+            <h5 class="modal-title">Product alert created!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">`;
           if (products.length > 0) {
             modalContent += `
-          <p>We already found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
-          <div class="mt-3 border rounded overflow-auto">`;
+            <p>We already found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
+            <div class="mt-3 border rounded overflow-auto">`;
             products.forEach(product => {
               modalContent += `
-              <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
-                <div class="d-flex align-items-center gap-3 p-0 card-body">
-                  <img src="../media/images/products/${product.image}" alt="${product.name}" 
-                  class="card-img p-3 border-end rounded-0 product-image"
-                  style="
-                  max-width: 200px;
-                  aspect-ratio: 1;
-                  object-fit: contain;
-                  cursor: pointer;
-                  ">
-                  <div class="ml-3">
-                    <h5
-                    style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
-                    >${product.name} <i class="fa fa-angle-right"></i></h5>
-                    <p class="mb-2">${product.category}</p>
-                    <p><strong>Price:</strong> €${product.price}</p>
+                <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
+                  <div class="d-flex align-items-center gap-3 p-0 card-body">
+                    <img src="../media/images/products/${product.image}" alt="${product.name}" 
+                    class="card-img p-3 border-end rounded-0 product-image"
+                    style="
+                    max-width: 200px;
+                    aspect-ratio: 1;
+                    object-fit: contain;
+                    cursor: pointer;
+                    ">
+                    <div class="ml-3">
+                      <h5
+                      style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
+                      >${product.name} <i class="fa fa-angle-right"></i></h5>
+                      <p class="mb-2">${product.category}</p>
+                      <p><strong>Price:</strong> €${product.price}</p>
+                    </div>
                   </div>
-                </div>
-              </div>`;
+                </div>`;
             });
             modalContent += `</div>`;
           } else {
             modalContent += `<p class="mt-3">We will alert you when a matching product becomes available.</p>`;
           }
           modalContent += `</div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
-        </div>`;
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+          </div>`;
 
           // Show the modal with the content
           document.querySelector('#productAlertFormModal .modal-content').innerHTML = modalContent;
@@ -481,38 +549,39 @@ window.addEventListener('userAuthenticated', (event) => {
                 const wishlistedProductCount = data.count || 0;
 
                 const productHTML = `
-              <div class="wishlist-item card rounded-0 border-0 border-bottom" id="wishlist-item-${item.id}">
-                  <div class="d-flex align-items-center gap-3 p-0 card-body">
-                      <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
-                      onclick="window.location.href = 'product?is=${item.product_id}';"
-                      class="card-img p-3 border-end rounded-0 product-image"
-                      style="
-                      max-width: 200px;
-                      aspect-ratio: 1;
-                      object-fit: contain;
-                      cursor: pointer;
-                      ">
-                      <div class="ml-3">
-                          <h5 onclick="window.location.href = 'product?is=${item.product_id}';"
-                          style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
-                          >${item.product_name} <i class="fa fa-angle-right"></i></h5>
-                          <p class="mb-2">${item.category}</p>
-                          <p><strong>Price:</strong> €${item.price}</p>
-                          ${localStorage.getItem('cartProducts') &&
+                <div class="wishlist-item card rounded-0 border-0 border-bottom" 
+                id="wishlist-item-${item.id}">
+                    <div class="d-flex align-items-center gap-3 p-0 card-body">
+                        <img src="../media/images/products/${item.product_image}" alt="${item.product_name}" 
+                        onclick="window.location.href = 'product?is=${item.product_id}';"
+                        class="card-img p-3 border-end rounded-0 product-image"
+                        style="
+                        max-width: 200px;
+                        aspect-ratio: 1;
+                        object-fit: contain;
+                        cursor: pointer;
+                        ">
+                        <div class="ml-3">
+                            <h5 onclick="window.location.href = 'product?is=${item.product_id}';"
+                            style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
+                            >${item.product_name} <i class="fa fa-angle-right"></i></h5>
+                            <p class="mb-2">${item.category}</p>
+                            <p><strong>Price:</strong> €${item.price}</p>
+                            ${localStorage.getItem('cartProducts') &&
                     JSON.parse(localStorage.getItem('cartProducts')).includes(item.product_id) ?
                     `<a class="btn btn-success me-2 shadow disabled add-to-cart-button"
-                          data-product-id="${item.product_id}">In your cart</a>` :
+                            data-product-id="${item.product_id}">In your cart</a>` :
                     `<a class="btn btn-primary me-2 shadow add-to-cart-button"
-                          data-product-id="${item.product_id}">Add to cart</a>`}
-                          <button class="btn btn-danger btn-sm remove-from-wishlist" 
-                          data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
-                            Remove
-                          </button>
-                          <p class="mt-3"><i>${wishlistedProductCount == 1 ? `${wishlistedProductCount} person has` :
+                            data-product-id="${item.product_id}">Add to cart</a>`}
+                            <button class="btn btn-danger btn-sm remove-from-wishlist" 
+                            data-product-id="${item.product_id}" data-wishlist-entry-id="${item.id}">
+                              Remove
+                            </button>
+                            <p class="mt-3"><i>${wishlistedProductCount == 1 ? `${wishlistedProductCount} person has` :
                     `${wishlistedProductCount} people have`} this item in their wishlist.</i></p>
-                      </div>
-                  </div>
-              </div>`;
+                        </div>
+                    </div>
+                </div>`;
                 wishlistSection.insertAdjacentHTML('beforeend', productHTML);
 
                 // Add event listener for "Add to cart" button

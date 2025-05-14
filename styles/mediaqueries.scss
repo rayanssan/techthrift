@@ -1,10 +1,10 @@
-@media (1200px <= width <= 1400px) {
+@media (1200px <=width <=1400px) {
     #featuredContainer {
         zoom: 0.86;
     }
 }
 
-@media (1000px <= width <= 1200px) {
+@media (1000px <=width <=1200px) {
     #featuredContainer {
         zoom: 0.72;
     }
@@ -70,6 +70,17 @@
             input[type='range'] {
                 width: 100%;
             }
+        }
+    }
+
+    #cartPage {
+        overflow: auto !important;
+
+        #payment-section,
+        #cart-section {
+            max-height: unset !important;
+            min-height: unset !important;
+            overflow: unset !important;
         }
     }
 }

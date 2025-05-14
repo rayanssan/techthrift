@@ -4,82 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechThrift - Store Dashboard</title>
-    <!-- Bootstrap -->
+    <title>Admin Products</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Bootstrap -->
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
     <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
-    <!-- Font Awesome -->
-    <!-- Sidebar Script -->
     <script src="../scripts/sidebar.js"></script>
-    <!-- Sidebar Script -->
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
-    <!-- Stylesheets -->
-    <!-- Favicons -->
-    <link rel="icon" type="image/png" href="../media/images/favicon/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="../media/images/favicon/favicon.svg" />
-    <link rel="shortcut icon" href="../media/images/favicon/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="../media/images/favicon/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="TechThrift" />
-    <link rel="manifest" href="../media/images/favicon/site.webmanifest" />
-    <!-- Favicons -->
+    <link rel="stylesheet" href="../styles/adminstyles.css">
+
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="p-3 bg-white border-bottom">
-        <div class="d-flex justify-content-between container">
-            <div class="row align-items-center gap-3">
-                <!-- Left elements -->
-                <div class="col-lg-5 col-md-12 col-12 d-flex align-items-center">
-                    <a id="header-brand" href="/dashboardStore">
-                        <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
-                    </a>
-                </div>
-                <!-- Left elements -->
-            </div>
-            <a href="/authentication" id="username" class="border 
-            rounded py-1 px-3 nav-link d-flex h-auto
-            align-self-center
-            align-items-center btn btn-light">
-                <i class="fas fa-user-alt m-1 me-md-2"></i>
-                <p class="d-none d-md-block mb-0">···</p>
+    <style>
+        #dropzone:hover {
+    background-color: #f8f9fa;
+}
+
+    </style>
+    <div class="p-3 bg-white border-bottom">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a href="#" class="d-flex align-items-center">
+                <img src="../media/images/logo_hor.png" alt="Logo" height="40">
+            </a>
+            <a href="/authentication" class="btn btn-outline-dark d-flex align-items-center">
+                <i class="fas fa-user-alt me-2"></i> Sign in
             </a>
         </div>
-    </header>
-    <!-- Header -->
+    </div>
 
-    <!-- Store Dashboard -->
-    <div class="container mt-3 d-flex" style="min-height: 100vh;">
-        <div class="content container p-4" style="flex-grow: 1;">
-            <h2 class="pb-3">&lt;name of the store&gt; - Dashboard</h2>
-            <hr>
-            <div class="d-flex flex-column mb-2">
-                <div class="d-flex flex-row align-items-center justify-content-between mb-2">
-                    <h3>Transactions</h3>
-                    <button class="btn btn-secondary">See all transactions</button>
-                </div>
-                <p>Total revenue: &lt;...&gt;</p>
-                <p>Transactions in progress: &lt;...&gt;</p>
-                <p class="mb-2">&lt; more stats &gt;</p>
-            </div>
-            
-            <hr>
+    <div class="d-flex">
+        <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">
+            <h4 class="text-center">Admin Panel</h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminDashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark active" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark active" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="adminUsers"><i class="fas fa-users me-2"></i>Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="fas fa-cogs me-2"></i>Settings</a>
+                </li>
+            </ul>
+        </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-2" id="top-buttons">
-                <h3>Inventory of products</h3>
+        <div class="content p-4" style="flex-grow: 1;">
+            <div class="d-flex justify-content-between align-items-center mb-4" id="top-buttons">
+                <h2>Product List</h2>
                 <div>
                     <button class="btn btn-light" id="delete-selected">Delete Selected</button>
-                    <button class="btn btn-success" onclick="showAddProductForm()">Register Product</button>
+                    <button class="btn btn-success" onclick="showAddProductForm()">Add Product</button>
                 </div>
             </div>
 
-            <div class="row mb-2 justify-content-between" id="filters-row">
+            <div class="row mb-4 justify-content-between" id="filters-row">
                 <div class="col-md-4 mb-2">
                     <input type="text" id="search-bar" class="form-control" placeholder="Search products...">
                 </div>
@@ -117,7 +103,7 @@
 
             <div id="add-product-form" class="d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="mb-0">Add New Product</h3>
+                    <h2>Add New Product</h2>
                     <div>
                         <button class="btn btn-light me-2" onclick="hideAddProductForm()">Cancel</button>
                         <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
@@ -128,11 +114,12 @@
                     <div class="row">
                         <div class="col-md-4">
                             <label class="form-label">Product Images</label>
-                            <div id="dropzone" class="border border-secondary rounded p-0 text-center position-relative"
-                                style="height: auto;">
+                            <div id="dropzone" class="border border-secondary rounded p-0 text-center position-relative" style="height: auto;">
                                 <!-- This will be replaced dynamically -->
                             </div>
-
+                            
+                            
+                            
                         </div>
                         <div class="col-md-8">
                             <div class="mb-3">
@@ -140,17 +127,12 @@
                                 <input type="text" name="name" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Brand</label>
-                                <input type="text" name="brand" class="form-control" required>
+                                <label class="form-label">Store NIPC</label>
+                                <input type="text" name="store_nipc" class="form-control" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Condition</label>
-                                <select name="condition"class="form-select" required>
-                                    <option value="Like New">Like New</option>
-                                    <option value="Excellent">Excellent</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Needs Repair">Needs Repair"</option>
-                                </select>
+                                <input type="text" name="condition" class="form-control" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Availability</label>
@@ -163,129 +145,18 @@
                                 <label class="form-label">Category</label>
                                 <input type="text" name="category" class="form-control">
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Color</label>
-                                <input type="text" name="color" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Screen</label>
-                                <input type="text" name="screen" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Operating System (OS)</label>
-                                <input type="text" name="os" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Storage</label>
-                                <input type="text" name="storage" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Processor</label>
-                                <input type="text" name="processor" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Graphics Card</label>
-                                <input type="text" name="graphics_card" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">RAM Memory</label>
-                                <input type="text" name="ram_memory" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Year</label>
-                                <input type="text" name="year" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Keyboard</label>
-                                <input type="text" name="keyboard" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Dimensions</label>
-                                <input type="text" name="dimensions" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Weight</label>
-                                <input type="text" name="weight" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Model Code</label>
-                                <input type="text" name="model_code" class="form-control">
-                            </div>
                         </div>
                     </div>
                     <div class="mb-3 mt-4">
                         <label class="form-label">Description</label>
                         <textarea name="description" rows="5" class="form-control"></textarea>
                     </div>
-
+                    
                 </form>
-            </div>
-
-            <hr>
-
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h3>Inventory of repair parts</h3>
-                <div>
-                    <button class="btn btn-light">Delete Selected</button>
-                    <button class="btn btn-success" onclick="showAddProductForm()">Register repair part</button>
-                </div>
-            </div>
-
-            <div class="row mb-2 justify-content-between">
-                <div class="col-md-4 mb-2">
-                    <input type="text" class="form-control" placeholder="Search repair parts...">
-                </div>
-                <div class="col-md-7 d-flex justify-content-end align-items-center gap-3">
-                    <select class="form-select w-auto">
-                        <option value="">All Conditions</option>
-                    </select>
-                    <select class="form-select w-auto">
-                        <option value="">All Availability</option>
-                        <option value="true">Available</option>
-                        <option value="false">Unavailable</option>
-                    </select>
-                    <button class="btn btn-light">Filter</button>
-                </div>
-            </div>
-
-            <div class="table-responsive" id="repair-parts-table">
-                <div class="rounded-3 border overflow-hidden">
-                    <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
-                        <thead class="table-light">
-                            <tr>
-                                <th><input type="checkbox"></th>
-                                <th>Product ID</th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Category</th>
-                                <th>Condition</th>
-                                <th>Availability</th>
-                            </tr>
-                        </thead>
-                        <tbody id="repair-parts-list" class="animate-list"></tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>
-    <!-- Store Dashboard -->
 
-    <!-- Footer -->
-    <footer class="mt-5 border-top bottom-0" style="background-color: #f5f5f5;">
-        <div class="">
-            <div class="container">
-                <div class="d-flex justify-content-between py-4">
-                    <p class="mb-0">
-                        © 2025 Copyright: TechThrift.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </footer>
-    <!-- Footer -->
-
-    <!-- Scripts -->
-    <script src="../scripts/auth.js"></script>
     <script>
         function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
@@ -360,7 +231,7 @@
 
                     productContainer.appendChild(productRow);
                 });
-
+             
                 animateListItems('#product-list');
 
 
@@ -404,34 +275,34 @@
             </div>
             <div id="preview-container" class="d-flex flex-wrap gap-2 mt-3 justify-content-center"></div>
         `;
-            const fileInput = document.getElementById('fileInput');
-            const dropzoneBox = document.getElementById('dropzone-box');
-            const previewContainer = document.getElementById('preview-container');
+        const fileInput = document.getElementById('fileInput');
+        const dropzoneBox = document.getElementById('dropzone-box');
+        const previewContainer = document.getElementById('preview-container');
 
-            // Hook events after dropzone is inserted
-            dropzoneBox.addEventListener('click', () => fileInput.click());
+        // Hook events after dropzone is inserted
+        dropzoneBox.addEventListener('click', () => fileInput.click());
 
-            fileInput.addEventListener('change', (e) => {
-                updatePreview(e.target.files);
-            });
+        fileInput.addEventListener('change', (e) => {
+            updatePreview(e.target.files);
+        });
 
-            dropzoneBox.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropzoneBox.classList.add('bg-light');
-            });
+        dropzoneBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzoneBox.classList.add('bg-light');
+        });
 
-            dropzoneBox.addEventListener('dragleave', () => {
-                dropzoneBox.classList.remove('bg-light');
-            });
+        dropzoneBox.addEventListener('dragleave', () => {
+            dropzoneBox.classList.remove('bg-light');
+        });
 
-            dropzoneBox.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropzoneBox.classList.remove('bg-light');
-                fileInput.files = e.dataTransfer.files;
-                updatePreview(e.dataTransfer.files);
-            });
+        dropzoneBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzoneBox.classList.remove('bg-light');
+            fileInput.files = e.dataTransfer.files;
+            updatePreview(e.dataTransfer.files);
+        });
 
-
+       
         }
 
 
@@ -697,8 +568,7 @@
             });
         });
     </script>
-    <!-- Scripts -->
-
+    
 </body>
 
 </html>
