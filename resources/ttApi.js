@@ -5,9 +5,10 @@ const router = Router();
 // Import the db connection from dbConnection.js
 import { db, dbR } from './dbConnection.js';
 import path from 'path';
+import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-import { exposeApi } from '../techthrift.js'; 
+import { exposeApi } from '../techthrift.js';
 
 /**
  * Middleware to verify the origin or referer of incoming requests.
@@ -39,10 +40,10 @@ function verifyRequestOrigin(req, res, next) {
 
 // Get all products up for sale
 router.get('/tt', verifyRequestOrigin, (req, res) => {
-        const { name, condition, category, brand, color, processor,
-            storage, screen, os, year, maxPrice, store } = req.query;
+    const { name, condition, category, brand, color, processor,
+        storage, screen, os, year, maxPrice, store } = req.query;
 
-        let query = `SELECT p.*, sp.*, pi.image_path AS image, c.name AS store
+    let query = `SELECT p.*, sp.*, pi.image_path AS image, c.name AS store
         FROM saleProducts sp
         INNER JOIN products p ON p.id = sp.id
         INNER JOIN entities e ON p.store_nipc = e.nipc
@@ -50,171 +51,171 @@ router.get('/tt', verifyRequestOrigin, (req, res) => {
         LEFT JOIN productImages pi ON p.id = pi.product AND pi.image_order = 1 
         WHERE p.availability = 1 `;
 
-        let params = [];
+    let params = [];
 
-        if (name) {
-            query += ` AND p.name LIKE ?`;
-            params.push(`%${name}%`);
-        }
-        if (condition) {
-            query += ` AND p.product_condition = ?`;
-            params.push(condition);
-        }
-        if (category) {
-            query += ` AND p.category LIKE ?`;
-            params.push(`%${category}%`);
-        }
-        if (brand) {
-            query += ` AND p.brand LIKE ?`;
-            params.push(`%${brand}%`);
-        }
-        if (color) {
-            query += ` AND p.color LIKE ?`;
-            params.push(`%${color}%`);
-        }
-        if (processor) {
-            query += ` AND p.processor LIKE ?`;
-            params.push(`%${processor}%`);
-        }
-        if (storage) {
-            query += ` AND p.storage LIKE ?`;
-            params.push(`%${storage}%`);
-        }
-        if (screen) {
-            query += ` AND p.screen LIKE ?`;
-            params.push(`%${screen}%`);
-        }
-        if (os) {
-            query += ` AND p.os LIKE ?`;
-            params.push(`%${os}%`);
-        }
-        if (year) {
-            query += ` AND p.year = ?`;
-            params.push(year);
-        }
-        if (maxPrice) {
-            query += ` AND sp.price <= ?`;
-            params.push(maxPrice);
-        }
-        if (store) {
-            query += ' AND c.name LIKE ?';
-            params.push(`%${store}%`);
-        }
+    if (name) {
+        query += ` AND p.name LIKE ?`;
+        params.push(`%${name}%`);
+    }
+    if (condition) {
+        query += ` AND p.product_condition = ?`;
+        params.push(condition);
+    }
+    if (category) {
+        query += ` AND p.category LIKE ?`;
+        params.push(`%${category}%`);
+    }
+    if (brand) {
+        query += ` AND p.brand LIKE ?`;
+        params.push(`%${brand}%`);
+    }
+    if (color) {
+        query += ` AND p.color LIKE ?`;
+        params.push(`%${color}%`);
+    }
+    if (processor) {
+        query += ` AND p.processor LIKE ?`;
+        params.push(`%${processor}%`);
+    }
+    if (storage) {
+        query += ` AND p.storage LIKE ?`;
+        params.push(`%${storage}%`);
+    }
+    if (screen) {
+        query += ` AND p.screen LIKE ?`;
+        params.push(`%${screen}%`);
+    }
+    if (os) {
+        query += ` AND p.os LIKE ?`;
+        params.push(`%${os}%`);
+    }
+    if (year) {
+        query += ` AND p.year = ?`;
+        params.push(year);
+    }
+    if (maxPrice) {
+        query += ` AND sp.price <= ?`;
+        params.push(maxPrice);
+    }
+    if (store) {
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
+    }
 
-        db.query(query, params, (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(query, params, (replicaErr, replicaRows) => {
-                    if (replicaErr) {
-                        return res.status(500).json({ error: replicaErr.message });
-                    }
-                    res.json(replicaRows);
-                });
-            } else {
-                res.json(rows);
-            }
-        });
+    db.query(query, params, (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, params, (replicaErr, replicaRows) => {
+                if (replicaErr) {
+                    return res.status(500).json({ error: replicaErr.message });
+                }
+                res.json(replicaRows);
+            });
+        } else {
+            res.json(rows);
+        }
     });
+});
 
 // Get all products in the system
 router.get('/tt/product', verifyRequestOrigin, (req, res) => {
-        const { name, condition, category, brand, color, processor,
-            storage, os, year, availability, store } = req.query;
+    const { name, condition, category, brand, color, processor,
+        storage, os, year, availability, store } = req.query;
 
-        let query = `SELECT p.*, c.name AS store 
+    let query = `SELECT p.*, c.name AS store 
         FROM products p 
         INNER JOIN entities e ON p.store_nipc = e.nipc
         INNER JOIN clients c ON e.id = c.id WHERE 1=1`;
-        let params = [];
+    let params = [];
 
-        // Apply filters dynamically
-        if (name) {
-            query += ' AND p.name LIKE ?';
-            params.push(`%${name}%`);
-        }
-        if (condition) {
-            query += ' AND p.product_condition = ?';
-            params.push(condition);
-        }
-        if (category) {
-            query += ' AND p.category LIKE ?';
-            params.push(`%${category}%`);
-        }
-        if (brand) {
-            query += ' AND p.brand LIKE ?';
-            params.push(`%${brand}%`);
-        }
-        if (color) {
-            query += ' AND p.color LIKE ?';
-            params.push(`%${color}%`);
-        }
-        if (processor) {
-            query += ' AND p.processor LIKE ?';
-            params.push(`%${processor}%`);
-        }
-        if (storage) {
-            query += ' AND p.storage LIKE ?';
-            params.push(`%${storage}%`);
-        }
-        if (os) {
-            query += ' AND p.os LIKE ?';
-            params.push(`%${os}%`);
-        }
-        if (year) {
-            query += ' AND p.year = ?';
-            params.push(year);
-        }
-        if (availability) {
-            query += ' AND p.availability = ?';
-            params.push((availability === 'true' || availability === "1") ? 1 : 0);
-        }
-        if (store) {
-            query += ' AND c.name LIKE ?';
-            params.push(`%${store}%`);
-        }
+    // Apply filters dynamically
+    if (name) {
+        query += ' AND p.name LIKE ?';
+        params.push(`%${name}%`);
+    }
+    if (condition) {
+        query += ' AND p.product_condition = ?';
+        params.push(condition);
+    }
+    if (category) {
+        query += ' AND p.category LIKE ?';
+        params.push(`%${category}%`);
+    }
+    if (brand) {
+        query += ' AND p.brand LIKE ?';
+        params.push(`%${brand}%`);
+    }
+    if (color) {
+        query += ' AND p.color LIKE ?';
+        params.push(`%${color}%`);
+    }
+    if (processor) {
+        query += ' AND p.processor LIKE ?';
+        params.push(`%${processor}%`);
+    }
+    if (storage) {
+        query += ' AND p.storage LIKE ?';
+        params.push(`%${storage}%`);
+    }
+    if (os) {
+        query += ' AND p.os LIKE ?';
+        params.push(`%${os}%`);
+    }
+    if (year) {
+        query += ' AND p.year = ?';
+        params.push(year);
+    }
+    if (availability) {
+        query += ' AND p.availability = ?';
+        params.push((availability === 'true' || availability === "1") ? 1 : 0);
+    }
+    if (store) {
+        query += ' AND c.name LIKE ?';
+        params.push(`%${store}%`);
+    }
 
-        db.query(query, params, (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(query, params, (replicaErr, replicaRows) => {
-                    if (replicaErr) {
-                        return res.status(500).json({ error: replicaErr.message });
-                    }
-                    res.json(replicaRows);
-                });
-            } else {
-                res.json(rows);
-            }
-        });
+    db.query(query, params, (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, params, (replicaErr, replicaRows) => {
+                if (replicaErr) {
+                    return res.status(500).json({ error: replicaErr.message });
+                }
+                res.json(replicaRows);
+            });
+        } else {
+            res.json(rows);
+        }
     });
+});
 
 // Get details about a product
 router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
-        const { id } = req.params;
+    const { id } = req.params;
 
-        // Check if the product is in the saleProducts table
-        let isSaleProduct = false;
+    // Check if the product is in the saleProducts table
+    let isSaleProduct = false;
 
-        // Query to check if the product is in the saleProducts table
-        let checkSaleQuery = 'SELECT 1 FROM saleProducts WHERE id = ? LIMIT 1';
+    // Query to check if the product is in the saleProducts table
+    let checkSaleQuery = 'SELECT 1 FROM saleProducts WHERE id = ? LIMIT 1';
 
-        db.query(checkSaleQuery, [id], (err, result) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(checkSaleQuery, [id], (err, result) => {
-                    if (err) {
-                        return res.status(500).json({ error: err.message });
-                    }
-                    // If the product is found in the saleProducts table, set isSaleProduct to true
-                    isSaleProduct = result.length > 0;
+    db.query(checkSaleQuery, [id], (err, result) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(checkSaleQuery, [id], (err, result) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                // If the product is found in the saleProducts table, set isSaleProduct to true
+                isSaleProduct = result.length > 0;
 
-                    // Based on whether it's a sale product, modify the main query
-                    let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
+                // Based on whether it's a sale product, modify the main query
+                let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
                     products.id = productImages.product WHERE id = ?`;
-                    let params = [id];
+                let params = [id];
 
-                    if (isSaleProduct) {
-                        query = `
+                if (isSaleProduct) {
+                    query = `
                     SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
                     FROM products
                     JOIN saleProducts ON products.id = saleProducts.id
@@ -223,54 +224,10 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
                     JOIN clients ON entities.id = clients.id
                     WHERE products.id = ?;
                     `;
-                    }
-
-                    // Execute the final query
-                    dbR.query(query, params, (err, rows) => {
-                        if (err || rows.length === 0) {
-                            return res.status(404).send('Product not found');
-                        }
-                        // Create images object with keys as image_order and values as image_path
-                        const product = rows[0];
-                        const images = {};
-
-                        rows.forEach(row => {
-                            // Assign the image path to the key being the image_order
-                            images[row.image_order] = row.image_path;
-                        });
-
-                        // Build the response object
-                        const response = {
-                            ...product, // product info
-                            images: images // image info
-                        };
-
-                        res.json(response);
-                    });
-                });
-            } else {
-                // If the product is found in the saleProducts table, set isSaleProduct to true
-                isSaleProduct = result.length > 0;
-
-                // Based on whether it's a sale product, modify the main query
-                let query = `SELECT * FROM products LEFT JOIN productImages ON 
-                    products.id = productImages.product WHERE products.id = ?`;
-                let params = [id];
-
-                if (isSaleProduct) {
-                    query = `
-                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
-                FROM products
-                JOIN saleProducts ON products.id = saleProducts.id
-                LEFT JOIN productImages ON products.id = productImages.product
-                JOIN entities ON products.store_nipc = entities.nipc
-                JOIN clients ON entities.id = clients.id
-                WHERE products.id = ?;
-                `;
                 }
 
                 // Execute the final query
-                db.query(query, params, (err, rows) => {
+                dbR.query(query, params, (err, rows) => {
                     if (err || rows.length === 0) {
                         return res.status(404).send('Product not found');
                     }
@@ -284,18 +241,62 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
                     });
 
                     // Build the response object
-                    const { image_path, product: productId, image_order, ...filteredProduct } = product;
-
                     const response = {
-                        ...filteredProduct,
-                        images: images
+                        ...product, // product info
+                        images: images // image info
                     };
 
                     res.json(response);
                 });
+            });
+        } else {
+            // If the product is found in the saleProducts table, set isSaleProduct to true
+            isSaleProduct = result.length > 0;
+
+            // Based on whether it's a sale product, modify the main query
+            let query = `SELECT * FROM products LEFT JOIN productImages ON 
+                    products.id = productImages.product WHERE products.id = ?`;
+            let params = [id];
+
+            if (isSaleProduct) {
+                query = `
+                SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
+                FROM products
+                JOIN saleProducts ON products.id = saleProducts.id
+                LEFT JOIN productImages ON products.id = productImages.product
+                JOIN entities ON products.store_nipc = entities.nipc
+                JOIN clients ON entities.id = clients.id
+                WHERE products.id = ?;
+                `;
             }
-        });
+
+            // Execute the final query
+            db.query(query, params, (err, rows) => {
+                if (err || rows.length === 0) {
+                    return res.status(404).send('Product not found');
+                }
+                // Create images object with keys as image_order and values as image_path
+                const product = rows[0];
+                const images = {};
+
+                rows.forEach(row => {
+                    // Assign the image path to the key being the image_order
+                    images[row.image_order] = row.image_path;
+                });
+
+                // Build the response object
+                const { image_path, product: productId, image_order, ...filteredProduct } = product;
+
+                const response = {
+                    ...filteredProduct,
+                    images: images
+                };
+
+                res.json(response);
+            });
+        }
     });
+});
 
 // Add product
 router.post('/tt/add', verifyRequestOrigin, (req, res) => {
@@ -412,8 +413,8 @@ router.delete('/tt/remove/:id', (req, res) => {
             }
 
             // Also delete from replica
-            dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => {});
-            dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => {});
+            dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => { });
+            dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => { });
 
             res.status(200).send('Product and related images successfully removed');
         });
@@ -496,7 +497,7 @@ router.put('/tt/sale/remove/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Get all products up for repair
-router.get('/tt/repair', verifyRequestOrigin, 
+router.get('/tt/repair', verifyRequestOrigin,
     (req, res) => {
         const { name, category, condition, brand, color,
             processor, storage, os, year, store } = req.query;
@@ -569,7 +570,7 @@ router.get('/tt/repair', verifyRequestOrigin,
     });
 
 // Get details about a product up for repair
-router.get('/tt/repair/:id', verifyRequestOrigin, 
+router.get('/tt/repair/:id', verifyRequestOrigin,
     (req, res) => {
         db.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?',
             [req.params.id], (err, rows) => {
@@ -665,7 +666,7 @@ router.put('/tt/repair/remove/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Get all products up for donation
-router.get('/tt/donation', verifyRequestOrigin, 
+router.get('/tt/donation', verifyRequestOrigin,
     (req, res) => {
         const { name, category, condition, brand, color, processor,
             storage, os, year, store, charity } = req.query;
@@ -748,7 +749,7 @@ router.get('/tt/donation', verifyRequestOrigin,
     });
 
 // Get details about a product up for donation
-router.get('/tt/donation/:id', verifyRequestOrigin, 
+router.get('/tt/donation/:id', verifyRequestOrigin,
     (req, res) => {
         db.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?',
             [req.params.id], (err, rows) => {
@@ -850,7 +851,7 @@ router.put('/tt/donation/remove/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Get all categories
-router.get('/tt/categories', verifyRequestOrigin, 
+router.get('/tt/categories', verifyRequestOrigin,
     (req, res) => {
         db.query('SELECT * FROM categories', [], (err, rows) => {
             if (err) {
@@ -1926,7 +1927,7 @@ router.get('/ttuser/wishlist/count/:product_id', verifyRequestOrigin, (req, res)
 });
 
 // Get reports
-router.get('/ttuser/reports', verifyRequestOrigin, 
+router.get('/ttuser/reports', verifyRequestOrigin,
     (req, res) => {
         db.query('SELECT * FROM reports', [], (err, rows) => {
             if (err) {
@@ -1944,7 +1945,7 @@ router.get('/ttuser/reports', verifyRequestOrigin,
     });
 
 // Get details about a report
-router.get('/ttuser/reports/:id', verifyRequestOrigin, 
+router.get('/ttuser/reports/:id', verifyRequestOrigin,
     (req, res) => {
         db.query('SELECT * FROM reports WHERE id = ?', [req.params.id], (err, rows) => {
             if (err) {
@@ -1985,7 +1986,7 @@ router.post('/ttuser/reports/add', verifyRequestOrigin, (req, res) => {
 
 // Get sale transactions
 router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
-        const query = `
+    const query = `
         SELECT 
             t.*, 
             s.is_online, 
@@ -2003,172 +2004,172 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
         INNER JOIN soldProducts sp ON s.transaction_id = sp.sale_id
         INNER JOIN products p ON sp.product_id = p.id
     `;
-        const groupSales = (rows) => {
-            const salesMap = new Map();
+    const groupSales = (rows) => {
+        const salesMap = new Map();
 
-            rows.forEach(row => {
-                if (!salesMap.has(row.id)) {
-                    salesMap.set(row.id, {
-                        id: row.id,
-                        client: row.client,
-                        transaction_value: row.transaction_value,
-                        date_inserted: row.date_inserted,
-                        is_online: row.is_online,
-                        order_number: row.order_number,
-                        overseeing_employee: row.employee,
-                        store_of_sale: row.store,
-                        shipping_address: row.shipping_address,
-                        shipping_postal_code: row.shipping_postal_code,
-                        shipping_city: row.shipping_city,
-                        shipping_country: row.shipping_country,
-                        sold_products: []
-                    });
-                }
-
-                const sale = salesMap.get(row.id);
-
-                sale.sold_products.push({
-                    id: row.product_id,
-                    name: row.product_name
+        rows.forEach(row => {
+            if (!salesMap.has(row.id)) {
+                salesMap.set(row.id, {
+                    id: row.id,
+                    client: row.client,
+                    transaction_value: row.transaction_value,
+                    date_inserted: row.date_inserted,
+                    is_online: row.is_online,
+                    order_number: row.order_number,
+                    overseeing_employee: row.employee,
+                    store_of_sale: row.store,
+                    shipping_address: row.shipping_address,
+                    shipping_postal_code: row.shipping_postal_code,
+                    shipping_city: row.shipping_city,
+                    shipping_country: row.shipping_country,
+                    sold_products: []
                 });
+            }
+
+            const sale = salesMap.get(row.id);
+
+            sale.sold_products.push({
+                id: row.product_id,
+                name: row.product_name
             });
+        });
 
-            return Array.from(salesMap.values());
-        }
-        db.query(query, [], (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(query, [], (err, rows) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    const result = groupSales(rows);
-                    res.json(result);
-                });
-            } else {
+        return Array.from(salesMap.values());
+    }
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
                 const result = groupSales(rows);
                 res.json(result);
-            }
-        });
+            });
+        } else {
+            const result = groupSales(rows);
+            res.json(result);
+        }
     });
+});
 
 // Add sale transaction
 router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
-        let { client, transaction_value, is_online, order_number,
-            employee, store, shipping_address, shipping_postal_code,
-            shipping_city, shipping_country, products } = req.body;
+    let { client, transaction_value, is_online, order_number,
+        employee, store, shipping_address, shipping_postal_code,
+        shipping_city, shipping_country, products } = req.body;
 
-        if (!client || !transaction_value ||
-            typeof is_online !== 'boolean' || !Array.isArray(products)) {
-            return res.status(400).send({ error: 'Missing required fields' });
-        }
+    if (!client || !transaction_value ||
+        typeof is_online !== 'boolean' || !Array.isArray(products)) {
+        return res.status(400).send({ error: 'Missing required fields' });
+    }
 
-        const transactionQuery = `
+    const transactionQuery = `
         INSERT INTO transactions (client, transaction_value)
         VALUES (?, ?)
     `;
 
-        const saleQuery = `
+    const saleQuery = `
         INSERT INTO sales (transaction_id, is_online, order_number, employee, store, 
         shipping_address, shipping_postal_code, shipping_city, shipping_country)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-        const soldProductsQuery = `
+    const soldProductsQuery = `
         INSERT INTO soldProducts (product_id, sale_id)
         VALUES ?
     `;
 
-        const productsQuery = `
+    const productsQuery = `
         UPDATE products SET availability = 0 WHERE id = ?
     `;
 
-        // Insert transaction
-        db.query(transactionQuery, [client, transaction_value], (err, result) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send({ error: err.message });
-            }
+    // Insert transaction
+    db.query(transactionQuery, [client, transaction_value], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send({ error: err.message });
+        }
 
-            const transactionId = result.insertId;
-            if (order_number == "APPLE-PAY-") {
-                order_number += transactionId;
-            }
+        const transactionId = result.insertId;
+        if (order_number == "APPLE-PAY-") {
+            order_number += transactionId;
+        }
 
-            db.query(saleQuery,
-                [transactionId, is_online, order_number, employee, store, shipping_address,
-                    shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+        db.query(saleQuery,
+            [transactionId, is_online, order_number, employee, store, shipping_address,
+                shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send({ error: err.message });
+                    }
+
+                    // Insert sold products
+                    if (products.length === 0) {
+                        return res.status(400).send({ error: 'No products provided' });
+                    }
+
+                    const soldProductsData = products.map(productId => [productId, transactionId]);
+
+                    db.query(soldProductsQuery, [soldProductsData], (err) => {
                         if (err) {
                             console.error(err);
                             return res.status(500).send({ error: err.message });
                         }
 
-                        // Insert sold products
-                        if (products.length === 0) {
-                            return res.status(400).send({ error: 'No products provided' });
-                        }
+                        // Update availability of sold products
+                        products.forEach(productId => {
+                            db.query(productsQuery, [productId], (err) => {
+                                if (err) console.error('Product update error:', err.message);
+                            });
+                        });
 
-                        const soldProductsData = products.map(productId => [productId, transactionId]);
-
-                        db.query(soldProductsQuery, [soldProductsData], (err) => {
+                        // Update replica
+                        dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
                             if (err) {
                                 console.error(err);
                                 return res.status(500).send({ error: err.message });
                             }
 
-                            // Update availability of sold products
-                            products.forEach(productId => {
-                                db.query(productsQuery, [productId], (err) => {
-                                    if (err) console.error('Product update error:', err.message);
-                                });
-                            });
+                            const transactionId = result.insertId;
 
-                            // Update replica
-                            dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
-                                if (err) {
-                                    console.error(err);
-                                    return res.status(500).send({ error: err.message });
-                                }
+                            // Insert into sales
+                            dbR.query(saleQuery,
+                                [transactionId, is_online, order_number, employee, store, shipping_address,
+                                    shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+                                        if (err) {
+                                            console.error(err);
+                                            return res.status(500).send({ error: err.message });
+                                        }
 
-                                const transactionId = result.insertId;
+                                        // Insert sold products
+                                        if (products.length === 0) {
+                                            return res.status(400).send({ error: 'No products provided' });
+                                        }
 
-                                // Insert into sales
-                                dbR.query(saleQuery,
-                                    [transactionId, is_online, order_number, employee, store, shipping_address,
-                                        shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+                                        const soldProductsData = products.map(productId => [productId, transactionId]);
+
+                                        dbR.query(soldProductsQuery, [soldProductsData], (err) => {
                                             if (err) {
                                                 console.error(err);
                                                 return res.status(500).send({ error: err.message });
                                             }
 
-                                            // Insert sold products
-                                            if (products.length === 0) {
-                                                return res.status(400).send({ error: 'No products provided' });
-                                            }
-
-                                            const soldProductsData = products.map(productId => [productId, transactionId]);
-
-                                            dbR.query(soldProductsQuery, [soldProductsData], (err) => {
-                                                if (err) {
-                                                    console.error(err);
-                                                    return res.status(500).send({ error: err.message });
-                                                }
-
-                                                // Update availability of sold products
-                                                products.forEach(productId => {
-                                                    dbR.query(productsQuery, [productId], (err) => {
-                                                        if (err) console.error('Product update error:', err.message);
-                                                    });
+                                            // Update availability of sold products
+                                            products.forEach(productId => {
+                                                dbR.query(productsQuery, [productId], (err) => {
+                                                    if (err) console.error('Product update error:', err.message);
                                                 });
                                             });
                                         });
-                            });
-
-                            res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+                                    });
                         });
+
+                        res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
                     });
-        });
+                });
     });
+});
 
 // Check availability of products
 router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, res) => {
@@ -2196,76 +2197,89 @@ router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, re
 
 // Get repair transactions
 router.get('/tttransaction/repairs', verifyRequestOrigin, (req, res) => {
-        const query = `SELECT * FROM transactions t 
+    const query = `SELECT * FROM transactions t 
     INNER JOIN repairs r ON r.transaction_id = t.id`
-        db.query(query, [], (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(query, [], (err, rows) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    res.json(rows);
-                });
-            } else {
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
                 res.json(rows);
-            }
-        });
+            });
+        } else {
+            res.json(rows);
+        }
     });
+});
 
 
 // Get donation transactions
 router.get('/tttransaction/donations', verifyRequestOrigin, (req, res) => {
-        const query = `SELECT * FROM transactions t 
+    const query = `SELECT * FROM transactions t 
     INNER JOIN donations ON d.transaction_id = t.id`
-        db.query(query, [], (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(query, [], (err, rows) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    res.json(rows);
-                });
-            } else {
-                res.json(rows);
-            }
-        });
-    });
-
-// Get shipping costs
-router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {
-        db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    res.json(rows[0]);
-                });
-            } else {
-                res.json(rows[0]);
-            }
-        });
-    });
-
-// Update shipping costs
-router.get('/tttransaction/shipping/update/:newCost', verifyRequestOrigin, (req, res) => {
-        const shipping_cost = req.params.newCost;
-        db.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            // Update replica
-            dbR.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
+    db.query(query, [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }
+                res.json(rows);
             });
-            res.status(200).send('Shipping costs successfully updated');
-        });
+        } else {
+            res.json(rows);
+        }
     });
+});
+
+// Get shipping costs
+router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {
+    db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows[0]);
+            });
+        } else {
+            res.json(rows[0]);
+        }
+    });
+});
+
+// Update shipping costs
+router.get('/tttransaction/shipping/update/:newCost', verifyRequestOrigin, (req, res) => {
+    const shipping_cost = req.params.newCost;
+    db.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
+        if (err) {
+            return res.status(500).send({ error: err.message });
+        }
+        // Update replica
+        dbR.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
+            if (err) {
+                return res.status(500).send({ error: err.message });
+            }
+        });
+        res.status(200).send('Shipping costs successfully updated');
+    });
+});
+
+// Nominatim OpenStreetMap API
+router.get("/geocode", verifyRequestOrigin, async (req, res) => {
+    const query = req.query.q;
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err.message);
+    }
+});
 
 // Add notification to user (FOR TESTING ONLY, WILL BE REMOVED)
 // Instead use `/ttuser/client/edit/:id`

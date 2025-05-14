@@ -2,7 +2,6 @@
 
 import express from 'express';
 import path from 'path';
-import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
@@ -74,16 +73,6 @@ app.get(['/homepage', '/'], (req, res) => {
     res.sendFile(pagePath, (err) => {
         if (err) {
             console.error('Error serving homepage.html:', err);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-});
-// help
-app.get('/help', (req, res) => {
-    const pagePath = path.join(__dirname, 'html/help.html');
-    res.sendFile(pagePath, (err) => {
-        if (err) {
-            console.error('Error serving help.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -166,6 +155,17 @@ app.get('/store', (req, res) => {
     });
 });
 
+// Help
+app.get('/help', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/help.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving help.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 // Partners
 app.get('/partners', (req, res) => {
     const pagePath = path.join(__dirname, 'html/partners.html');
@@ -243,18 +243,4 @@ app.get('/authentication', (req, res) => {
     const loginUrl = `https://${auth0Domain}/authorize?response_type=token&client_id=${clientID}&redirect_uri=${redirectUri}&scope=openid profile email&connection=Username-Password-Authentication&prompt=login`;
 
     res.redirect(loginUrl);
-});
-
-
-// Nominatim OpenStreetMap API
-app.get("/geocode", async (req, res) => {
-    const query = req.query.q;
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-        const data = await response.json();
-        res.json(data);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(err.message);
-    }
 });
