@@ -4,17 +4,17 @@ import { Router } from 'express';
 const router = Router();
 import { createConnection } from 'mysql2';
 const connection = {
-    host: '0.0.0.0',
-    user: 'root',
-    password: '',
-    database: 'tt_database',
+    host: '10.0.1.6',
+    user: 'techthrift',
+    password: '123',
+    database: 'db',
     multipleStatements: true
 };
 const connectionReplica = {
-    host: '0.0.0.0',
-    user: 'root',
-    password: '',
-    database: 'tt_database_replica',
+    host: '10.0.1.6',
+    user: 'techthrift',
+    password: '123',
+    database: 'db',
     multipleStatements: true
 };
 
