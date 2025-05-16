@@ -43,27 +43,6 @@ dbReady.then((isConnected) => {
                 console.log(`Server is running on http://0.0.0.0:${PORT}`);
             });
         }
-    } else {
-        exec('node resources/dbCreate.js', (err, stdout, stderr) => {
-            if (err) {
-                console.error(`Error creating database: ${stderr}`);
-                return;
-            }
-            console.log(stdout);
-            console.log('Connected to the TechThrift database.');
-            // Restart the techthrift.js script after dbCreate.js is executed
-            if (process.argv.includes("-https")) {
-                console.log(`Server is running on https://0.0.0.0:${PORT}`);
-                exec('node techthrift.js -https', () => {
-                    process.exit(0); // Exit the current process after restarting    
-                });
-            } else {
-                console.log(`Server is running on http://0.0.0.0:${PORT}`);
-                exec('node techthrift.js', () => {
-                    process.exit(0); // Exit the current process after restarting    
-                });
-            }
-        })
     }
 });
 
