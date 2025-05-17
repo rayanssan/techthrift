@@ -304,18 +304,53 @@ let totalPrice = 0;
 
 
 const categoryFieldMap = {
-    'Smartphones': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage',  'os', 'year'],
-    'Laptops & PCs': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
-    'Smartwatches': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'os', 'year'],
-    'Gaming': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
-    'TVs & Monitors': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
-    'Audio': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions',   'year'],
-    'Tablets': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage',  'os', 'year'],
-    'Cameras': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'storage', 'os', 'year'],
-    'Accessories': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
-    'Home Appliances': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
-    'Other': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year']
+  'Smartphones': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'storage', 'os', 'year'
+  ],
+  'Laptops & PCs': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card',
+    'storage', 'keyboard', 'os', 'year'
+  ],
+  'Smartwatches': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Gaming': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'storage', 'year'
+  ],
+  'TVs & Monitors': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'screen', 'year'
+  ],
+  'Audio': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Tablets': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'storage', 'os', 'year'
+  ],
+  'Cameras': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'storage', 'os', 'year'
+  ],
+  'Accessories': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Home Appliances': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Other': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ]
 };
+
 
 
 
