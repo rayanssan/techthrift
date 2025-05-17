@@ -7,6 +7,8 @@ import { router as dbConnection, dbReady } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
 import https from 'https';
 import fs from 'fs';
+import pkg from 'pdfkit';
+const PDFDocument = pkg;
 const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -208,6 +210,44 @@ app.get('/adminOrders', (req, res) => {
             res.status(500).send('Internal Server Error');
         }
     });
+});
+
+app.get('/reports', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(`
+        <html>
+            <head>
+                <script>
+                    alert("login");
+                    setTimeout(() => {
+                        window.location.href = "/report";
+                    }, 5000); // 5 seconds
+                </script>
+            </head>
+            <body>
+                <h1>Redirecting to report in 5 seconds...</h1>
+            </body>
+        </html>
+    `);
+});
+
+// Reports
+app.get('/report', (req, res) => {
+    // Create a new PDF document
+    const doc = new PDFDocument();
+
+    // Set the response headers to tell the browser it's a PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="report.pdf"');
+
+    // Pipe the PDF into the response
+    doc.pipe(res);
+
+    // Add some content to the PDF
+    doc.fontSize(25).text('Hello, World!', 100, 100);
+
+    // Finalize the PDF and end the stream
+    doc.end();
 });
 
 // Authentication
