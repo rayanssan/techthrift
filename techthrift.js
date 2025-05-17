@@ -3,7 +3,6 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { exec } from 'child_process';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
 import https from 'https';
