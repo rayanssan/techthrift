@@ -146,130 +146,151 @@
                 </div>
             
                 <form id="productForm" enctype="multipart/form-data">
-                    <div class="row">
-                        <!-- SPLIT: TWO-COLUMN LAYOUT -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="product-name" class="form-label">Product Name</label>
-                                <input type="text" id="product-name" name="name" class="form-control" required>
-                            </div>
+    <div class="row">
+        <!-- COLUNA ESQUERDA -->
+        <div class="col-md-6">
+            <div class="mb-3" id="form-group-name">
+                <label for="product-name" class="form-label">Product Name</label>
+                <input type="text" id="product-name" name="name" class="form-control" required>
+            </div>
 
-                            <div class="mb-3">
-                                <label for="product-condition" class="form-label">Condition</label>
-                                <select id="product-condition" name="product_condition" class="form-select" required>
-                                    <option>Like New</option>
-                                    <option>Excellent</option>
-                                    <option>Good</option>
-                                    <option>Needs Repair</option>
-                                </select>
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-availability" class="form-label">Availability (number of units)</label>
-                                <input type="number" id="product-availability" name="availability" class="form-control" required min="0">
-                            </div>
-                            
-            
-                            <div class="mb-3">
-                                <label for="product-category" class="form-label">Category</label>
-                                <select id="product-category" name="category" class="form-select" required>
-                                    <option>Smartphones</option>
-                                    <option>Laptops & PCs</option>
-                                    <option>Smartwatches</option>
-                                    <option>Gaming</option>
-                                    <option>TVs & Monitors</option>
-                                    <option>Audio</option>
-                                    <option>Tablets</option>
-                                    <option>Cameras</option>
-                                    <option>Accessories</option>
-                                    <option>Home Appliances</option>
-                                    <option>Other</option>
-                                </select>
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-brand" class="form-label">Brand</label>
-                                <input type="text" id="product-brand" name="brand" class="form-control" required>
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-model-code" class="form-label">Model Code</label>
-                                <input type="text" id="product-model-code" name="model_code" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-color" class="form-label">Color</label>
-                                <input type="text" id="product-color" name="color" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-weight" class="form-label">Weight (kg)</label>
-                                <input type="number" id="product-weight" name="weight" class="form-control" step="0.01">
-                            </div>
-                        </div>
-            
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="product-dimensions" class="form-label">Dimensions</label>
-                                <input type="text" id="product-dimensions" name="dimensions" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-processor" class="form-label">Processor</label>
-                                <input type="text" id="product-processor" name="processor" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-screen" class="form-label">Screen</label>
-                                <input type="text" id="product-screen" name="screen" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-ram" class="form-label">RAM Memory</label>
-                                <input type="text" id="product-ram" name="ram" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-graphics" class="form-label">Graphics Card</label>
-                                <input type="text" id="product-graphics" name="graphics" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-storage" class="form-label">Storage</label>
-                                <input type="text" id="product-storage" name="storage" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-keyboard" class="form-label">Keyboard</label>
-                                <input type="text" id="product-keyboard" name="keyboard" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-os" class="form-label">Operating System</label>
-                                <input type="text" id="product-os" name="os" class="form-control">
-                            </div>
-            
-                            <div class="mb-3">
-                                <label for="product-year" class="form-label">Manufacture Year</label>
-                                <input type="number" id="product-year" name="year" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-            
-                    <!-- FULL WIDTH: DESCRIPTION -->
-                    <div class="mb-3 mt-4">
-                        <label for="product-description" class="form-label">Description</label>
-                        <textarea id="product-description" name="description" rows="5" class="form-control" placeholder="Enter Description" required></textarea>
-                    </div>
-            
-                    <!-- FULL WIDTH: IMAGE UPLOAD -->
-                    <div class="mb-4">
-                        <label for="product-images" class="form-label">Product Images</label>
-                        <div id="product-images" class="border border-secondary rounded p-3">
-                            <!-- Image upload inputs are dynamically inserted here -->
-                        </div>
-                    </div>
-                </form>
+            <div class="mb-3">
+                <label for="product-condition" class="form-label">Condition</label>
+                <select id="product-condition" name="product_condition" class="form-select" required>
+                    <option>Like New</option>
+                    <option>Excellent</option>
+                    <option>Good</option>
+                    <option>Needs Repair</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="product-availability" class="form-label">Availability</label>
+                <select id="product-availability" name="availability" class="form-select" required>
+                    <option value="1">Available</option>
+                    <option value="0">Not Available</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="product-category" class="form-label">Category</label>
+                <select id="product-category" name="category" class="form-select" required>
+                    <option>Smartphones</option>
+                    <option>Laptops & PCs</option>
+                    <option>Smartwatches</option>
+                    <option>Gaming</option>
+                    <option>TVs & Monitors</option>
+                    <option>Audio</option>
+                    <option>Tablets</option>
+                    <option>Cameras</option>
+                    <option>Accessories</option>
+                    <option>Home Appliances</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="product-brand" class="form-label">Brand</label>
+                <select id="product-brand" name="brand" class="form-select" required>
+                    <option disabled selected>Select a brand</option>
+                    <option>Apple</option>
+                    <option>Samsung</option>
+                    <option>Dell</option>
+                    <option>HP</option>
+                    <option>Microsoft</option>
+                    <option>Xiaomi</option>
+                    <option>LG</option>
+                    <option>Sony</option>
+                    <option>Fitbit</option>
+                    <option>Nintendo</option>
+                    <option>Razer</option>
+                    <option>Bose</option>
+                    <option>GoPro</option>
+                    <option>Canon</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="form-group-model_code">
+                <label for="product-model-code" class="form-label">Model Code</label>
+                <input type="text" id="product-model-code" name="model_code" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-color">
+                <label for="product-color" class="form-label">Color</label>
+                <input type="text" id="product-color" name="color" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-weight">
+                <label for="product-weight" class="form-label">Weight (kg)</label>
+                <input type="number" id="product-weight" name="weight" class="form-control" step="0.01">
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA -->
+        <div class="col-md-6">
+            <div class="mb-3" id="form-group-dimensions">
+                <label for="product-dimensions" class="form-label">Dimensions</label>
+                <input type="text" id="product-dimensions" name="dimensions" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-processor">
+                <label for="product-processor" class="form-label">Processor</label>
+                <input type="text" id="product-processor" name="processor" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-screen">
+                <label for="product-screen" class="form-label">Screen</label>
+                <input type="text" id="product-screen" name="screen" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-ram_memory">
+                <label for="product-ram" class="form-label">RAM Memory</label>
+                <input type="text" id="product-ram" name="ram_memory" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-graphics_card">
+                <label for="product-graphics" class="form-label">Graphics Card</label>
+                <input type="text" id="product-graphics" name="graphics_card" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-storage">
+                <label for="product-storage" class="form-label">Storage</label>
+                <input type="text" id="product-storage" name="storage" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-keyboard">
+                <label for="product-keyboard" class="form-label">Keyboard</label>
+                <input type="text" id="product-keyboard" name="keyboard" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-os">
+                <label for="product-os" class="form-label">Operating System</label>
+                <input type="text" id="product-os" name="os" class="form-control">
+            </div>
+
+            <div class="mb-3" id="form-group-year">
+                <label for="product-year" class="form-label">Manufacture Year</label>
+                <input type="number" id="product-year" name="year" class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <!-- DESCRIÇÃO -->
+    <div class="mb-3 mt-4">
+        <label for="product-description" class="form-label">Description</label>
+        <textarea id="product-description" name="description" rows="5" class="form-control" placeholder="Enter Description" required></textarea>
+    </div>
+
+    <!-- IMAGENS -->
+    <div class="mb-4">
+        <label for="product-images" class="form-label">Product Images</label>
+        <div id="product-images" class="border border-secondary rounded p-3">
+            <!-- Image upload inputs are dynamically inserted here -->
+        </div>
+    </div>
+</form>
+
             </div>
             
             </div>
@@ -280,6 +301,71 @@
     <script>
 let productList = []; // Persist across modal openings
 let totalPrice = 0;
+
+
+const categoryFieldMap = {
+    'Smartphones': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage',  'os', 'year'],
+    'Laptops & PCs': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
+    'Smartwatches': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'os', 'year'],
+    'Gaming': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
+    'TVs & Monitors': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
+    'Audio': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions',   'year'],
+    'Tablets': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage',  'os', 'year'],
+    'Cameras': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'storage', 'os', 'year'],
+    'Accessories': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
+    'Home Appliances': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'],
+    'Other': ['name','product_condition','availability','brand', 'model_code', 'color', 'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year']
+};
+
+
+
+
+function updateVisibleFields(category) {
+    const allFields = [
+  'name',
+  'product_condition',
+  'availability',
+  'category',
+  'brand',
+  'model_code',
+  'color',
+  'weight',
+  'dimensions',
+  'processor',
+  'screen',
+  'ram_memory',
+  'graphics_card',
+  'storage',
+  'keyboard',
+  'os',
+  'year'
+];
+
+
+    allFields.forEach(field => {
+        const group = document.getElementById(`form-group-${field}`);
+        if (group) group.classList.add('d-none');
+    });
+
+    const visibleFields = categoryFieldMap[category] || [];
+    visibleFields.forEach(field => {
+        const group = document.getElementById(`form-group-${field}`);
+        if (group) group.classList.remove('d-none');
+    });
+}
+
+
+
+document.getElementById('product-category').addEventListener('change', function () {
+    const selectedCategory = this.value;
+    updateVisibleFields(selectedCategory);
+});
+
+// Inicializa no carregamento
+const initialCategory = document.getElementById('product-category').value;
+updateVisibleFields(initialCategory);
+
+
 
 document.getElementById("register-sale").addEventListener("click", async () => {
     const selectedProducts = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
