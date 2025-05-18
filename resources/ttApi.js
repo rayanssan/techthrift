@@ -810,6 +810,7 @@ router.put('/tt/donation/remove/:id', (req, res) => {
     });
 });
 
+
 // Get all categories
 router.get('/tt/categories', (req, res) => {
     db.query('SELECT * FROM categories', [], (err, rows) => {
@@ -1448,6 +1449,82 @@ router.delete('/ttuser/store/remove/:id', (req, res) => {
         });
 });
 
+// Add new charity project
+router.post('/ttuser/charity/project/add', (req, res) => {
+    const { name, description, endDate, charity } = req.body;
+  
+    if (!name || !description || !charity) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    const query = `
+      INSERT INTO charityProjects (name, description, endDate, charity)
+      VALUES (?, ?, ?, ?)
+    `;
+  
+    const values = [name, description, endDate || null, charity];
+  
+    db.query(query, values, (err, result) => {
+      if (err) {
+        dbR.query(query, values, (err, result) => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json({ success: true, insertedId: result.insertId });
+        });
+      } else {
+        res.json({ success: true, insertedId: result.insertId });
+      }
+    });
+  });
+
+  // Delete charity projects in bulk
+router.post('/ttuser/charity/project/delete', (req, res) => {
+    const { ids } = req.body;
+  
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No project IDs provided' });
+    }
+  
+    const placeholders = ids.map(() => '?').join(',');
+    const query = `DELETE FROM charityProjects WHERE id IN (${placeholders})`;
+  
+    db.query(query, ids, (err, result) => {
+      if (err) {
+        dbR.query(query, ids, (err, result) => {
+          if (err) return res.status(500).json({ error: err.message });
+          return res.json({ success: true, deleted: result.affectedRows });
+        });
+      } else {
+        res.json({ success: true, deleted: result.affectedRows });
+      }
+    });
+  });
+  
+  
+  
+// Get charity projects by charity ID
+router.get('/ttuser/charity/projects', (req, res) => {
+    const { charity_id } = req.query;
+    if (!charity_id) return res.status(400).json({ error: 'charity_id required' });
+  
+    const query = `
+      SELECT id, name, description, endDate
+      FROM charityProjects
+      WHERE charity = ?
+      ORDER BY endDate ASC
+    `;
+  
+    db.query(query, [charity_id], (err, rows) => {
+      if (err) {
+        dbR.query(query, [charity_id], (err, rows) => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json(rows);
+        });
+      } else {
+        res.json(rows);
+      }
+    });
+  });
+  
 // Get all charities
 router.get('/ttuser/charity', (req, res) => {
     db.query(`SELECT * FROM entities e 

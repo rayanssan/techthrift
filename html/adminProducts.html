@@ -94,7 +94,7 @@
                     <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
                         <thead class="table-light">
                             <tr>
-                                <th><input type="checkbox" id="select-all"></th>
+                                <th><input type="checkbox" id="select-all" onclick="toggleAllProducts(this)"></th>
                                 <th>Product ID</th>
                                 <th>Name</th>
                                 <th>Price</th>
@@ -302,6 +302,11 @@
 let productList = []; // Persist across modal openings
 let totalPrice = 0;
 
+function toggleAllProducts(source) {
+  document.querySelectorAll('.product-checkbox').forEach(cb => {
+    cb.checked = source.checked;
+  });
+}
 
 const categoryFieldMap = {
   'Smartphones': [
