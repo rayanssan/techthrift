@@ -303,6 +303,11 @@
     </div>
 
     <script type="module">
+        const filters = {
+                    name: document.getElementById('search-bar').value.trim(),
+                    condition: document.getElementById('condition-filter').value,
+                    availability: document.getElementById('availability-filter').value
+                };
 let productList = []; // Persist across modal openings
 let totalPrice = 0;
 
@@ -737,7 +742,7 @@ function renderPayPal() {
         }
 
         // Call on page load
-        fetchAdminProducts();
+        fetchAdminProducts(filters);
 
 
 
@@ -795,14 +800,16 @@ function renderPayPal() {
 
 
 
-        function hideAddProductForm() {
+        window.hideAddProductForm = function() {
             document.getElementById('product-table').classList.remove('d-none');
             document.getElementById('filters-row').classList.remove('d-none');
             document.getElementById('top-buttons').classList.remove('d-none');
             document.getElementById('add-product-form').classList.add('d-none');
-        }
+        };
+
 
         async function viewProductDetails(id) {
+
     try {
         const res = await fetch(`/tt/product/${id}`);
         if (!res.ok) {
@@ -986,7 +993,7 @@ function renderPayPal() {
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchConditions();
-            fetchAdminProducts();
+            fetchAdminProducts(filters);
 
             document.getElementById('filter-btn').addEventListener('click', () => {
                 const filters = {
@@ -1106,7 +1113,7 @@ function renderPayPal() {
                     document.getElementById('top-buttons').classList.remove('d-none');
 
                     // Optionally reload table
-                    fetchAdminProducts();
+                    fetchAdminProducts(filters);
 
                 } catch (err) {
                     console.error(err);
@@ -1154,7 +1161,7 @@ function renderPayPal() {
 
                 if (typeof fetchAdminProducts === 'function') {
                     console.log('Refreshing product list...');
-                    fetchAdminProducts();
+                    fetchAdminProducts(filters);
                 } else {
                     console.warn('fetchAdminProducts is not defined.');
                 }
