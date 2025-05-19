@@ -57,7 +57,7 @@ const connectToDb = async () => {
             db.connect((err) => (err ? reject(err) : resolve()));
             dbR.connect((err) => (err ? reject(err) : resolve()));
         });
-        console.log('Connected to the TechThrift databases.');
+        console.log('Connected to the TechThrift databases (locally).');
         return true;
     }
 };
