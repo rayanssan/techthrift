@@ -19,18 +19,23 @@ function getAccessTokenFromUrl() {
 
 async function getUserProfile(token) {
   try {
-    const response = await fetch(`https://${domain}/userinfo`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    let loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!loggedInUser) {
+      const response = await fetch(`https://${domain}/userinfo`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-    if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(await response.text());
 
-    let loggedInUser = await response.json();
+      loggedInUser = await response.json();
+      // Save to localStorage
+      localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+    }
+    
     const event = new CustomEvent('userAuthenticated', { detail: loggedInUser });
     window.dispatchEvent(event);
-
     const newClient = {
       name: loggedInUser.nickname,
       email: loggedInUser.email
@@ -73,24 +78,55 @@ async function getUserProfile(token) {
       class="rounded-circle me-md-2" style="scale:1.1;" width="22" height="22">
       <p class="d-none d-md-block mb-0">${loggedInUser.nickname}</p>`;
       usernameBtn.href = "";
-      // Lock width to current size
-      const width = usernameBtn.offsetWidth;
-      usernameBtn.style.display = 'inline-block';
-      usernameBtn.style.width = `${width}px`;
-      usernameBtn.dataset.originalText = usernameBtn.innerHTML;
 
-      usernameBtn.addEventListener("click", () => {
-        logout();
+      usernameBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        // Check if dropdown already exists to toggle it
+        let existingDropdown = document.getElementById("profileDropdown");
+        if (existingDropdown) {
+          existingDropdown.remove(); // remove if already open
+          return;
+        }
+
+        // Create dropdown menu
+        const dropdown = document.createElement("div");
+        dropdown.className = "dropdown-menu mt-1 show position-absolute";
+        dropdown.id = "profileDropdown";
+        dropdown.style.top = `${usernameBtn.offsetTop + usernameBtn.offsetHeight}px`;
+        dropdown.style.left = `${usernameBtn.offsetLeft}px`;
+        dropdown.style.width = `${usernameBtn.offsetWidth}px`;
+
+        // Add menu items
+        dropdown.innerHTML = `
+          <a class="dropdown-item" style="cursor:pointer;" href="/profile"><i class="fa fa-user me-2"></i> My Profile</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="cursor:pointer;" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i>  Logout</a>
+        `;
+
+        // Add dropdown to body
+        document.body.appendChild(dropdown);
+
+        // Defer adding the outside click listener
+        setTimeout(() => {
+          const closeDropdown = (e) => {
+            if (!dropdown.contains(e.target) && e.target !== usernameBtn) {
+              dropdown.remove();
+              document.removeEventListener("click", closeDropdown);
+            }
+          };
+          document.addEventListener("click", closeDropdown);
+        }, 0);
+        window.addEventListener("resize", () => {
+          dropdown.style.top = `${usernameBtn.offsetTop + usernameBtn.offsetHeight}px`;
+          dropdown.style.left = `${usernameBtn.offsetLeft}px`;
+          dropdown.style.width = `${usernameBtn.offsetWidth}px`;
+        });
       });
 
-      usernameBtn.addEventListener("mouseover", () => {
-        usernameBtn.classList.add("text-danger");
-        usernameBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i>&nbsp;Log out`;
-      });
-
-      usernameBtn.addEventListener("mouseleave", () => {
-        usernameBtn.classList.remove("text-danger");
-        usernameBtn.innerHTML = usernameBtn.dataset.originalText;
+      usernameBtn.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        window.location.href = "/profile";
       });
     }
   } catch (err) {

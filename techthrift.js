@@ -157,6 +157,17 @@ app.get('/partners', (req, res) => {
     });
 });
 
+// Profile
+app.get('/profile', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/profile.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving profile.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 // Admin Dashboard
 app.get('/adminDashboard', (req, res) => {
     const pagePath = path.join(__dirname, 'html/adminDashboard.html');
@@ -212,6 +223,20 @@ app.get('/adminOrders', (req, res) => {
     });
 });
 
+// Authentication
+app.get('/authentication', (req, res) => {
+    const auth0Domain = "dev-1qdq127lj6aekksz.us.auth0.com"; 
+    const clientID = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const redirectUri = `${protocol}://${host}/`;
+
+    const loginUrl = `https://${auth0Domain}/authorize?response_type=token&client_id=${clientID}&redirect_uri=${redirectUri}&scope=openid profile email&connection=Username-Password-Authentication&prompt=login`;
+
+    res.redirect(loginUrl);
+});
+
+// Reports Authentication
 app.get('/reports', (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.send(`
@@ -248,17 +273,4 @@ app.get('/report', (req, res) => {
 
     // Finalize the PDF and end the stream
     doc.end();
-});
-
-// Authentication
-app.get('/authentication', (req, res) => {
-    const auth0Domain = "dev-1qdq127lj6aekksz.us.auth0.com"; 
-    const clientID = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const redirectUri = `${protocol}://${host}/`;
-
-    const loginUrl = `https://${auth0Domain}/authorize?response_type=token&client_id=${clientID}&redirect_uri=${redirectUri}&scope=openid profile email&connection=Username-Password-Authentication&prompt=login`;
-
-    res.redirect(loginUrl);
 });

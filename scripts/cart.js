@@ -113,10 +113,16 @@ window.addEventListener('userAuthenticated', (event) => {
                             return actions.order.capture().then(function (details) {
                                 const shipping = details.purchase_units[0].shipping;
                                 const shippingAddress = {
-                                    address: (shipping.address.address_line_1 + ", " + shipping.address.address_line_2).replace(" undefined", "").trim(),
-                                    postal_code: shipping.address.postal_code.replace("undefined", "").trim(),
-                                    city: (shipping.address.admin_area_2 + ", " + shipping.address.admin_area_1).replace(" undefined", "").trim(),
-                                    country: shipping.address.country_code.replace("undefined", "").trim()
+                                    address: [
+                                    shipping.address.address_line_1,
+                                    shipping.address.address_line_2
+                                    ].filter(Boolean).join(', ').trim(),
+                                    postal_code: shipping.address.postal_code?.trim() || '',
+                                    city: [
+                                        shipping.address.admin_area_2,
+                                        shipping.address.admin_area_1
+                                        ].filter(Boolean).join(', ').trim(),
+                                    country: shipping.address.country_code?.trim() || '',
                                 };
 
                                 // Store transaction in the database

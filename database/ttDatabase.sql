@@ -202,6 +202,7 @@ CREATE TABLE IF NOT EXISTS sales (
     shipping_postal_code VARCHAR(255) NOT NULL,
     shipping_city VARCHAR(255) NOT NULL,
     shipping_country CHAR(2) NOT NULL,
+    sale_status ENUM('To be shipped', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'To be shipped',
 
     FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (store) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE,

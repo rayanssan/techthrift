@@ -1926,64 +1926,6 @@ router.get('/ttuser/wishlist/count/:product_id', verifyRequestOrigin, (req, res)
     });
 });
 
-// Get reports
-router.get('/ttuser/reports', verifyRequestOrigin,
-    (req, res) => {
-        db.query('SELECT * FROM reports', [], (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query('SELECT * FROM reports', [], (err, rows) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    res.json(rows);
-                });
-            } else {
-                res.json(rows);
-            }
-        });
-    });
-
-// Get details about a report
-router.get('/ttuser/reports/:id', verifyRequestOrigin,
-    (req, res) => {
-        db.query('SELECT * FROM reports WHERE id = ?', [req.params.id], (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query('SELECT * FROM reports WHERE id = ?', [req.params.id], (err, rows) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (!rows) {
-                        return res.status(404).send('Report not found');
-                    }
-                    res.json(rows[0]);
-                });
-            } else if (!rows) {
-                return res.status(404).send('Report not found');
-            } else {
-                res.json(rows[0]);
-            }
-        });
-    });
-
-// Add reports
-router.post('/ttuser/reports/add', verifyRequestOrigin, (req, res) => {
-    const { report } = req.body;
-    db.execute('INSERT INTO reports (report) VALUES (?)', [report], function (err) {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        // Update replica
-        dbR.execute('INSERT INTO reports (report) VALUES (?)', [report], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-        });
-        res.status(201).send('Report successfully added');
-    });
-});
-
 // Get sale transactions
 router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
     const query = `
@@ -1997,12 +1939,15 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
             s.shipping_postal_code,
             s.shipping_city,
             s.shipping_country,
+            s.sale_status,
             p.id AS product_id,
-            p.name AS product_name
+            p.name AS product_name,
+            pi.image_path AS product_image
         FROM transactions t 
         INNER JOIN sales s ON s.transaction_id = t.id
         INNER JOIN soldProducts sp ON s.transaction_id = sp.sale_id
         INNER JOIN products p ON sp.product_id = p.id
+        INNER JOIN productImages pi ON sp.product_id = pi.product AND pi.image_order = 1
     `;
     const groupSales = (rows) => {
         const salesMap = new Map();
@@ -2022,6 +1967,7 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
                     shipping_postal_code: row.shipping_postal_code,
                     shipping_city: row.shipping_city,
                     shipping_country: row.shipping_country,
+                    sale_status: row.sale_status,
                     sold_products: []
                 });
             }
@@ -2030,7 +1976,8 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
 
             sale.sold_products.push({
                 id: row.product_id,
-                name: row.product_name
+                name: row.product_name,
+                product_image: row.product_image
             });
         });
 
@@ -2052,6 +1999,82 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
         }
     });
 });
+
+// Get sale transactions from a client
+router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
+    const query = `
+        SELECT 
+            t.*,
+            s.is_online, 
+            s.order_number,
+            s.employee,
+            s.store,
+            s.shipping_address,
+            s.shipping_postal_code,
+            s.shipping_city,
+            s.shipping_country,
+            s.sale_status,
+            p.id AS product_id,
+            p.name AS product_name,
+            pi.image_path AS product_image
+        FROM transactions t 
+        INNER JOIN sales s ON s.transaction_id = t.id
+        INNER JOIN soldProducts sp ON s.transaction_id = sp.sale_id
+        INNER JOIN products p ON sp.product_id = p.id
+        INNER JOIN productImages pi ON sp.product_id = pi.product AND pi.image_order = 1
+        WHERE t.client = ? 
+    `;
+    const groupSales = (rows) => {
+        const salesMap = new Map();
+
+        rows.forEach(row => {
+            if (!salesMap.has(row.id)) {
+                salesMap.set(row.id, {
+                    id: row.id,
+                    client: row.client,
+                    transaction_value: row.transaction_value,
+                    date_inserted: row.date_inserted,
+                    is_online: row.is_online,
+                    order_number: row.order_number,
+                    overseeing_employee: row.employee,
+                    store_of_sale: row.store,
+                    shipping_address: row.shipping_address,
+                    shipping_postal_code: row.shipping_postal_code,
+                    shipping_city: row.shipping_city,
+                    shipping_country: row.shipping_country,
+                    sale_status: row.sale_status,
+                    sold_products: []
+                });
+            }
+
+            const sale = salesMap.get(row.id);
+
+            sale.sold_products.push({
+                id: row.product_id,
+                name: row.product_name,
+                product_image: row.product_image
+            });
+        });
+
+        return Array.from(salesMap.values());
+    }
+    db.query(query, [req.params.email], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                const result = groupSales(rows);
+                res.json(result);
+            });
+        } else {
+            const result = groupSales(rows);
+            res.json(result);
+        }
+    });
+});
+
 
 // Add sale transaction
 router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
