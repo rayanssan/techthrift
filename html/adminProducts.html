@@ -311,6 +311,9 @@
 let productList = []; // Persist across modal openings
 let totalPrice = 0;
 
+window.showAddProductForm = showAddProductForm; // expose globally
+
+
 window.toggleAllProducts = function (source) {
   const checkboxes = document.querySelectorAll('#product-list .product-checkbox');
   checkboxes.forEach(cb => {
