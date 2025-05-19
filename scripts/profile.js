@@ -2,6 +2,9 @@
 
 window.addEventListener('userAuthenticated', (event) => {
     const loggedInUser = event.detail;
+    if (!loggedInUser) {
+       location.href = "/authentication";
+    }
     const profileInfo = document.getElementById('profile-info');
     document.getElementById('username').classList.add("text-white");
     document.getElementById('username').style.backgroundColor = "navy";

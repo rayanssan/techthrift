@@ -3,6 +3,9 @@
 window.addEventListener('userAuthenticated', (event) => {
   const loggedInUser = event.detail;
   if (loggedInUser == null) {
+    if (document.body.id == "wishlistPage") {
+      location.href = "/authentication";
+    }
     return;
   }
 
