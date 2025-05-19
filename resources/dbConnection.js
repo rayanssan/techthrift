@@ -4,19 +4,19 @@ import { Router } from 'express';
 const router = Router();
 import { createConnection } from 'mysql2';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: './dbCredentials.env' });
 
 let connection = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     multipleStatements: true
 };
 let connectionReplica = {
     host: process.env.DB_HOST_REPLICA,
     user: process.env.DB_USER_REPLICA,
-    password: process.env.DB_PASSWORD_REPLICA,
+    password: process.env.DB_PASS_REPLICA,
     database: process.env.DB_NAME_REPLICA,
     multipleStatements: true
 };
