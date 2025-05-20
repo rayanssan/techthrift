@@ -50,7 +50,6 @@ window.addEventListener('userAuthenticated', (event) => {
              * - Storing transaction details and displaying the success message
              * 
              * @function renderPayPal
-             * 
              * @returns {void}
              */
             const renderPayPal = () => paypal.Buttons({
@@ -114,14 +113,14 @@ window.addEventListener('userAuthenticated', (event) => {
                                 const shipping = details.purchase_units[0].shipping;
                                 const shippingAddress = {
                                     address: [
-                                    shipping.address.address_line_1,
-                                    shipping.address.address_line_2
+                                        shipping.address.address_line_1,
+                                        shipping.address.address_line_2
                                     ].filter(Boolean).join(', ').trim(),
                                     postal_code: shipping.address.postal_code?.trim() || '',
                                     city: [
                                         shipping.address.admin_area_2,
                                         shipping.address.admin_area_1
-                                        ].filter(Boolean).join(', ').trim(),
+                                    ].filter(Boolean).join(', ').trim(),
                                     country: shipping.address.country_code?.trim() || '',
                                 };
 

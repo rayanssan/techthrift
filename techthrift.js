@@ -217,7 +217,7 @@ app.get('/adminOrders', (req, res) => {
     const pagePath = path.join(__dirname, 'html/adminOrders.html');
     res.sendFile(pagePath, (err) => {
         if (err) {
-            console.error('Error serving adminadminOrders.html:', err);
+            console.error('Error serving adminOrders.html:', err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -234,6 +234,17 @@ app.get('/authentication', (req, res) => {
     const loginUrl = `https://${auth0Domain}/authorize?response_type=token&client_id=${clientID}&redirect_uri=${redirectUri}&scope=openid profile email&connection=Username-Password-Authentication&prompt=login`;
 
     res.redirect(loginUrl);
+});
+
+// Registration
+app.get('/registration', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/registration.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving registration.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
 });
 
 // Reports Authentication
