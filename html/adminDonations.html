@@ -98,36 +98,359 @@
       </div>
     </div>
   
-   <!-- Donation Form  -->
+
+  <!-- Donation Form -->
 <div id="donationFormContainer" class="d-none">
   <div class="mb-4 d-flex justify-content-between align-items-center">
     <h2>Register New Donation</h2>
     <div>
       <button class="btn btn-light me-2" onclick="toggleDonationForm()">Cancel</button>
-      <!-- This button submits the form with id="register-donation" -->
       <button type="submit" form="register-donation" class="btn btn-success me-2">Submit Donation</button>
     </div>
   </div>
 
   <form id="register-donation" class="p-0" onsubmit="submitDonation(event)" style="max-width: 600px;">
     <div class="mb-3">
-      <label for="donation-product-id" class="form-label">Product ID</label>
-      <input type="number" class="form-control" id="donation-product-id" required>
+      <label class="form-label">Product</label>
+      <div class="form-control" id="donation-product-name" style="background-color: #e9ecef;">No product selected</div>
+      <input type="hidden" id="donation-product-id" required>
+      <button type="button" class="btn btn-primary mt-2" onclick="showAddProductForm()">Add Product</button>
     </div>
+
     <div class="mb-3">
       <label for="donation-donor-nif" class="form-label">Donor NIF</label>
       <input type="number" class="form-control" id="donation-donor-nif" required>
     </div>
+
     <div class="mb-3">
-      <label for="donation-charity-nipc" class="form-label">Charity NIPC</label>
-      <input type="number" class="form-control" id="donation-charity-nipc" required>
+      <label for="donation-charity-nipc" class="form-label">Charity</label>
+      <select class="form-select" id="donation-charity-nipc" required>
+        <option value="" disabled selected>Select a charity</option>
+      </select>
     </div>
+
   </form>
 </div>
+
+
+
+
+<div id="add-product-form" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Add New Product</h2>
+      <div>
+          <button class="btn btn-light me-2" onclick="hideAddProductForm()">Cancel</button>
+          <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
+      </div>
+  </div>
+
+  <form id="productForm" enctype="multipart/form-data">
+<div class="row">
+<!-- COLUNA ESQUERDA -->
+<div class="col-md-6">
+<div class="mb-3" id="form-group-name">
+  <label for="product-name" class="form-label">Product Name</label>
+  <input type="text" id="product-name" name="name" class="form-control" required>
+</div>
+
+<div class="mb-3">
+  <label for="product-condition" class="form-label">Condition</label>
+  <select id="product-condition" name="product_condition" class="form-select" required>
+      <option>Like New</option>
+      <option>Excellent</option>
+      <option>Good</option>
+      <option>Needs Repair</option>
+  </select>
+</div>
+
+<div class="mb-3">
+  <label for="product-availability" class="form-label">Availability</label>
+  <select id="product-availability" name="availability" class="form-select" required>
+      <option value="1">Available</option>
+      <option value="0">Not Available</option>
+  </select>
+</div>
+
+<div class="mb-3">
+  <label for="product-category" class="form-label">Category</label>
+  <select id="product-category" name="category" class="form-select" required>
+      <option>Smartphones</option>
+      <option>Laptops & PCs</option>
+      <option>Smartwatches</option>
+      <option>Gaming</option>
+      <option>TVs & Monitors</option>
+      <option>Audio</option>
+      <option>Tablets</option>
+      <option>Cameras</option>
+      <option>Accessories</option>
+      <option>Home Appliances</option>
+      <option>Other</option>
+  </select>
+</div>
+
+<div class="mb-3">
+  <label for="product-brand" class="form-label">Brand</label>
+  <select id="product-brand" name="brand" class="form-select" required>
+      <option disabled selected>Select a brand</option>
+      <option>Apple</option>
+      <option>Samsung</option>
+      <option>Dell</option>
+      <option>HP</option>
+      <option>Microsoft</option>
+      <option>Xiaomi</option>
+      <option>LG</option>
+      <option>Sony</option>
+      <option>Fitbit</option>
+      <option>Nintendo</option>
+      <option>Razer</option>
+      <option>Bose</option>
+      <option>GoPro</option>
+      <option>Canon</option>
+      <option>Other</option>
+  </select>
+</div>
+
+<div class="mb-3" id="form-group-model_code">
+  <label for="product-model-code" class="form-label">Model Code</label>
+  <input type="text" id="product-model-code" name="model_code" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-color">
+  <label for="product-color" class="form-label">Color</label>
+  <input type="text" id="product-color" name="color" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-weight">
+  <label for="product-weight" class="form-label">Weight (kg)</label>
+  <input type="number" id="product-weight" name="weight" class="form-control" step="0.01">
+</div>
+</div>
+
+<!-- COLUNA DIREITA -->
+<div class="col-md-6">
+<div class="mb-3" id="form-group-dimensions">
+  <label for="product-dimensions" class="form-label">Dimensions</label>
+  <input type="text" id="product-dimensions" name="dimensions" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-processor">
+  <label for="product-processor" class="form-label">Processor</label>
+  <input type="text" id="product-processor" name="processor" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-screen">
+  <label for="product-screen" class="form-label">Screen</label>
+  <input type="text" id="product-screen" name="screen" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-ram_memory">
+  <label for="product-ram" class="form-label">RAM Memory</label>
+  <input type="text" id="product-ram" name="ram_memory" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-graphics_card">
+  <label for="product-graphics" class="form-label">Graphics Card</label>
+  <input type="text" id="product-graphics" name="graphics_card" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-storage">
+  <label for="product-storage" class="form-label">Storage</label>
+  <input type="text" id="product-storage" name="storage" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-keyboard">
+  <label for="product-keyboard" class="form-label">Keyboard</label>
+  <input type="text" id="product-keyboard" name="keyboard" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-os">
+  <label for="product-os" class="form-label">Operating System</label>
+  <input type="text" id="product-os" name="os" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-year">
+  <label for="product-year" class="form-label">Manufacture Year</label>
+  <input type="number" id="product-year" name="year" class="form-control">
+</div>
+</div>
+</div>
+
+<!-- DESCRIÇÃO -->
+<div class="mb-3 mt-4">
+<label for="product-description" class="form-label">Description</label>
+<textarea id="product-description" name="description" rows="5" class="form-control" placeholder="Enter Description" required></textarea>
+</div>
+
+<!-- IMAGENS -->
+<div class="mb-4">
+<label for="product-images" class="form-label">Product Images</label>
+<div id="product-images" class="border border-secondary rounded p-3">
+<!-- Image upload inputs are dynamically inserted here -->
+</div>
+</div>
+</form>
 
   
   
   <script>
+
+  let lastAddedProduct = null;
+
+
+    function showAddProductForm() {
+  const formSection = document.getElementById('add-product-form');
+  formSection.classList.remove('d-none');
+
+  // Scroll into view
+  formSection.scrollIntoView({ behavior: 'smooth' });
+
+  // Reset form
+  const form = document.getElementById('productForm');
+  form.reset();
+  [...form.elements].forEach(el => el.disabled = false);
+
+  // Reset buttons
+  const cancelBtn = document.querySelector('#add-product-form .btn-light');
+  const submitBtn = document.querySelector('#add-product-form .btn-success');
+
+  cancelBtn.textContent = 'Cancel';
+  submitBtn.classList.remove('d-none');
+
+  // Replace image upload area with basic input rows
+  const dropzone = document.getElementById('product-images');
+  dropzone.innerHTML = `
+    <div class="mb-2"><small class="text-muted">Upload up to 5 images and optionally set their order.</small></div>
+    <div id="image-input-group" class="d-flex flex-column gap-2"></div>
+  `;
+
+  const imageInputGroup = document.getElementById('image-input-group');
+  for (let i = 1; i <= 5; i++) {
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-center gap-2";
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.name = "images[]";
+    fileInput.className = "form-control";
+
+    const orderInput = document.createElement("input");
+    orderInput.type = "number";
+    orderInput.min = "1";
+    orderInput.max = "5";
+    orderInput.placeholder = "Order";
+    orderInput.name = "orders[]";
+    orderInput.className = "form-control";
+    orderInput.style.maxWidth = "100px";
+
+    row.appendChild(fileInput);
+    row.appendChild(orderInput);
+    imageInputGroup.appendChild(row);
+  }
+
+  // Refresh visible fields
+  const initialCategory = document.getElementById('product-category').value;
+  updateVisibleFields(initialCategory);
+}
+
+const categoryFieldMap = {
+  'Smartphones': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'storage', 'os', 'year'
+  ],
+  'Laptops & PCs': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card',
+    'storage', 'keyboard', 'os', 'year'
+  ],
+  'Smartwatches': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Gaming': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'storage', 'year'
+  ],
+  'TVs & Monitors': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'screen', 'year'
+  ],
+  'Audio': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Tablets': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'storage', 'os', 'year'
+  ],
+  'Cameras': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'processor', 'screen', 'storage', 'os', 'year'
+  ],
+  'Accessories': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Home Appliances': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ],
+  'Other': [
+    'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+    'weight', 'dimensions', 'year'
+  ]
+};
+
+
+
+
+
+function updateVisibleFields(category) {
+    const allFields = [
+  'name',
+  'product_condition',
+  'availability',
+  'category',
+  'brand',
+  'model_code',
+  'color',
+  'weight',
+  'dimensions',
+  'processor',
+  'screen',
+  'ram_memory',
+  'graphics_card',
+  'storage',
+  'keyboard',
+  'os',
+  'year'
+];
+
+
+    allFields.forEach(field => {
+        const group = document.getElementById(`form-group-${field}`);
+        if (group) group.classList.add('d-none');
+    });
+
+    const visibleFields = categoryFieldMap[category] || [];
+    visibleFields.forEach(field => {
+        const group = document.getElementById(`form-group-${field}`);
+        if (group) group.classList.remove('d-none');
+    });
+}
+
+
+
+document.getElementById('product-category').addEventListener('change', function () {
+    const selectedCategory = this.value;
+    updateVisibleFields(selectedCategory);
+});
+
+    // Inicializa no carregamento
+    const initialCategory = document.getElementById('product-category').value;
+    updateVisibleFields(initialCategory);
+
+
     function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
             if (!container) return;
@@ -139,34 +462,71 @@
                 item.style.animationDelay = `${index * 70}ms`;
             });
         }
+
+    async function loadCharities() {
+        try {
+          const res = await fetch('/ttuser/charity');
+          if (!res.ok) throw new Error('Failed to fetch charities');
+          
+          const charities = await res.json();
+          const select = document.getElementById('donation-charity-nipc');
+
+          // Clear old options
+          select.innerHTML = '<option value="" disabled selected>Select a charity</option>';
+
+          // Populate with new options
+          charities.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.nipc;
+            option.textContent = `${c.name} (${c.city})`;
+            select.appendChild(option);
+          });
+        } catch (err) {
+          console.error('Error loading charities:', err);
+          const select = document.getElementById('donation-charity-nipc');
+          select.innerHTML = '<option value="" disabled selected>Failed to load charities</option>';
+        }
+      }
+
+
     function toggleDonationForm() {
       document.getElementById('donationsTableContainer').classList.toggle('d-none');
       document.getElementById('donationFormContainer').classList.toggle('d-none');
+      loadCharities();
+
     }
   
-    async function submitDonation(e) {
-    e.preventDefault();
 
-    const id = document.getElementById('donation-product-id').value.trim();
-    const donor = document.getElementById('donation-donor-nif').value.trim();
-    const charity = document.getElementById('donation-charity-nipc').value.trim();
-
-    try {
-      const res = await fetch('/tt/donation/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, donor, charity  })
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Unknown error');
-
-      alert('Donation registered!');
-      toggleDonationForm();
-      loadDonations();
-    } catch (err) {
-      alert('Failed to register donation: ' + err.message);
+    // Update donation form with product info
+    if (lastAddedProduct) {
+      document.getElementById('donation-product-id').value = lastAddedProduct.id;
+      document.getElementById('donation-product-name').textContent = lastAddedProduct.name;
     }
+
+
+    async function submitDonation(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('donation-product-id').value.trim();
+      const donor = document.getElementById('donation-donor-nif').value.trim();
+      const charity = document.getElementById('donation-charity-nipc').value.trim();
+
+      try {
+        const res = await fetch('/tt/donation/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, donor, charity  })
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Unknown error');
+
+        alert('Donation registered!');
+        toggleDonationForm();
+        loadDonations();
+      } catch (err) {
+        alert('Failed to register donation: ' + err.message);
+      }
   }
   
     // On page load, fetch and render donations
@@ -196,12 +556,120 @@
         console.error(err);
       }
     }
+
+
+document.getElementById('productForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const data = {};
+
+    const fields = [
+        'name', 'store_nipc', 'product_condition', 'availability', 'description', 'category',
+        'brand', 'model_code', 'color', 'weight', 'dimensions', 'processor',
+        'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'
+    ];
+
+    fields.forEach(field => {
+        const el = form.elements[field];
+        if (el) {
+            if (el.type === 'checkbox') {
+                data[field] = el.checked;
+            } else if (el.type === 'number') {
+                data[field] = el.value ? parseFloat(el.value) : null;
+            } else {
+                data[field] = el.value || null;
+            }
+        }
+    });
+
+    if (typeof data.availability === 'string') {
+        data.availability = data.availability === 'true';
+    }
+
+    try {
+        // Submit product
+        const res = await fetch('/tt/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            alert('Failed to add product: ' + err.error);
+            return;
+        }
+
+        const addedProduct = await res.json();
+
+        // ✅ Save product ID and name
+        lastAddedProduct = {
+            id: addedProduct.id,
+            name: addedProduct.name
+        };
+        console.log("Saved product:", lastAddedProduct);
+
+        // Collect image filenames and orders
+        const rows = document.querySelectorAll('#image-input-group > div');
+        const images = [];
+        const orders = [];
+
+        rows.forEach((row, idx) => {
+            const fileInput = row.querySelector('input[type="file"]');
+            const orderInput = row.querySelector('input[type="number"]');
+
+            if (fileInput.files[0]) {
+                const fileName = fileInput.files[0].name;
+                const imageOrder = orderInput.value || (idx + 1);
+                images.push(fileName);
+                orders.push(parseInt(imageOrder));
+            }
+        });
+
+        // Submit image metadata
+        if (images.length > 0) {
+            const imgRes = await fetch('/tt/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: addedProduct.id,
+                    images,
+                    orders
+                })
+            });
+
+            if (!imgRes.ok) {
+                const err = await imgRes.json();
+                alert('Images upload failed: ' + err.error);
+                return;
+            }
+        }
+
+        alert('Product added successfully!');
+
+        // ✅ Switch to donation form and fill product info
+        document.getElementById('add-product-form').classList.add('d-none');
+        document.getElementById('register-donation').classList.remove('d-none');
+
+        if (lastAddedProduct) {
+            document.getElementById('donation-product-id').value = lastAddedProduct.id;
+            document.getElementById('donation-product-name').textContent = lastAddedProduct.name;
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert('Error submitting product.');
+    }
+});
+</script>
+
   </script>
   
 
     
     <!-- Scripts -->
-    <script src="../scripts/auth.js"></script>
+    <!-- <script src="../scripts/auth.js"></script>-->
 
     <!-- Scripts -->
     

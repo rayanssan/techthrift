@@ -25,5 +25,9 @@
     "node-fetch": "^3.3.2",
     "pdfkit": "^0.17.1",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": []
 }

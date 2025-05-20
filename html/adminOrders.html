@@ -128,85 +128,582 @@
                     </li>
                 </ul>
 
-                <form id="orderForm" class="mt-3">
-                    <!-- Repair Form Fields -->
-                    <div id="repairFields">
-                        <div class="mb-3">
-                            <label for="repair-product-id" class="form-label">Product ID</label>
-                            <input type="text" class="form-control" id="repair-product-id"
-                                placeholder="Enter Product ID" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="repair-description" class="form-label">Issue Description</label>
-                            <textarea class="form-control" id="repair-description" placeholder="Enter Issue Description"
-                                required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="repair-price" class="form-label">Repair Price</label>
-                            <input type="number" class="form-control" id="repair-price" placeholder="Enter Repair Price"
-                                required>
-                        </div>
-                    </div>
-
-                    <!-- You can include sellFields if needed -->
-                    <div id="sellFields" style="display: none;">
-                        <form id="register-purchase-form">
-                            <div class="mb-3">
-                                <label for="purchase-product-seller-email" class="form-label">Seller Email</label>
-                                <input type="email" class="form-control" id="purchase-product-seller-email"
-                                    placeholder="Enter Seller Email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="purchase-price" class="form-label">Price</label>
-                                <input type="number" class="form-control" id="purchase-price" placeholder="Enter Price"
-                                    required>
-                            </div>
-
-                        </form>
-                    </div>
-
-
-                    <button type="submit" class="btn btn-primary w-100">Submit Order</button>
-                </form>
+    <form id="orderForm" class="mt-3">
+        <!-- Repair Form Fields -->
+        <div id="repairFields">
+            <div class="mb-3">
+                <label class="form-label">Selected Product</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="repair-product-name" placeholder="No product selected" readonly>
+                    <input type="hidden" id="repair-product-id" required>
+                    <button type="button" class="btn btn-outline-secondary" onclick="openProductForm('repair')">Select Product</button>
+                </div>
             </div>
+            
+            <div class="mb-3">
+                <label for="repair-description" class="form-label">Issue Description</label>
+                <textarea class="form-control" id="repair-description" placeholder="Enter Issue Description" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="repair-price" class="form-label">Repair Price</label>
+                <input type="number" class="form-control" id="repair-price" placeholder="Enter Repair Price" required>
+            </div>
+        </div>
 
+        <!-- You can include sellFields if needed -->
+        <div id="sellFields" style="display: none;">
+            <div class="mb-3">
+                <label class="form-label">Selected Product</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="sell-product-name" placeholder="No product selected" readonly>
+                    <input type="hidden" id="sell-product-id" required>
+                    <button type="button" class="btn btn-outline-secondary" onclick="openProductForm('sell')">Select Product</button>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="purchase-product-seller-email" class="form-label">Seller Email</label>
+                <input type="email" class="form-control" id="purchase-product-seller-email" name="seller_email" placeholder="Enter Seller Email" required>
+            </div>
+            <div class="mb-3">
+                <label for="purchase-price" class="form-label">Price</label>
+                <input type="number" class="form-control" id="purchase-price" name="purchase_price" placeholder="Enter Price" required>
+            </div>
+        </div>
+        
+        
+
+        <button type="submit" class="btn btn-primary w-100" onclick="disableHiddenFields()">Submit Order</button>
+    </form>
+</div>
+
+
+<div id="add-product-form" class="d-none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Add New Product</h2>
+        <div>
+            <button class="btn btn-light me-2" onclick="hideAddProductForm()">Cancel</button>
+            <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
         </div>
     </div>
 
+    <form id="productForm" enctype="multipart/form-data">
+<div class="row">
+<!-- COLUNA ESQUERDA -->
+<div class="col-md-6">
+<div class="mb-3" id="form-group-name">
+    <label for="product-name" class="form-label">Product Name</label>
+    <input type="text" id="product-name" name="name" class="form-control" required>
+</div>
+
+<div class="mb-3">
+    <label for="product-condition" class="form-label">Condition</label>
+    <select id="product-condition" name="product_condition" class="form-select" required>
+        <option>Like New</option>
+        <option>Excellent</option>
+        <option>Good</option>
+        <option>Needs Repair</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="product-availability" class="form-label">Availability</label>
+    <select id="product-availability" name="availability" class="form-select" required>
+        <option value="1">Available</option>
+        <option value="0">Not Available</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="product-category" class="form-label">Category</label>
+    <select id="product-category" name="category" class="form-select" required>
+        <option>Smartphones</option>
+        <option>Laptops & PCs</option>
+        <option>Smartwatches</option>
+        <option>Gaming</option>
+        <option>TVs & Monitors</option>
+        <option>Audio</option>
+        <option>Tablets</option>
+        <option>Cameras</option>
+        <option>Accessories</option>
+        <option>Home Appliances</option>
+        <option>Other</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="product-brand" class="form-label">Brand</label>
+    <select id="product-brand" name="brand" class="form-select" required>
+        <option disabled selected>Select a brand</option>
+        <option>Apple</option>
+        <option>Samsung</option>
+        <option>Dell</option>
+        <option>HP</option>
+        <option>Microsoft</option>
+        <option>Xiaomi</option>
+        <option>LG</option>
+        <option>Sony</option>
+        <option>Fitbit</option>
+        <option>Nintendo</option>
+        <option>Razer</option>
+        <option>Bose</option>
+        <option>GoPro</option>
+        <option>Canon</option>
+        <option>Other</option>
+    </select>
+</div>
+
+<div class="mb-3" id="form-group-model_code">
+    <label for="product-model-code" class="form-label">Model Code</label>
+    <input type="text" id="product-model-code" name="model_code" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-color">
+    <label for="product-color" class="form-label">Color</label>
+    <input type="text" id="product-color" name="color" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-weight">
+    <label for="product-weight" class="form-label">Weight (kg)</label>
+    <input type="number" id="product-weight" name="weight" class="form-control" step="0.01">
+</div>
+</div>
+
+<!-- COLUNA DIREITA -->
+<div class="col-md-6">
+<div class="mb-3" id="form-group-dimensions">
+    <label for="product-dimensions" class="form-label">Dimensions</label>
+    <input type="text" id="product-dimensions" name="dimensions" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-processor">
+    <label for="product-processor" class="form-label">Processor</label>
+    <input type="text" id="product-processor" name="processor" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-screen">
+    <label for="product-screen" class="form-label">Screen</label>
+    <input type="text" id="product-screen" name="screen" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-ram_memory">
+    <label for="product-ram" class="form-label">RAM Memory</label>
+    <input type="text" id="product-ram" name="ram_memory" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-graphics_card">
+    <label for="product-graphics" class="form-label">Graphics Card</label>
+    <input type="text" id="product-graphics" name="graphics_card" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-storage">
+    <label for="product-storage" class="form-label">Storage</label>
+    <input type="text" id="product-storage" name="storage" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-keyboard">
+    <label for="product-keyboard" class="form-label">Keyboard</label>
+    <input type="text" id="product-keyboard" name="keyboard" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-os">
+    <label for="product-os" class="form-label">Operating System</label>
+    <input type="text" id="product-os" name="os" class="form-control">
+</div>
+
+<div class="mb-3" id="form-group-year">
+    <label for="product-year" class="form-label">Manufacture Year</label>
+    <input type="number" id="product-year" name="year" class="form-control">
+</div>
+</div>
+</div>
+
+<!-- DESCRIÇÃO -->
+<div class="mb-3 mt-4">
+<label for="product-description" class="form-label">Description</label>
+<textarea id="product-description" name="description" rows="5" class="form-control" placeholder="Enter Description" required></textarea>
+</div>
+
+<!-- IMAGENS -->
+<div class="mb-4">
+<label for="product-images" class="form-label">Product Images</label>
+<div id="product-images" class="border border-secondary rounded p-3">
+<!-- Image upload inputs are dynamically inserted here -->
+</div>
+</div>
+</form>
+        </div>
+    </div>
+
+
+    
     <!-- Scripts -->
     <script src="../scripts/auth.js"></script>
     <script>
+        
+        let lastAddedProduct = null;
+
+
+        function showAddProductForm() {
+            const formSection = document.getElementById('add-product-form');
+            formSection.classList.remove('d-none');
+
+            // Scroll into view
+            formSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Reset form
+            const form = document.getElementById('productForm');
+            form.reset();
+            [...form.elements].forEach(el => el.disabled = false);
+
+            // Reset buttons
+            const cancelBtn = document.querySelector('#add-product-form .btn-light');
+            const submitBtn = document.querySelector('#add-product-form .btn-success');
+
+            cancelBtn.textContent = 'Cancel';
+            submitBtn.classList.remove('d-none');
+
+            // Replace image upload area with basic input rows
+            const dropzone = document.getElementById('product-images');
+            dropzone.innerHTML = `
+            <div class="mb-2"><small class="text-muted">Upload up to 5 images and optionally set their order.</small></div>
+            <div id="image-input-group" class="d-flex flex-column gap-2"></div>
+            `;
+
+            const imageInputGroup = document.getElementById('image-input-group');
+            for (let i = 1; i <= 5; i++) {
+            const row = document.createElement("div");
+            row.className = "d-flex align-items-center gap-2";
+
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            fileInput.name = "images[]";
+            fileInput.className = "form-control";
+
+            const orderInput = document.createElement("input");
+            orderInput.type = "number";
+            orderInput.min = "1";
+            orderInput.max = "5";
+            orderInput.placeholder = "Order";
+            orderInput.name = "orders[]";
+            orderInput.className = "form-control";
+            orderInput.style.maxWidth = "100px";
+
+            row.appendChild(fileInput);
+            row.appendChild(orderInput);
+            imageInputGroup.appendChild(row);
+            }
+
+            // Refresh visible fields
+            const initialCategory = document.getElementById('product-category').value;
+            updateVisibleFields(initialCategory);
+            }
+
+    const categoryFieldMap = {
+        'Smartphones': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'storage', 'os', 'year'
+        ],
+        'Laptops & PCs': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'graphics_card',
+        'storage', 'keyboard', 'os', 'year'
+        ],
+        'Smartwatches': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'year'
+        ],
+        'Gaming': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'storage', 'year'
+        ],
+        'TVs & Monitors': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'screen', 'year'
+        ],
+        'Audio': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'year'
+        ],
+        'Tablets': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'processor', 'screen', 'ram_memory', 'storage', 'os', 'year'
+        ],
+        'Cameras': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'processor', 'screen', 'storage', 'os', 'year'
+        ],
+        'Accessories': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'year'
+        ],
+        'Home Appliances': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'year'
+        ],
+        'Other': [
+        'name', 'product_condition', 'availability', 'brand', 'model_code', 'color',
+        'weight', 'dimensions', 'year'
+        ]
+    };
+
+
+
+
+
+function updateVisibleFields(category) {
+    const allFields = [
+    'name',
+    'product_condition',
+    'availability',
+    'category',
+    'brand',
+    'model_code',
+    'color',
+    'weight',
+    'dimensions',
+    'processor',
+    'screen',
+    'ram_memory',
+    'graphics_card',
+    'storage',
+    'keyboard',
+    'os',
+    'year'
+    ];
+
+
+    allFields.forEach(field => {
+        const group = document.getElementById(`form-group-${field}`);
+        if (group) group.classList.add('d-none');
+    });
+
+    const visibleFields = categoryFieldMap[category] || [];
+    visibleFields.forEach(field => {
+        const group = document.getElementById(`form-group-${field}`);
+        if (group) group.classList.remove('d-none');
+    });
+    }
+
+
+
+    document.getElementById('product-category').addEventListener('change', function () {
+        const selectedCategory = this.value;
+        updateVisibleFields(selectedCategory);
+        });
+
+    // Inicializa no carregamento
+    const initialCategory = document.getElementById('product-category').value;
+    updateVisibleFields(initialCategory);
+
+
+    document.getElementById('productForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const data = {};
+
+    const fields = [
+        'name', 'store_nipc', 'product_condition', 'availability', 'description', 'category',
+        'brand', 'model_code', 'color', 'weight', 'dimensions', 'processor',
+        'screen', 'ram_memory', 'graphics_card', 'storage', 'keyboard', 'os', 'year'
+    ];
+
+    fields.forEach(field => {
+        const el = form.elements[field];
+        if (el) {
+            if (el.type === 'checkbox') {
+                data[field] = el.checked;
+            } else if (el.type === 'number') {
+                data[field] = el.value ? parseFloat(el.value) : null;
+            } else {
+                data[field] = el.value || null;
+            }
+        }
+    });
+
+    if (typeof data.availability === 'string') {
+        data.availability = data.availability === 'true';
+    }
+
+    try {
+        // Submit product
+        const res = await fetch('/tt/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            alert('Failed to add product: ' + err.error);
+            return;
+        }
+
+        const addedProduct = await res.json();
+
+        // Save product ID and name globally
+        lastAddedProduct = {
+            id: addedProduct.id,
+            name: addedProduct.name
+        };
+        console.log("Saved product:", lastAddedProduct);
+
+        // Collect image filenames and orders
+        const rows = document.querySelectorAll('#image-input-group > div');
+        const images = [];
+        const orders = [];
+
+        rows.forEach((row, idx) => {
+            const fileInput = row.querySelector('input[type="file"]');
+            const orderInput = row.querySelector('input[type="number"]');
+
+            if (fileInput.files[0]) {
+                const fileName = fileInput.files[0].name;
+                const imageOrder = orderInput.value || (idx + 1);
+                images.push(fileName);
+                orders.push(parseInt(imageOrder));
+            }
+        });
+
+        // Submit image metadata
+        if (images.length > 0) {
+            const imgRes = await fetch('/tt/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: addedProduct.id,
+                    images,
+                    orders
+                })
+            });
+
+            if (!imgRes.ok) {
+                const err = await imgRes.json();
+                alert('Images upload failed: ' + err.error);
+                return;
+            }
+        }
+
+        alert('Product added successfully!');
+
+        // Hide add product form and show product table + filters etc
+        document.getElementById('add-product-form').classList.add('d-none');
+
+        // Check if repair tab is active
+        const isRepair = document.getElementById("repairTab").classList.contains("active");
+
+        // Open order form accordingly
+        openOrderForm(isRepair ? 'repair' : 'sell', lastAddedProduct);
+
+    } catch (err) {
+        console.error(err);
+        alert('Error submitting product.');
+    }
+});
+
+
+function openOrderForm(type, product) {
+    // Show form
+    document.getElementById('ordersTableContainer').style.display = 'none';
+    document.getElementById('orderFormContainer').style.display = 'block';
+
+    // Switch tabs
+    document.getElementById('sellTab').classList.toggle('active', type === 'sell');
+    document.getElementById('repairTab').classList.toggle('active', type === 'repair');
+    document.getElementById('sellFields').style.display = (type === 'sell') ? 'block' : 'none';
+    document.getElementById('repairFields').style.display = (type === 'repair') ? 'block' : 'none';
+
+    // Fill fields
+    if (product) {
+        if (type === 'repair') {
+            document.getElementById('repair-product-name').value = product.name;
+            document.getElementById('repair-product-id').value = product.id;
+        } else {
+            document.getElementById('sell-product-name').value = product.name;
+            document.getElementById('sell-product-id').value = product.id;
+        }
+    }
+}
+
+
+
+
+/////////////////up, is the add product form////////////////////////////////
+
+
+function animateListItems(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+
+        const items = container.children;
+
+        Array.from(items).forEach((item, index) => {
+            item.classList.add('animate-item');
+            item.style.animationDelay = `${index * 70}ms`;
+        });
+    }
+        let currentOrderType = null; // 'repair' or 'sell'
+
+        function openProductForm(orderType) {
+            currentOrderType = orderType;
+            document.getElementById('orderFormContainer').style.display = 'none';
+            showAddProductForm();
+        }
+
+        // Modify your existing `hideAddProductForm` to optionally return to the order form:
+        function hideAddProductForm() {
+            document.getElementById('add-product-form').classList.add('d-none');
+            document.getElementById('product-table').classList.remove('d-none');
+            document.getElementById('filters-row').classList.remove('d-none');
+            document.getElementById('top-buttons').classList.remove('d-none');
+
+            // Re-show the order form if it was launched from there
+            if (currentOrderType === 'repair' || currentOrderType === 'sell') {
+                document.getElementById('orderFormContainer').style.display = 'block';
+            }
+        }
+        function disableHiddenFields() {
+            const sellFields = document.getElementById("sellFields");
+            if (sellFields.style.display === "none") {
+                sellFields.querySelectorAll("input").forEach(input => {
+                    input.disabled = true;
+                });
+            }
+        }
         function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
             if (!container) return;
-
+    
             const items = container.children;
-
+    
             Array.from(items).forEach((item, index) => {
                 item.classList.add('animate-item');
                 item.style.animationDelay = `${index * 70}ms`;
             });
         }
+    
         // Handle showing the Add Order form
         function showOrderForm() {
-            document.getElementById('ordersTableContainer').style.display = 'none';
-            document.getElementById('orderFormContainer').style.display = 'block';
-            switchOrderType('sell'); // Default to sell order
+            // Default to repair tab active
+            openOrderForm('repair', lastAddedProduct || { id: '', name: '' });
         }
 
+    
         // Return to Orders Table
         function showOrdersTable() {
             document.getElementById('ordersTableContainer').style.display = 'block';
             document.getElementById('orderFormContainer').style.display = 'none';
         }
-
+    
         // Switch between Sell and Repair tabs
         function switchOrderType(type) {
             const sellFields = document.getElementById('sellFields');
             const repairFields = document.getElementById('repairFields');
             const sellTab = document.getElementById('sellTab');
             const repairTab = document.getElementById('repairTab');
-
+    
             if (type === 'sell') {
                 sellFields.style.display = 'block';
                 repairFields.style.display = 'none';
@@ -219,7 +716,7 @@
                 repairTab.classList.add('active');
             }
         }
-
+    
         // Fetch and display repair orders in the table
         async function fetchRepairOrders() {
             try {
@@ -227,38 +724,44 @@
                 const repairs = await res.json();
                 const repairList = document.getElementById('order-list');
                 repairList.innerHTML = '';
-
+    
                 repairs.forEach(repair => {
                     const row = document.createElement('tr');
-
+    
                     const orderIdCell = document.createElement('td');
                     orderIdCell.textContent = repair.id || 'N/A';
                     row.appendChild(orderIdCell);
-
+    
                     const typeCell = document.createElement('td');
                     typeCell.textContent = 'Repair Order';
                     row.appendChild(typeCell);
-
+    
                     const detailsCell = document.createElement('td');
                     detailsCell.textContent = repair.name || 'Unnamed Product';
                     row.appendChild(detailsCell);
-
+    
                     const statusCell = document.createElement('td');
                     statusCell.textContent = repair.status ? 'Completed' : 'Pending';
                     row.appendChild(statusCell);
-
+    
                     repairList.appendChild(row);
                 });
             } catch (err) {
                 console.error('Error fetching repair orders:', err);
             }
         }
-
+    
         // Handle form submission for repair orders
         document.getElementById("orderForm").addEventListener("submit", async function (e) {
             e.preventDefault();
 
             const isRepair = document.getElementById("repairTab").classList.contains("active");
+
+            // ✅ Disable hidden required fields to prevent validation errors
+            const sellFields = document.getElementById("sellFields");
+            sellFields.querySelectorAll("input").forEach(input => {
+                input.disabled = (sellFields.style.display === "none");
+            });
 
             if (isRepair) {
                 const productId = document.getElementById("repair-product-id").value.trim();
@@ -270,6 +773,7 @@
                     return;
                 }
 
+    
                 try {
                     const response = await fetch('/tt/repair/add', {
                         method: 'POST',
@@ -282,9 +786,9 @@
                             price: parseFloat(price)
                         }),
                     });
-
+    
                     const result = await response.json();
-
+    
                     if (response.ok) {
                         alert("Repair order added successfully.");
                         showOrdersTable();
@@ -296,17 +800,20 @@
                     console.error("Submit failed:", err);
                     alert("An unexpected error occurred.");
                 }
-            } else {
-                // Handle sell order submission (if needed)
             }
+    
+            // ✅ Optional: Re-enable the sell inputs if needed (e.g., for switching tabs again)
+            sellFields.querySelectorAll("input").forEach(input => {
+        input.disabled = false;
+    });
         });
-
-
+    
         // Initial load
         window.onload = function () {
             fetchRepairOrders();
         };
     </script>
+    
     <!-- Scripts -->
 </body>
 
