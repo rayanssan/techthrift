@@ -1,3 +1,5 @@
+"use strict";
+
 // pagination.js
 const PRODUCTS_PER_PAGE = 20;
 let currentPage = 1;

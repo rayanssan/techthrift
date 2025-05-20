@@ -1,3 +1,5 @@
+"use strict";
+
 // test-create-products.js
 
 import fetch from 'node-fetch';
@@ -95,7 +97,7 @@ function generateProduct(category) {
 }
 
 async function submitProduct(product) {
-    const res = await fetch('http://localhost:3000/tt/add', {
+    const res = await fetch('/tt/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product)
