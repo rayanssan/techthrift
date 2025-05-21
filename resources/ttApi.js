@@ -1844,6 +1844,39 @@ router.delete('/ttuser/charity/remove/:id', verifyRequestOrigin, (req, res) => {
         });
 });
 
+
+// Get all product interests
+router.get('/ttuser/interests', verifyRequestOrigin, (req, res) => {
+    const query = `SELECT * FROM interests`;
+
+    db.query(query, (err, rows) => {
+        if (err) {
+            dbR.query(query, (err, rows) => {
+                if (err) return res.status(500).send({ error: err.message });
+                return res.status(200).json(rows || []);
+            });
+        } else {
+            return res.status(200).json(rows || []);
+        }
+    });
+});
+
+// Get client by email, needed when comparing interests and new added product for client notifications
+router.get('/ttuser/client/email/:email', verifyRequestOrigin, (req, res) => {
+    const query = `SELECT * FROM clients WHERE email = ?`;
+
+    db.query(query, [req.params.email], (err, rows) => {
+        if (err) {
+            dbR.query(query, [req.params.email], (err, rows) => {
+                if (err) return res.status(500).send({ error: err.message });
+                return res.status(200).json(rows[0] || {});
+            });
+        } else {
+            return res.status(200).json(rows[0] || {});
+        }
+    });
+});
+
 // Add product alert
 router.post('/ttuser/interest', verifyRequestOrigin, (req, res) => {
     const newInterest = req.body;
