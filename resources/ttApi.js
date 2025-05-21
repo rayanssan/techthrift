@@ -776,39 +776,38 @@ router.get('/tt/donation/:id', verifyRequestOrigin,
 
 // Set product up for donation
 router.post('/tt/donation/add', (req, res) => {
-    const newDonationProduct = req.body;
-    // Check if product exists in the products table
-    db.query('SELECT * FROM products WHERE id = ?', [newDonationProduct.id], (err, row) => {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row) {
-            return res.status(404).send('Product not found');
-        }
-        // Insert the product into the donationProducts table
-        db.execute('INSERT INTO donationProducts (id, charity) VALUES (?)',
-            [newDonationProduct.id, newDonationProduct.charity], function (err) {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                // Update replica
-                dbR.query('SELECT * FROM products WHERE id = ?', [newDonationProduct.id], (err, row) => {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (!row) {
-                        return res.status(404).send('Product not found');
-                    }
-                    // Insert the product into the donationProducts table
-                    dbR.execute('INSERT INTO donationProducts (id, charity) VALUES (?)',
-                        [newDonationProduct.id, newDonationProduct.charity], function (err) {
-                            if (err) {
-                                return res.status(500).send({ error: err.message });
-                            }
-                        });
+    const { id, donor, charity } = req.body;
+
+    if (!id || !donor || !charity) {
+        return res.status(400).send({ error: 'Missing id, donor or charity' });
+    }
+
+    // Check if product exists
+    db.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
+        if (err) return res.status(500).send({ error: err.message });
+        if (rows.length === 0) return res.status(404).send('Product not found');
+
+        // Insert into donationProducts
+        const insertQuery = `
+            INSERT INTO donationProducts (id, charity_nipc, donor_nif)
+            VALUES (?, ?, ?)
+        `;
+        const insertValues = [id, charity, donor];
+
+        db.execute(insertQuery, insertValues, function (err) {
+            if (err) return res.status(500).send({ error: err.message });
+
+            // Update replica DB
+            dbR.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
+                if (err) return res.status(500).send({ error: err.message });
+
+                dbR.execute(insertQuery, insertValues, function (err) {
+                    if (err) return res.status(500).send({ error: err.message });
                 });
-                res.status(201).json({ message: 'Product set for donation', product: row });
+
+                res.status(201).json({ message: 'Product set for donation' });
             });
+        });
     });
 });
 
