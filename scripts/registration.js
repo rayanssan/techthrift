@@ -28,49 +28,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-
+  
     if (!form.checkValidity()) {
       alert('Por favor preencha todos os campos obrigatórios.');
       return;
     }
-
+  
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user || !user.id) {
       alert('Utilizador não autenticado.');
       return;
     }
-
+  
     const data = {};
     Array.from(form.elements).forEach(el => {
       if (!el.disabled && el.name) {
         data[el.name] = el.value || null;
       }
     });
-
+  
     // Dados fixos do utilizador autenticado
     data.id = user.id;
     data.name = user.name;
     data.email = user.email;
-
+  
     const userType = data.userType;
     delete data.userType;
-
-    console.log("Dados a enviar:", data);
-
+  
+  
     // Remover campos que não pertencem à tabela clients
     const employeeFields = ['store', 'internal_number'];
     const entityFields = ['nipc', 'entity_type', 'address', 'city', 'country'];
-
+  
     const clientData = { ...data };
     if (userType === 'employee') {
-      entityFields.forEach(f => delete clientData[f]);
+      employeeFields.forEach(f => delete clientData[f]);
+      entityFields.forEach(f => delete clientData[f]); 
     } else if (userType === 'entity') {
       employeeFields.forEach(f => delete clientData[f]);
+      entityFields.forEach(f => delete clientData[f]);  // <<< Linha adicionada
     } else {
       employeeFields.forEach(f => delete clientData[f]);
       entityFields.forEach(f => delete clientData[f]);
     }
-
+  
     // 1. Atualizar CLIENTE
     fetch('/ttuser/client/add', {
       method: 'POST',
@@ -82,38 +83,42 @@ document.addEventListener('DOMContentLoaded', function () {
           const msg = await res.text();
           throw new Error(msg || 'Erro ao atualizar dados do cliente.');
         }
-
+  
         // 2. Registo específico
         if (userType === 'employee') {
+          const employeeData = {
+            id: data.id,
+            store: data.store,
+            internal_number: data.internal_number
+          }
           return fetch('/ttuser/employee/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: data.id,
-              store: data.store,
-              internal_number: data.internal_number || null
-            })
+            body: JSON.stringify(employeeData)
           });
         }
-
+  
         if (userType === 'entity') {
           const entityData = {
             id: data.id,
             nipc: data.nipc,
-            entity_type: data.entity_type
+            entity_type: data.entity_type,
+            address: data.address,
+            city: data.city,
+            country: data.country
           };
-
+  
           const endpoint = data.entity_type === 'store'
             ? '/ttuser/store/add'
             : '/ttuser/charity/add';
-
+  
           return fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entityData)
           });
         }
-
+  
         return Promise.resolve();
       })
       .then(async res => {
@@ -121,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const msg = await res.text();
           throw new Error(msg || 'Erro ao completar registo.');
         }
-
+  
         alert('Registo efetuado com sucesso!');
         localStorage.removeItem('user');
         window.location.href = '/homepage';
@@ -131,4 +136,5 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Erro: ' + err.message);
       });
   });
+  
 });
