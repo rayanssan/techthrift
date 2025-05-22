@@ -2,7 +2,7 @@
 
 window.addEventListener('userAuthenticated', (event) => {
     const loggedInUser = event.detail;
-    if (!loggedInUser) {
+    if (!loggedInUser || loggedInUser.id == null) {
        location.href = "/authentication";
     }
     const profileInfo = document.getElementById('profile-info');

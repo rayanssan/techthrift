@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
   
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user || !user.id) {
+    const user = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!user) {
       alert('Utilizador não autenticado.');
       return;
     }
@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   
     // Dados fixos do utilizador autenticado
-    data.id = user.id;
     data.name = user.name;
     data.email = user.email;
   
@@ -71,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
       employeeFields.forEach(f => delete clientData[f]);
       entityFields.forEach(f => delete clientData[f]);
     }
-  
+    console.log(clientData);
     // 1. Atualizar CLIENTE
     fetch('/ttuser/client/add', {
       method: 'POST',
@@ -83,11 +82,13 @@ document.addEventListener('DOMContentLoaded', function () {
           const msg = await res.text();
           throw new Error(msg || 'Erro ao atualizar dados do cliente.');
         }
-  
+      
+        const insertedClient = await res.json();
+
         // 2. Registo específico
         if (userType === 'employee') {
           const employeeData = {
-            id: data.id,
+            id: insertedClient.id,
             store: data.store,
             internal_number: data.internal_number
           }
@@ -100,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
   
         if (userType === 'entity') {
           const entityData = {
-            id: data.id,
+            id: insertedClient.id,
             nipc: data.nipc,
             entity_type: data.entity_type,
             address: data.address,
@@ -128,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
   
         alert('Registo efetuado com sucesso!');
-        localStorage.removeItem('user');
         window.location.href = '/homepage';
       })
       .catch(err => {

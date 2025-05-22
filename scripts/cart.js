@@ -4,7 +4,7 @@ window.addEventListener('userAuthenticated', (event) => {
     const loggedInUser = event.detail;
     fetchCartProducts().then(() => {
 
-        if (loggedInUser == null) {
+        if (loggedInUser == null || loggedInUser.id == null) {
             if (document.querySelector("#paypal")) {
                 document.querySelector("#paypal").innerHTML = `
               <p class="text-center fs-5">Sign in to continue with payment!</p>

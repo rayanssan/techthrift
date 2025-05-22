@@ -868,36 +868,45 @@ router.get('/tt/categories', verifyRequestOrigin,
         });
     });
 
-// Get all users in the system
+// Get all clients in the system
 router.get('/ttuser', verifyRequestOrigin, (req, res) => {
-    db.query('SELECT * FROM clients', [], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query('SELECT * FROM clients', [], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                res.json(rows);
-            });
-        } else {
-            res.json(rows);
-        }
-    });
-});
+    const { user_type } = req.query;
 
-// Get all clients
-router.get('/ttuser/client', verifyRequestOrigin, (req, res) => {
-    const query = `SELECT * FROM clients c
-    WHERE c.id NOT IN (
-        SELECT id FROM entities
-    )
-    AND c.id NOT IN (
-        SELECT id FROM employees
-    )`;
-    db.query(query, [], (err, rows) => {
+    let whereClause = '';
+    const params = [];
+
+    if (user_type === 'store') {
+        whereClause = 'WHERE e.entity_type = "store"';
+    } else if (user_type === 'charity') {
+        whereClause = 'WHERE e.entity_type = "charity"';
+    } else if (user_type === 'employee') {
+        whereClause = 'WHERE em.id IS NOT NULL';
+    } else if (user_type === 'client') {
+        whereClause = `
+        WHERE e.entity_type IS NULL 
+        AND em.id IS NULL
+        `;
+    }
+
+    const query = `
+    SELECT 
+      c.*,
+      CASE 
+        WHEN e.entity_type = 'store' THEN 'store'
+        WHEN e.entity_type = 'charity' THEN 'charity'
+        WHEN em.id IS NOT NULL THEN 'employee'
+        ELSE 'client'
+      END AS user_type
+    FROM clients c
+    LEFT JOIN entities e ON e.id = c.id
+    LEFT JOIN employees em ON em.id = c.id
+    ${whereClause}
+  `;
+
+    db.query(query, params, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [], (err, rows) => {
+            dbR.query(query, params, (err, rows) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
@@ -914,17 +923,20 @@ router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
     const { id } = req.params;
 
     // Check all possibilities (id, nif, nic, email, phone_number)
-    let query = `
-        SELECT * 
-        FROM clients c
-        WHERE (c.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?)
-        AND c.id NOT IN (
-            SELECT id FROM entities
-        )
-        AND c.id NOT IN (
-            SELECT id FROM employees
-        )
-    `;
+    const query = `
+    SELECT 
+      c.*,
+      CASE 
+        WHEN e.entity_type = 'store' THEN 'store'
+        WHEN e.entity_type = 'charity' THEN 'charity'
+        WHEN em.id IS NOT NULL THEN 'employee'
+        ELSE 'client'
+      END AS user_type
+    FROM clients c
+    LEFT JOIN entities e ON e.id = c.id
+    LEFT JOIN employees em ON em.id = c.id
+    WHERE (c.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?)
+    LIMIT 1`;
 
     // Use the `id` parameter for all possible search options
     db.query(query, [id, id, id, id, id], (err, rows) => {
@@ -936,14 +948,14 @@ router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
                 }
 
                 if (rows.length === 0) {
-                    return res.status(404).send('Client not found');
+                    return res.status(204).send();
                 }
 
                 // Send the client details in the response
                 res.json(rows[0]);
             });
         } else if (rows.length === 0) {
-            return res.status(404).send('Client not found');
+            return res.status(204).send();
         } else {
             // Send the client details in the response
             res.json(rows[0]);
@@ -980,7 +992,11 @@ router.post('/ttuser/client/add', verifyRequestOrigin, (req, res) => {
             }
         });
 
-        res.status(201).send('Client successfully added');
+        res.status(201).json({
+            message: 'Client successfully added or updated',
+            id: result.insertId,
+            clientData: newClient
+        });
     });
 });
 
@@ -1113,51 +1129,47 @@ router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
 });
 
 //Add new employee
-
 router.post('/ttuser/employee/add', verifyRequestOrigin, (req, res) => {
     const newEmployee = req.body;
-  
+
     if (!newEmployee.id || !newEmployee.store || !newEmployee.internal_number) {
-      return res.status(400).send({ error: "Missing required fields: id, store, internal_number" });
+        return res.status(400).send({ error: "Missing required fields: id, store, internal_number" });
     }
-  
-    // Verificar se o cliente existe
+
+    // Check if clients exists
     db.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, rows) => {
-      if (err) return res.status(500).send({ error: err.message });
-      if (rows.length === 0) return res.status(404).send('Client not found');
-  
-      // Inserir na tabela employees
-      db.query(
-        'INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
-        [newEmployee.id, newEmployee.store, newEmployee.internal_number],
-        (err) => {
-          if (err) return res.status(500).send({ error: err.message });
-  
-          // Atualizar réplica
-          dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, rowsR) => {
-            if (err) {
-              console.error('Erro na réplica (select):', err.message);
-              // Não bloqueia o sucesso principal, apenas log
-            } else if (rowsR.length === 0) {
-              console.error('Client not found na réplica');
-            } else {
-              dbR.query(
-                'INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
-                [newEmployee.id, newEmployee.store, newEmployee.internal_number],
-                (err) => {
-                  if (err) {
-                    console.error('Erro na réplica (insert):', err.message);
-                  }
-                }
-              );
+        if (err) return res.status(500).send({ error: err.message });
+        if (rows.length === 0) return res.status(404).send('Client not found');
+
+        // Insert into employees table
+        db.query(
+            'INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
+            [newEmployee.id, newEmployee.store, newEmployee.internal_number],
+            (err) => {
+                if (err) return res.status(500).send({ error: err.message });
+
+                // Update replica
+                dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row) {
+                        return res.status(404).send('Client not found');
+                    }
+                    // Insert the user into the employees table
+                    dbR.execute('INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
+                        [newEmployee.id, newEmployee.store, newEmployee.internal_number], function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        });
+                });
+
+                res.status(201).json({ message: 'Employee successfully added' });
             }
-          });
-  
-          res.status(201).json({ message: 'Employee successfully added' });
-        }
-      );
+        );
     });
-  });
+});
 
 // Edit employee
 router.put('/ttuser/employee/edit', verifyRequestOrigin, (req, res) => {
@@ -1193,28 +1205,6 @@ router.put('/ttuser/employee/edit', verifyRequestOrigin, (req, res) => {
             }
         });
         res.send('Employee successfully updated');
-    });
-});
-
-// Remove employee
-router.delete('/ttuser/employee/remove/:id', verifyRequestOrigin, (req, res) => {
-    db.execute('DELETE FROM employees WHERE id = ?', [req.params.id], function (err) {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).send('Employee not found');
-        }
-        // Update replica
-        dbR.execute('DELETE FROM employees WHERE id = ?', [req.params.id], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            if (this.changes === 0) {
-                return res.status(404).send('Employee not found');
-            }
-        });
-        res.send('Employee successfully removed');
     });
 });
 
@@ -1402,50 +1392,50 @@ router.get('/ttuser/store/:id', verifyRequestOrigin, (req, res) => {
 // Add new store
 router.post('/ttuser/store/add', verifyRequestOrigin, (req, res) => {
     const newStore = req.body;
-  
+
     // Check if new store exists in the clients table
     db.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
-      if (err) {
-        return res.status(500).send({ error: err.message });
-      }
-      if (!row || row.length === 0) {
-        return res.status(404).send('Client not found');
-      }
-  
-      // Insert the store into the entities table including address, city, country
-      db.execute(
-        'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "store", ?, ?, ?)',
-        [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
-        function (err) {
-          if (err) {
+        if (err) {
             return res.status(500).send({ error: err.message });
-          }
-  
-          // Update replica
-          dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
-            if (err) {
-              return res.status(500).send({ error: err.message });
-            }
-            if (!row || row.length === 0) {
-              return res.status(404).send('Client not found');
-            }
-  
-            dbR.execute(
-              'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "store", ?, ?, ?)',
-              [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
-              function (err) {
-                if (err) {
-                  return res.status(500).send({ error: err.message });
-                }
-              }
-            );
-          });
-  
-          res.status(201).json({ message: 'Store successfully added', product: row });
         }
-      );
+        if (!row || row.length === 0) {
+            return res.status(404).send('Client not found');
+        }
+
+        // Insert the store into the entities table including address, city, country
+        db.execute(
+            'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "store", ?, ?, ?)',
+            [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
+            function (err) {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+
+                // Update replica
+                dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row || row.length === 0) {
+                        return res.status(404).send('Client not found');
+                    }
+
+                    dbR.execute(
+                        'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "store", ?, ?, ?)',
+                        [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
+                        function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        }
+                    );
+                });
+
+                res.status(201).json({ message: 'Store successfully added', product: row });
+            }
+        );
     });
-  });
+});
 
 // Edit store
 router.put('/ttuser/store/edit', verifyRequestOrigin, (req, res) => {
@@ -1483,106 +1473,6 @@ router.put('/ttuser/store/edit', verifyRequestOrigin, (req, res) => {
     });
 });
 
-// Remove store
-router.delete('/ttuser/store/remove/:id', verifyRequestOrigin, (req, res) => {
-    db.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "store"',
-        [req.params.id], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            if (this.changes === 0) {
-                return res.status(404).send('Store not found');
-            }
-            // Update replica
-            dbR.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "store"',
-                [req.params.id], function (err) {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (this.changes === 0) {
-                        return res.status(404).send('Store not found');
-                    }
-                });
-            res.send('Store successfully removed');
-        });
-});
-
-// Add new charity project
-router.post('/ttuser/charity/project/add', (req, res) => {
-    const { name, description, endDate, charity } = req.body;
-  
-    if (!name || !description || !charity) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-  
-    const query = `
-      INSERT INTO charityProjects (name, description, endDate, charity)
-      VALUES (?, ?, ?, ?)
-    `;
-  
-    const values = [name, description, endDate || null, charity];
-  
-    db.query(query, values, (err, result) => {
-      if (err) {
-        dbR.query(query, values, (err, result) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.json({ success: true, insertedId: result.insertId });
-        });
-      } else {
-        res.json({ success: true, insertedId: result.insertId });
-      }
-    });
-  });
-
-  // Delete charity projects in bulk
-router.post('/ttuser/charity/project/delete', (req, res) => {
-    const { ids } = req.body;
-  
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ error: 'No project IDs provided' });
-    }
-  
-    const placeholders = ids.map(() => '?').join(',');
-    const query = `DELETE FROM charityProjects WHERE id IN (${placeholders})`;
-  
-    db.query(query, ids, (err, result) => {
-      if (err) {
-        dbR.query(query, ids, (err, result) => {
-          if (err) return res.status(500).json({ error: err.message });
-          return res.json({ success: true, deleted: result.affectedRows });
-        });
-      } else {
-        res.json({ success: true, deleted: result.affectedRows });
-      }
-    });
-  });
-  
-  
-  
-// Get charity projects by charity ID
-router.get('/ttuser/charity/projects', (req, res) => {
-    const { charity_id } = req.query;
-    if (!charity_id) return res.status(400).json({ error: 'charity_id required' });
-  
-    const query = `
-      SELECT id, name, description, endDate
-      FROM charityProjects
-      WHERE charity = ?
-      ORDER BY endDate ASC
-    `;
-  
-    db.query(query, [charity_id], (err, rows) => {
-      if (err) {
-        dbR.query(query, [charity_id], (err, rows) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.json(rows);
-        });
-      } else {
-        res.json(rows);
-      }
-    });
-  });
-  
 // Get all charities
 router.get('/ttuser/charity', verifyRequestOrigin, (req, res) => {
     db.query(`SELECT * FROM entities e 
@@ -1767,50 +1657,50 @@ router.get('/ttuser/charity/:id', verifyRequestOrigin, (req, res) => {
 // Add new charity
 router.post('/ttuser/charity/add', verifyRequestOrigin, (req, res) => {
     const newCharity = req.body;
-  
+
     // Check if charity exists in clients table
     db.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
-      if (err) {
-        return res.status(500).send({ error: err.message });
-      }
-      if (!row || row.length === 0) {
-        return res.status(404).send('Client not found');
-      }
-  
-      // Insert charity into entities table including address, city, country
-      db.execute(
-        'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "charity", ?, ?, ?)',
-        [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
-        function (err) {
-          if (err) {
+        if (err) {
             return res.status(500).send({ error: err.message });
-          }
-  
-          // Update replica
-          dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
-            if (err) {
-              return res.status(500).send({ error: err.message });
-            }
-            if (!row || row.length === 0) {
-              return res.status(404).send('Client not found');
-            }
-  
-            dbR.execute(
-              'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "charity", ?, ?, ?)',
-              [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
-              function (err) {
-                if (err) {
-                  return res.status(500).send({ error: err.message });
-                }
-              }
-            );
-          });
-  
-          res.status(201).json({ message: 'Charity successfully added', product: row });
         }
-      );
+        if (!row || row.length === 0) {
+            return res.status(404).send('Client not found');
+        }
+
+        // Insert charity into entities table including address, city, country
+        db.execute(
+            'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "charity", ?, ?, ?)',
+            [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
+            function (err) {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+
+                // Update replica
+                dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
+                    if (err) {
+                        return res.status(500).send({ error: err.message });
+                    }
+                    if (!row || row.length === 0) {
+                        return res.status(404).send('Client not found');
+                    }
+
+                    dbR.execute(
+                        'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "charity", ?, ?, ?)',
+                        [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
+                        function (err) {
+                            if (err) {
+                                return res.status(500).send({ error: err.message });
+                            }
+                        }
+                    );
+                });
+
+                res.status(201).json({ message: 'Charity successfully added', product: row });
+            }
+        );
     });
-  });
+});
 
 // Edit charity
 router.put('/ttuser/charity/edit', verifyRequestOrigin, (req, res) => {
@@ -1848,30 +1738,79 @@ router.put('/ttuser/charity/edit', verifyRequestOrigin, (req, res) => {
     });
 });
 
-// Remove charity
-router.delete('/ttuser/charity/remove/:id', verifyRequestOrigin, (req, res) => {
-    db.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "charity"',
-        [req.params.id], function (err) {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-            if (this.changes === 0) {
-                return res.status(404).send('Charity not found');
-            }
-            // Update replica
-            dbR.execute('DELETE FROM entities e WHERE e.id = ? AND e.entity_type = "charity"',
-                [req.params.id], function (err) {
-                    if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (this.changes === 0) {
-                        return res.status(404).send('Charity not found');
-                    }
-                });
-            res.send('Charity successfully removed');
-        });
+// Add new charity project
+router.post('/ttuser/charity/project/add', (req, res) => {
+    const { name, description, endDate, charity } = req.body;
+
+    if (!name || !description || !charity) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const query = `
+      INSERT INTO charityProjects (name, description, endDate, charity)
+      VALUES (?, ?, ?, ?)
+    `;
+
+    const values = [name, description, endDate || null, charity];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            dbR.query(query, values, (err, result) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ success: true, insertedId: result.insertId });
+            });
+        } else {
+            res.json({ success: true, insertedId: result.insertId });
+        }
+    });
 });
 
+// Delete charity projects in bulk
+router.post('/ttuser/charity/project/delete', (req, res) => {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'No project IDs provided' });
+    }
+
+    const placeholders = ids.map(() => '?').join(',');
+    const query = `DELETE FROM charityProjects WHERE id IN (${placeholders})`;
+
+    db.query(query, ids, (err, result) => {
+        if (err) {
+            dbR.query(query, ids, (err, result) => {
+                if (err) return res.status(500).json({ error: err.message });
+                return res.json({ success: true, deleted: result.affectedRows });
+            });
+        } else {
+            res.json({ success: true, deleted: result.affectedRows });
+        }
+    });
+});
+
+// Get charity projects by charity ID
+router.get('/ttuser/charity/projects', (req, res) => {
+    const { charity_id } = req.query;
+    if (!charity_id) return res.status(400).json({ error: 'charity_id required' });
+
+    const query = `
+      SELECT id, name, description, endDate
+      FROM charityProjects
+      WHERE charity = ?
+      ORDER BY endDate ASC
+    `;
+
+    db.query(query, [charity_id], (err, rows) => {
+        if (err) {
+            dbR.query(query, [charity_id], (err, rows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
+        }
+    });
+});
 
 // Get all product interests
 router.get('/ttuser/interests', verifyRequestOrigin, (req, res) => {

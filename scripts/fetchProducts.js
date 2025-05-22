@@ -359,7 +359,7 @@ if (document.body.id === "homepage") {
 
             // Check if product is in user's wishlist
             const checkWishlist = () => {
-                if (loggedInUser) {
+                if (loggedInUser || loggedInUser.id != null) {
                     fetch(`/ttuser/wishlist/${loggedInUser.email}`)
                         .then(res => res.json())
                         .then(wishlistItems => {
@@ -486,7 +486,7 @@ if (document.body.id === "homepage") {
                         modal.show();
                     });
                 });
-                if (loggedInUser == null) {
+                if (loggedInUser == null && loggedInUser.id == null) {
                     if (document.getElementById('add-to-wishlist-button')) {
                         document.getElementById('add-to-wishlist-button').style.display = 'none';
                     }

@@ -6,6 +6,32 @@ body {
     transition: all;
 }
 
+body::before {
+  content: "Loading...";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: white;
+  color: black;
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: 'Lucida Grande', sans-serif;
+
+  z-index: 9999;
+  pointer-events: none;
+}
+
+body.loaded::before {
+  display: none;
+}
+
 .navbar-brand {
     font-weight: bold;
 }
