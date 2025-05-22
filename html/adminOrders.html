@@ -132,7 +132,7 @@
                     <!-- Repair Form Fields -->
                     <div id="repairFields">
                         <div class="mb-3">
-                            <label class="form-label">Selected Product</label>
+                            <label for="repair-product-name" class="form-label">Selected Product</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="repair-product-name"
                                     placeholder="No product selected" readonly>
@@ -157,7 +157,7 @@
                     <!-- You can include sellFields if needed -->
                     <div id="sellFields" style="display: none;">
                         <div class="mb-3">
-                            <label class="form-label">Selected Product</label>
+                            <label for="sell-product-name" class="form-label">Selected Product</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="sell-product-name"
                                     placeholder="No product selected" readonly>
@@ -346,10 +346,13 @@
         </div>
 
         <!-- Scripts -->
-        <script>
+         
+        <script >
 
             let lastAddedProduct = null;
-
+            document.addEventListener('DOMContentLoaded', function () {
+                fetchRepairOrders();
+            });
 
             function showAddProductForm() {
                 const formSection = document.getElementById('add-product-form');
@@ -679,17 +682,7 @@
                     });
                 }
             }
-            function animateListItems(containerSelector) {
-                const container = document.querySelector(containerSelector);
-                if (!container) return;
-
-                const items = container.children;
-
-                Array.from(items).forEach((item, index) => {
-                    item.classList.add('animate-item');
-                    item.style.animationDelay = `${index * 70}ms`;
-                });
-            }
+            
 
             // Handle showing the Add Order form
             function showOrderForm() {
@@ -702,6 +695,8 @@
             function showOrdersTable() {
                 document.getElementById('ordersTableContainer').style.display = 'block';
                 document.getElementById('orderFormContainer').style.display = 'none';
+                fetchRepairOrders();
+
             }
 
             // Switch between Sell and Repair tabs
@@ -725,38 +720,43 @@
             }
 
             // Fetch and display repair orders in the table
-            async function fetchRepairOrders() {
-                try {
-                    const res = await fetch('/tt/repair');
-                    const repairs = await res.json();
-                    const repairList = document.getElementById('order-list');
-                    repairList.innerHTML = '';
+async function fetchRepairOrders() {
+    try {
+        const res = await fetch('/tt/repair');
+        const repairs = await res.json();
 
-                    repairs.forEach(repair => {
-                        const row = document.createElement('tr');
+        // Debug: log the full JSON response
+        console.log('Fetched repair orders:', repairs);
 
-                        const orderIdCell = document.createElement('td');
-                        orderIdCell.textContent = repair.id || 'N/A';
-                        row.appendChild(orderIdCell);
+        const repairList = document.getElementById('order-list');
+        repairList.innerHTML = '';
 
-                        const typeCell = document.createElement('td');
-                        typeCell.textContent = 'Repair Order';
-                        row.appendChild(typeCell);
+        repairs.forEach(repair => {
+            const row = document.createElement('tr');
 
-                        const detailsCell = document.createElement('td');
-                        detailsCell.textContent = repair.name || 'Unnamed Product';
-                        row.appendChild(detailsCell);
+            const orderIdCell = document.createElement('td');
+            orderIdCell.textContent = repair.id || 'N/A';
+            row.appendChild(orderIdCell);
 
-                        const statusCell = document.createElement('td');
-                        statusCell.textContent = repair.status ? 'Completed' : 'Pending';
-                        row.appendChild(statusCell);
+            const typeCell = document.createElement('td');
+            typeCell.textContent = 'Repair Order';
+            row.appendChild(typeCell);
 
-                        repairList.appendChild(row);
-                    });
-                } catch (err) {
-                    console.error('Error fetching repair orders:', err);
-                }
-            }
+            const detailsCell = document.createElement('td');
+            detailsCell.textContent = repair.name || 'Unnamed Product';
+            row.appendChild(detailsCell);
+
+            const statusCell = document.createElement('td');
+            statusCell.textContent = repair.status ? 'Completed' : 'Pending';
+            row.appendChild(statusCell);
+
+            repairList.appendChild(row);
+        });
+    } catch (err) {
+        console.error('Error fetching repair orders:', err);
+    }
+}
+
 
             // Handle form submission for repair orders
             document.getElementById("orderForm").addEventListener("submit", async function (e) {
@@ -817,6 +817,7 @@
 
             // Initial load
             window.onload = function () {
+
                 fetchRepairOrders();
             };
         </script>
