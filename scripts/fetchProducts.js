@@ -486,7 +486,7 @@ if (document.body.id === "homepage") {
                         modal.show();
                     });
                 });
-                if (loggedInUser == null && loggedInUser.id == null) {
+                if (loggedInUser == null || loggedInUser.id == null) {
                     if (document.getElementById('add-to-wishlist-button')) {
                         document.getElementById('add-to-wishlist-button').style.display = 'none';
                     }
