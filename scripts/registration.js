@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(err => {
         console.error(err);
-        alert('Erro: ' + err.message);
+        alert('Registration error: ' + err.message);
       });
   });
   
