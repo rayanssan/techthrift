@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   userTypeSelect.addEventListener('change', updateFormVisibility);
-  updateFormVisibility(); // aplicar no carregamento inicial
+  updateFormVisibility();
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   
-    // Dados fixos do utilizador autenticado
+    // Fixed data from an user
     data.name = user.name;
     data.email = user.email;
   
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
     delete data.userType;
   
   
-    // Remover campos que não pertencem à tabela clients
+    // Filter fields based on user type
     const employeeFields = ['store', 'internal_number'];
     const entityFields = ['nipc', 'entity_type', 'address', 'city', 'country'];
   
@@ -65,13 +65,13 @@ document.addEventListener('DOMContentLoaded', function () {
       entityFields.forEach(f => delete clientData[f]); 
     } else if (userType === 'entity') {
       employeeFields.forEach(f => delete clientData[f]);
-      entityFields.forEach(f => delete clientData[f]);  // <<< Linha adicionada
+      entityFields.forEach(f => delete clientData[f]); 
     } else {
       employeeFields.forEach(f => delete clientData[f]);
       entityFields.forEach(f => delete clientData[f]);
     }
     console.log(clientData);
-    // 1. Atualizar CLIENTE
+    // Upload Client
     fetch('/ttuser/client/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -80,12 +80,12 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(async res => {
         if (!res.ok) {
           const msg = await res.text();
-          throw new Error(msg || 'Erro ao atualizar dados do cliente.');
+          throw new Error(msg || 'Error uploading client data.');
         }
       
         const insertedClient = await res.json();
 
-        // 2. Registo específico
+        // Handle employees and entities
         if (userType === 'employee') {
           const employeeData = {
             id: insertedClient.id,
@@ -98,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
             body: JSON.stringify(employeeData)
           });
         }
-  
         if (userType === 'entity') {
           const entityData = {
             id: insertedClient.id,
@@ -108,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function () {
             city: data.city,
             country: data.country
           };
-  
           const endpoint = data.entity_type === 'store'
             ? '/ttuser/store/add'
             : '/ttuser/charity/add';
@@ -125,11 +123,12 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(async res => {
         if (res && !res.ok) {
           const msg = await res.text();
-          throw new Error(msg || 'Erro ao completar registo.');
+          throw new Error(msg || 'Registration error.');
         }
   
-        alert('Registo efetuado com sucesso!');
-        window.location.href = '/homepage';
+        showMessage("Welcome to TechThrift!", "Registration Successful.", "success").then( () => {
+          window.location.href = '/homepage';
+        });
       })
       .catch(err => {
         console.error(err);
