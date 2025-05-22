@@ -1,51 +1,57 @@
 "use strict";
 
 /**
- * Displays a Bootstrap modal with a message and a title.
+ * Displays a Bootstrap modal with a message and a title, and returns a Promise
+ * that resolves when the user closes the modal.
  * 
+ * @async
  * @function showMessage
  * @param {string} title - The title to be displayed on the modal header.
  * @param {string} message - The main content or message to display inside the modal body.
  * @param {string} type - The Bootstrap contextual class to style the modal (e.g., 'success', 'danger', 'warning').
+ * @returns {Promise<void>} - Resolves when the modal is closed.
  */
 function showMessage(title, message, type) {
     const modalId = 'responseModal';
 
-    // Create modal HTML dynamically
     const modalHtml = `
-          <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                      <div class="modal-header">
-                          <h5 class="modal-title" id="${modalId}Label">${title}</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body text-${type}">
-                          ${message}
-                      </div>
-                      <div class="modal-footer">
-                          <button type="button" class="btn btn-${type}" data-bs-dismiss="modal">Close</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-        `;
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="${modalId}Label">${title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-${type}">
+                        ${message}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-${type}" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
-    // Insert modal into the body if not already present
-    let existingModal = document.getElementById(modalId);
+    // Remove existing modal if present
+    const existingModal = document.getElementById(modalId);
     if (existingModal) {
-        existingModal.remove();  // Remove the old modal if it exists
+        existingModal.remove();
     }
 
-    // Append new modal HTML to the body
+    // Append the new modal
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-    // Show the modal using Bootstrap's modal API
-    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    const modalElement = document.getElementById(modalId);
+    const modal = new bootstrap.Modal(modalElement);
     modal.show();
 
-    document.getElementById(modalId).addEventListener('hidden.bs.modal', () => {
-        document.getElementById(modalId).remove();
+    // Return a promise that resolves when the modal is hidden
+    return new Promise((resolve) => {
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            modalElement.remove();
+            resolve();  // Resolve the promise here
+        }, { once: true }); // Ensure the event listener fires only once
     });
 }
 
