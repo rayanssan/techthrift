@@ -1113,14 +1113,14 @@ router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
                 }
 
                 if (rows.length === 0) {
-                    return res.status(404).send('Employee not found');
+                    return res.status(204).send();
                 }
 
                 // Send the employee details in the response
                 res.json(rows[0]);
             });
         } else if (rows.length === 0) {
-            return res.status(404).send('Employee not found');
+            return res.status(204).send();
         } else {
             // Send the employee details in the response
             res.json(rows[0]);
@@ -1315,7 +1315,7 @@ router.get('/ttuser/store/:id', verifyRequestOrigin, (req, res) => {
                     return res.status(500).json({ error: err.message });
                 }
                 if (rows.length === 0) {
-                    return res.status(404).send('Store not found');
+                    return res.status(204).send();
                 }
                 // Process the rows
                 const result = rows.reduce((acc, row) => {
@@ -1351,7 +1351,7 @@ router.get('/ttuser/store/:id', verifyRequestOrigin, (req, res) => {
                 res.json(result[0]);
             });
         } else if (rows.length === 0) {
-            return res.status(404).send('Store not found');
+            return res.status(204).send();
         } else {
             // Process the rows
             const result = rows.reduce((acc, row) => {
@@ -1578,7 +1578,7 @@ router.get('/ttuser/charity/:id', verifyRequestOrigin, (req, res) => {
                     return res.status(500).json({ error: err.message });
                 }
                 if (rows.length === 0) {
-                    return res.status(404).send('Charity not found');
+                    return res.status(204).send();
                 }
                 // Process the rows
                 const result = rows.reduce((acc, row) => {
@@ -1615,7 +1615,7 @@ router.get('/ttuser/charity/:id', verifyRequestOrigin, (req, res) => {
                 res.json(result[0]);
             });
         } else if (rows.length === 0) {
-            return res.status(404).send('Charity not found');
+            return res.status(204).send();
         } else {
             // Process the rows
             const result = rows.reduce((acc, row) => {

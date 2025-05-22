@@ -65,7 +65,37 @@ async function getUserProfile(token) {
     }
 
     const clientData = await clientRes.json();
-    loggedInUser = { ...clientData, ...loggedInUser };
+    let employeeData, storeData, charityData;
+
+    try {
+      const employeeRes = await fetch(`/ttuser/employee/${encodeURIComponent(loggedInUser.email)}`);
+      if (employeeRes.ok) {
+        employeeData = await employeeRes.json();
+      }
+    } catch (err) { }
+
+    try {
+      const storeRes = await fetch(`/ttuser/store/${encodeURIComponent(loggedInUser.email)}`);
+      if (storeRes.ok) {
+        storeData = await storeRes.json();
+      }
+    } catch (err) { }
+
+    try {
+      const charityRes = await fetch(`/ttuser/charity/${encodeURIComponent(loggedInUser.email)}`);
+      if (charityRes.ok) {
+        charityData = await charityRes.json();
+      }
+    } catch (err) { }
+
+    // Merge all defined objects into loggedInUser
+    loggedInUser = {
+      ...clientData,
+      ...(employeeData || {}),
+      ...(storeData || {}),
+      ...(charityData || {}),
+      ...loggedInUser
+    };
 
     // Alter UI accordingly
     adjustUI(loggedInUser);
@@ -200,8 +230,8 @@ window.onload = async () => {
   if (token) {
     localStorage.setItem("access_token", token);
     (async () => {
-    await getUserProfile(token);
-    document.body.classList.add('loaded');
+      await getUserProfile(token);
+      document.body.classList.add('loaded');
     })();
   } else {
     token = localStorage.getItem("access_token");

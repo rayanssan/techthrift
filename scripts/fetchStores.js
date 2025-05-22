@@ -83,7 +83,7 @@ async function renderStores() {
                     displayAddress = `${store.address}, ${store.city}, ${store.country}`;
                 }
                 html += `
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6 d-flex flex-wrap">
                         <a href="/store?is=${store.id}" 
                            id="storeid-${store.id}" 
                            class="store-link d-block p-3 border btn btn-light
