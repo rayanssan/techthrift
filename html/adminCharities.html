@@ -63,192 +63,194 @@
     </div>
 
 
-  <!-- Inside <body> tag, replacing only the .content div -->
-  <div class="content p-4" style="flex-grow: 1;">
-    <!-- Charity Projects Table -->
-    <!-- Charity Projects Table Filters -->
-    <div id="projectsTableContainer">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2>Charity Projects</h2>
-        <div>
-          <button class="btn btn-light me-2" onclick="deleteSelectedProjects()">Delete Selected</button>
-          <button class="btn btn-success" onclick="toggleProjectForm()">Add Project</button>
+    <!-- Inside <body> tag, replacing only the .content div -->
+    <div class="content p-4" style="flex-grow: 1;">
+      <!-- Charity Projects Table -->
+      <!-- Charity Projects Table Filters -->
+      <div id="projectsTableContainer">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2>Charity Projects</h2>
+          <div>
+            <button class="btn btn-light me-2" onclick="deleteSelectedProjects()">Delete Selected</button>
+            <button class="btn btn-success" onclick="toggleProjectForm()">Add Project</button>
+          </div>
         </div>
-      </div>
-    
-      <div class="mb-3">
-        <input type="text" id="projectFilterInput" class="form-control" placeholder="Filter projects by name">
-      </div>
-    
-      <div class="table-responsive" id="charity-project-table">
-        <div class="rounded-3 border overflow-hidden">
-          <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
-            <thead class="table-light">
-              <tr>
-                <th><input type="checkbox" id="selectAllProjects" onclick="toggleAllProjects(this)"></th>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>End Date</th>
-              </tr>
-            </thead>
-            <tbody id="project-list" class="animate-list"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
 
-<!-- Donated Products Table Filters -->
-<div id="donatedProductsContainer" class="mt-5">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h2>All Donated Products</h2>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-6 mb-2">
-      <input type="text" id="productFilterInput" class="form-control" placeholder="Filter products by name">
-    </div>
-    <div class="col-md-6">
-      <select id="charityFilterSelect" class="form-select">
-        <option value="">All Charities</option>
-        <!-- Options will be dynamically inserted here -->
-      </select>
-    </div>
-  </div>
-
-  <div class="table-responsive" id="donation-table">
-    <div class="rounded-3 border overflow-hidden">
-      <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
-        <thead class="table-light">
-          <tr>
-            <th>Product ID</th>
-            <th>Name</th>
-            <th>Brand</th>
-            <th>Condition</th>
-            <th>Year</th>
-            <th>Charity</th>
-            <th>Store</th>
-          </tr>
-        </thead>
-        <tbody id="donation-list" class="animate-list"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-  
-    <!-- Create Project Form -->
-    <div id="projectFormContainer" class="container mt-4 d-none">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Create New Project</h4>
-        <div>
-          <button class="btn btn-light me-2" onclick="toggleProjectForm()">Cancel</button>
-          <button type="submit" class="btn btn-success" form="addProjectForm">Create Project</button>
-        </div>
-      </div>
-      <form id="addProjectForm">
         <div class="mb-3">
-          <label for="projectName" class="form-label">Project Name</label>
-          <input type="text" class="form-control" id="projectName" name="name" required>
+          <input type="text" id="projectFilterInput" class="form-control" placeholder="Filter projects by name">
         </div>
-        <div class="mb-3">
-          <label for="projectDescription" class="form-label">Description</label>
-          <textarea class="form-control" id="projectDescription" name="description" rows="3" required></textarea>
+
+        <div class="table-responsive" id="charity-project-table">
+          <div class="rounded-3 border overflow-hidden">
+            <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
+              <thead class="table-light">
+                <tr>
+                  <th><input type="checkbox" id="selectAllProjects" onclick="toggleAllProjects(this)"></th>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>End Date</th>
+                </tr>
+              </thead>
+              <tbody id="project-list" class="animate-list"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="projectEndDate" class="form-label">End Date</label>
-          <input type="date" class="form-control" id="projectEndDate" name="endDate">
+      </div>
+
+
+      <!-- Donated Products Table Filters -->
+      <div id="donatedProductsContainer" class="mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2>All Donated Products</h2>
         </div>
-      </form>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <input type="text" id="productFilterInput" class="form-control" placeholder="Filter products by name">
+          </div>
+          <div class="col-md-6">
+            <select id="charityFilterSelect" class="form-select">
+              <option value="">All Charities</option>
+              <!-- Options will be dynamically inserted here -->
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive" id="donation-table">
+          <div class="rounded-3 border overflow-hidden">
+            <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
+              <thead class="table-light">
+                <tr>
+                  <th>Product ID</th>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Condition</th>
+                  <th>Year</th>
+                  <th>Charity</th>
+                  <th>Store</th>
+                </tr>
+              </thead>
+              <tbody id="donation-list" class="animate-list"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Project Form -->
+      <div id="projectFormContainer" class="container mt-4 d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0">Create New Project</h4>
+          <div>
+            <button class="btn btn-light me-2" onclick="toggleProjectForm()">Cancel</button>
+            <button type="submit" class="btn btn-success" form="addProjectForm">Create Project</button>
+          </div>
+        </div>
+        <form id="addProjectForm">
+          <div class="mb-3">
+            <label for="projectName" class="form-label">Project Name</label>
+            <input type="text" class="form-control" id="projectName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="projectDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="projectDescription" name="description" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="projectEndDate" class="form-label">End Date</label>
+            <input type="date" class="form-control" id="projectEndDate" name="endDate">
+          </div>
+        </form>
+      </div>
+
     </div>
-    
-  </div>
 
-<script>
-  // Hardcoded charity ID for testing
-  const TEST_CHARITY_ID = 2;
-  const TEST_CLIENT_ID = 1;
-  const TEST_CHARITY_NAME = "Michael's Charity";
+    <!-- Scripts -->
+    <script src="../scripts/auth.js"></script>
+    <script>
+      // Hardcoded charity ID for testing
+      const TEST_CHARITY_ID = 2;
+      const TEST_CLIENT_ID = 1;
+      const TEST_CHARITY_NAME = "Michael's Charity";
 
-  let donationCharityFilter = '';
+      let donationCharityFilter = '';
 
-  function toggleProjectForm() {
-    document.getElementById('projectsTableContainer').classList.toggle('d-none');
-    document.getElementById('projectFormContainer').classList.toggle('d-none');
-    document.getElementById('donatedProductsContainer').classList.toggle('d-none');
+      function toggleProjectForm() {
+        document.getElementById('projectsTableContainer').classList.toggle('d-none');
+        document.getElementById('projectFormContainer').classList.toggle('d-none');
+        document.getElementById('donatedProductsContainer').classList.toggle('d-none');
 
-  }
+      }
 
-  document.getElementById('addProjectForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const name = document.getElementById('projectName').value.trim();
-    const description = document.getElementById('projectDescription').value.trim();
-    const endDate = document.getElementById('projectEndDate').value || null;
+      document.getElementById('addProjectForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const name = document.getElementById('projectName').value.trim();
+        const description = document.getElementById('projectDescription').value.trim();
+        const endDate = document.getElementById('projectEndDate').value || null;
 
-    const project = {
-      name,
-      description,
-      endDate,
-      charity: TEST_CHARITY_ID,
-    };
+        const project = {
+          name,
+          description,
+          endDate,
+          charity: TEST_CHARITY_ID,
+        };
 
-    try {
-      const res = await fetch('/ttuser/charity/project/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(project)
+        try {
+          const res = await fetch('/ttuser/charity/project/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(project)
+          });
+
+          if (!res.ok) throw new Error(await res.text());
+          const result = await res.json();
+          toggleProjectForm(); // Hide the form
+          await loadCharityProjects(); // Reload the project table
+        } catch (err) {
+          alert('Failed to create project: ' + err.message);
+        }
       });
 
-      if (!res.ok) throw new Error(await res.text());
-      const result = await res.json();
-      toggleProjectForm(); // Hide the form
-      await loadCharityProjects(); // Reload the project table
-    } catch (err) {
-      alert('Failed to create project: ' + err.message);
-    }
-  });
+      function toggleAllProjects(source) {
+        document.querySelectorAll('.project-checkbox').forEach(cb => {
+          cb.checked = source.checked;
+        });
+      }
+      function deleteSelectedProjects() {
+        const selectedIds = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => cb.value);
+        if (selectedIds.length === 0) {
+          alert("No projects selected.");
+          return;
+        }
 
-  function toggleAllProjects(source) {
-  document.querySelectorAll('.project-checkbox').forEach(cb => {
-    cb.checked = source.checked;
-  });
-}
-function deleteSelectedProjects() {
-  const selectedIds = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => cb.value);
-  if (selectedIds.length === 0) {
-    alert("No projects selected.");
-    return;
-  }
+        if (!confirm("Are you sure you want to delete the selected projects?")) return;
 
-  if (!confirm("Are you sure you want to delete the selected projects?")) return;
-
-  fetch('/ttuser/charity/project/delete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids: selectedIds })
-  })
-  .then(res => res.json())
-  .then(result => {
-    if (result.success) {
-      loadProjects();
-    } else {
-      console.error("Deletion failed:", result.error);
-    }
-  })
-  .catch(err => console.error("Error deleting projects:", err));
-  loadCharityProjects()
-}
+        fetch('/ttuser/charity/project/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: selectedIds })
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.success) {
+              loadProjects();
+            } else {
+              console.error("Deletion failed:", result.error);
+            }
+          })
+          .catch(err => console.error("Error deleting projects:", err));
+        loadCharityProjects()
+      }
 
 
-  async function loadCharityProjects() {
-    try {
-      const res = await fetch(`/ttuser/charity/projects?charity_id=${TEST_CHARITY_ID}`);
-      const projects = await res.json();
-      const tbody = document.getElementById('project-list');
-      tbody.innerHTML = '';
-      projects.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+      async function loadCharityProjects() {
+        try {
+          const res = await fetch(`/ttuser/charity/projects?charity_id=${TEST_CHARITY_ID}`);
+          const projects = await res.json();
+          const tbody = document.getElementById('project-list');
+          tbody.innerHTML = '';
+          projects.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
           <td><input type="checkbox" class="project-checkbox" value="${p.id}"></td>
 
           <td>${p.id}</td>
@@ -256,48 +258,48 @@ function deleteSelectedProjects() {
           <td>${p.description}</td>
           <td>${p.endDate || 'N/A'}</td>
         `;
-        tbody.appendChild(tr);
-      });
-    } catch (err) {
-      console.error('Failed to load projects:', err);
-    }
-  }
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error('Failed to load projects:', err);
+        }
+      }
 
-  async function setupCharityFilter() {
-  try {
-    const res = await fetch('/ttuser/charity');
-    const charities = await res.json();
-    const select = document.getElementById('charityFilterSelect');
-    select.innerHTML = `<option value="">All Charities</option>`;
-    charities.forEach(c => {
-      const option = document.createElement('option');
-      option.value = c.name;
-      option.textContent = c.name;
-      select.appendChild(option);
-    });
+      async function setupCharityFilter() {
+        try {
+          const res = await fetch('/ttuser/charity');
+          const charities = await res.json();
+          const select = document.getElementById('charityFilterSelect');
+          select.innerHTML = `<option value="">All Charities</option>`;
+          charities.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.name;
+            option.textContent = c.name;
+            select.appendChild(option);
+          });
 
-    select.addEventListener('change', () => {
-      donationCharityFilter = select.value;
-      loadDonatedProducts(); // reapply filter
-    });
-  } catch (err) {
-    console.error('Failed to load charities for filter:', err);
-  }
-}
+          select.addEventListener('change', () => {
+            donationCharityFilter = select.value;
+            loadDonatedProducts(); // reapply filter
+          });
+        } catch (err) {
+          console.error('Failed to load charities for filter:', err);
+        }
+      }
 
 
-async function loadDonatedProducts() {
-  try {
-    const res = await fetch(`/tt/donation`);
-    const products = await res.json();
-    const tbody = document.getElementById('donation-list');
-    tbody.innerHTML = '';
+      async function loadDonatedProducts() {
+        try {
+          const res = await fetch(`/tt/donation`);
+          const products = await res.json();
+          const tbody = document.getElementById('donation-list');
+          tbody.innerHTML = '';
 
-    products
-      .filter(p => donationCharityFilter === '' || p.charity === donationCharityFilter)
-      .forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+          products
+            .filter(p => donationCharityFilter === '' || p.charity === donationCharityFilter)
+            .forEach(p => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
           <td>${p.id}</td>
           <td>${p.name}</td>
           <td>${p.brand}</td>
@@ -306,70 +308,70 @@ async function loadDonatedProducts() {
           <td>${p.charity}</td>
           <td>${p.store}</td>
         `;
-        tbody.appendChild(tr);
+              tbody.appendChild(tr);
+            });
+        } catch (err) {
+          console.error('Failed to load donations:', err);
+        }
+      }
+
+
+      document.addEventListener('DOMContentLoaded', () => {
+        setupCharityFilter();
+
+        loadCharityProjects();
+        loadDonatedProducts();
       });
-  } catch (err) {
-    console.error('Failed to load donations:', err);
-  }
-}
 
+      const projectFilterInput = document.getElementById('projectFilterInput');
+      const productFilterInput = document.getElementById('productFilterInput');
+      const charityFilterSelect = document.getElementById('charityFilterSelect');
 
-  document.addEventListener('DOMContentLoaded', () => {
-    setupCharityFilter();
+      function loadCharities() {
+        fetch('/ttuser/charity')
+          .then(res => res.json())
+          .then(charities => {
+            charities.forEach(c => {
+              const opt = document.createElement('option');
+              opt.value = c.id;
+              opt.textContent = c.name;
+              charityFilterSelect.appendChild(opt);
+            });
+          });
+      }
 
-    loadCharityProjects();
-    loadDonatedProducts();
-  });
-
-  const projectFilterInput = document.getElementById('projectFilterInput');
-  const productFilterInput = document.getElementById('productFilterInput');
-  const charityFilterSelect = document.getElementById('charityFilterSelect');
-
-  function loadCharities() {
-    fetch('/ttuser/charity')
-      .then(res => res.json())
-      .then(charities => {
-        charities.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = c.name;
-          charityFilterSelect.appendChild(opt);
+      function filterProjects() {
+        const nameFilter = projectFilterInput.value.toLowerCase();
+        document.querySelectorAll('#project-list tr').forEach(row => {
+          const name = row.children[1]?.textContent?.toLowerCase() || '';
+          row.style.display = name.includes(nameFilter) ? '' : 'none';
         });
-      });
-  }
+      }
 
-  function filterProjects() {
-    const nameFilter = projectFilterInput.value.toLowerCase();
-    document.querySelectorAll('#project-list tr').forEach(row => {
-      const name = row.children[1]?.textContent?.toLowerCase() || '';
-      row.style.display = name.includes(nameFilter) ? '' : 'none';
-    });
-  }
+      function filterDonatedProducts() {
+        const nameFilter = productFilterInput.value.toLowerCase();
+        const charityFilter = charityFilterSelect.value;
 
-  function filterDonatedProducts() {
-    const nameFilter = productFilterInput.value.toLowerCase();
-    const charityFilter = charityFilterSelect.value;
+        document.querySelectorAll('#donation-list tr').forEach(row => {
+          const name = row.children[1]?.textContent?.toLowerCase() || '';
+          const charityId = row.getAttribute('data-charity-id');
 
-    document.querySelectorAll('#donation-list tr').forEach(row => {
-      const name = row.children[1]?.textContent?.toLowerCase() || '';
-      const charityId = row.getAttribute('data-charity-id');
+          const matchesName = name.includes(nameFilter);
+          const matchesCharity = !charityFilter || charityFilter === charityId;
 
-      const matchesName = name.includes(nameFilter);
-      const matchesCharity = !charityFilter || charityFilter === charityId;
+          row.style.display = matchesName && matchesCharity ? '' : 'none';
+        });
+      }
 
-      row.style.display = matchesName && matchesCharity ? '' : 'none';
-    });
-  }
+      // Attach events
+      projectFilterInput.addEventListener('input', filterProjects);
+      productFilterInput.addEventListener('input', filterDonatedProducts);
+      charityFilterSelect.addEventListener('change', filterDonatedProducts);
 
-  // Attach events
-  projectFilterInput.addEventListener('input', filterProjects);
-  productFilterInput.addEventListener('input', filterDonatedProducts);
-  charityFilterSelect.addEventListener('change', filterDonatedProducts);
-
-  // Initial setup
-  loadCharities();
-</script>
-
+      // Initial setup
+      loadCharities();
+    </script>
+    <!-- Scripts -->
 </body>
 
 </html>
