@@ -75,7 +75,7 @@ body {
 }
 
 body::before {
-  content: "Loading...";
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -85,10 +85,10 @@ body::before {
   align-items: center;
   justify-content: center;
   background-color: white;
-  color: black;
-  font-size: 2rem;
-  font-weight: bold;
-  font-family: "Lucida Grande", sans-serif;
+  background-image: url("../media/images/logo_loading.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 300px;
   z-index: 9999;
   pointer-events: none;
 }
