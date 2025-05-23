@@ -6,6 +6,21 @@ body {
     transition: all;
 }
 
+@keyframes loadingAnimation {
+  0% {
+    background-image: url('../media/images/logo_loading_1.png');
+  }
+  33% {
+    background-image: url('../media/images/logo_loading_2.png');
+  }
+  66% {
+    background-image: url('../media/images/logo_loading_3.png');
+  }
+  100% {
+    background-image: url('../media/images/logo_loading_1.png');
+  }
+}
+
 body::before {
   content: "";
   position: fixed;
@@ -19,11 +34,11 @@ body::before {
   justify-content: center;
 
   background-color: white;
-  background-image: url('../media/images/logo_loading.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 300px;
 
+  animation: loadingAnimation 1s infinite steps(1);
   z-index: 9999;
   pointer-events: none;
 }
