@@ -232,5 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    populateFilterOptions();
+    populateFilterOptions().then( () => {
+        populateFilterOptions();
+    });
 });

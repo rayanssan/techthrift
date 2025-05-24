@@ -4,12 +4,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Donations</title>
+  <title>TechThrift Partners - Donations</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="../styles/stylesheet.css">
+  <link rel="stylesheet" href="../styles/adminstyles.css">
   <!-- Sidebar Script -->
   <script src="../scripts/sidebar.js"></script>
   <style>
@@ -33,7 +34,7 @@
       <div class="row align-items-center gap-3">
         <!-- Left elements -->
         <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
-          <a id="header-brand" href="/adminDashboard" class="ms-1">
+          <a id="header-brand" onclick="localStorage.setItem('activeNavLink', 'adminDashboard')" href="/adminDashboard" class="ms-1">
             <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
           </a>
         </div>

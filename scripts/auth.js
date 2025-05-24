@@ -163,6 +163,11 @@ function adjustUI(loggedInUser) {
     if (logoutBtn) logoutBtn.classList.remove("d-none");
     const usernameBtn = document.getElementById('username');
 
+    ["My orders", "Refunds"].forEach(
+      t => ((l => l && (l.href = "/profile"))(
+        Array.from(document.querySelectorAll("footer li a")).
+          find(e => e.textContent.trim() === t))));
+
     if (usernameBtn) {
 
       usernameBtn.innerHTML = `

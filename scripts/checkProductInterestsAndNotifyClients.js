@@ -34,7 +34,7 @@ export async function checkProductInterestsAndNotifyClients(product) {
 
         // Step 3: Fetch and update each matching client
         for (const email of matchedEmails) {
-            const clientRes = await fetch(`/ttuser/client/email/${email}`);
+            const clientRes = await fetch(`/ttuser/client/${email}`);
             if (!clientRes.ok) {
                 console.warn(`Client fetch failed: ${email}`);
                 continue;
@@ -45,7 +45,7 @@ export async function checkProductInterestsAndNotifyClients(product) {
                 unread_notifications: (client.unread_notifications || 0) + 1
             };
 
-            const updateRes = await fetch(`/ttuser/client/edit/${client.id}`, {
+            const updateRes = await fetch(`/ttuser/edit/client`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updated)

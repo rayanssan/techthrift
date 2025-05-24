@@ -11,4 +11,8 @@
 .animate-item {
   opacity: 0;
   animation: fadeInUp 0.4s ease forwards;
+}
+
+table {
+  margin-bottom: 0 !important;
 }/*# sourceMappingURL=adminstyles.css.map */

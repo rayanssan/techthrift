@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS clients (
     nif CHAR(9) UNIQUE,
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),
-    dob DATE,
-    unread_notifications INT
+    dob DATE
 ); 
 
 CREATE TABLE IF NOT EXISTS entities ( -- Stores and Charities
@@ -270,6 +269,7 @@ CREATE TABLE IF NOT EXISTS interests (
     storage VARCHAR(255),
     year YEAR,
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    unread_notifications INT,
 
     FOREIGN KEY (interested_user) REFERENCES clients(email) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (category) REFERENCES categories(category) ON UPDATE CASCADE ON DELETE CASCADE

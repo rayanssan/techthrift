@@ -426,7 +426,7 @@ if (document.body.id === "homepage") {
                     });
 
                 } else {
-                    fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
+                    fetch(`/ttuser/remove/wishlist/${wishlistEntryId}`, {
                         method: 'DELETE'
                     }).then(response => {
                         if (!response.ok) throw new Error('Failed to remove from wishlist');

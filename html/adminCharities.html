@@ -4,12 +4,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Charities</title>
+  <title>TechThrift Partners - Charities</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://kit.fontawesome.com/05e3d8d374.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="../styles/stylesheet.css">
+  <link rel="stylesheet" href="../styles/adminstyles.css">
   <!-- Sidebar Script -->
   <script src="../scripts/sidebar.js"></script>
 </head>
@@ -21,7 +22,7 @@
       <div class="row align-items-center gap-3">
         <!-- Left elements -->
         <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
-          <a id="header-brand" href="/adminDashboard" class="ms-1">
+          <a id="header-brand" onclick="localStorage.setItem('activeNavLink', 'adminDashboard')" href="/adminDashboard" class="ms-1">
             <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
           </a>
         </div>
@@ -195,7 +196,7 @@
         };
 
         try {
-          const res = await fetch('/ttuser/charity/project/add', {
+          const res = await fetch('/ttuser/add/charityProject', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(project)
@@ -224,7 +225,7 @@
 
         if (!confirm("Are you sure you want to delete the selected projects?")) return;
 
-        fetch('/ttuser/charity/project/delete', {
+        fetch('/ttuser/remove/charityProject', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: selectedIds })
@@ -244,10 +245,19 @@
 
       async function loadCharityProjects() {
         try {
-          const res = await fetch(`/ttuser/charity/projects?charity_id=${TEST_CHARITY_ID}`);
+          const res = await fetch(`/ttuser/charityProjects?charity_id=${TEST_CHARITY_ID}`);
           const projects = await res.json();
           const tbody = document.getElementById('project-list');
           tbody.innerHTML = '';
+          if (projects.length == 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="text-center text-muted">
+                  No projects exist currently.
+                </td>
+              </tr>`;
+            return;
+          }
           projects.forEach(p => {
             const tr = document.createElement('tr');
             tr.innerHTML = `

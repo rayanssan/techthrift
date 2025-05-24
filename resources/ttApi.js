@@ -964,7 +964,7 @@ router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Add new client
-router.post('/ttuser/client/add', verifyRequestOrigin, (req, res) => {
+router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
     const newClient = req.body;
 
     /* Since some attributes are optional, extract keys and values from the newClient object, 
@@ -1001,9 +1001,9 @@ router.post('/ttuser/client/add', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit client
-router.put('/ttuser/client/edit/:id', verifyRequestOrigin, (req, res) => {
+router.put('/ttuser/edit/client', verifyRequestOrigin, (req, res) => {
     const updatedClient = req.body;
-    const id = req.params.id;
+    const id = updatedClient.id;
 
     // Determine whether id is numeric or string
     const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value));
@@ -1049,7 +1049,7 @@ router.put('/ttuser/client/edit/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Remove client
-router.delete('/ttuser/client/remove/:id', verifyRequestOrigin, (req, res) => {
+router.delete('/ttuser/remove/client/:id', verifyRequestOrigin, (req, res) => {
     db.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
         if (err) {
             return res.status(500).send({ error: err.message });
@@ -1129,7 +1129,7 @@ router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
 });
 
 //Add new employee
-router.post('/ttuser/employee/add', verifyRequestOrigin, (req, res) => {
+router.post('/ttuser/add/employee', verifyRequestOrigin, (req, res) => {
     const newEmployee = req.body;
 
     if (!newEmployee.id || !newEmployee.store || !newEmployee.internal_number) {
@@ -1172,7 +1172,7 @@ router.post('/ttuser/employee/add', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit employee
-router.put('/ttuser/employee/edit', verifyRequestOrigin, (req, res) => {
+router.put('/ttuser/edit/employee', verifyRequestOrigin, (req, res) => {
     const updatedEmployee = req.body;
 
     // Extract keys and values from the updatedEmployee object, filtering out undefined values
@@ -1390,7 +1390,7 @@ router.get('/ttuser/store/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Add new store
-router.post('/ttuser/store/add', verifyRequestOrigin, (req, res) => {
+router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
     const newStore = req.body;
 
     // Check if new store exists in the clients table
@@ -1438,7 +1438,7 @@ router.post('/ttuser/store/add', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit store
-router.put('/ttuser/store/edit', verifyRequestOrigin, (req, res) => {
+router.put('/ttuser/edit/store', verifyRequestOrigin, (req, res) => {
     const updatedStore = req.body;
 
     // Extract keys and values from the updatedStore object, filtering out undefined values
@@ -1655,7 +1655,7 @@ router.get('/ttuser/charity/:id', verifyRequestOrigin, (req, res) => {
 });
 
 // Add new charity
-router.post('/ttuser/charity/add', verifyRequestOrigin, (req, res) => {
+router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
     const newCharity = req.body;
 
     // Check if charity exists in clients table
@@ -1703,7 +1703,7 @@ router.post('/ttuser/charity/add', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit charity
-router.put('/ttuser/charity/edit', verifyRequestOrigin, (req, res) => {
+router.put('/ttuser/edit/charity', verifyRequestOrigin, (req, res) => {
     const updatedCharity = req.body;
 
     // Extract keys and values from the updatedCharity object, filtering out undefined values
@@ -1739,7 +1739,7 @@ router.put('/ttuser/charity/edit', verifyRequestOrigin, (req, res) => {
 });
 
 // Add new charity project
-router.post('/ttuser/charity/project/add', (req, res) => {
+router.post('/ttuser/add/charityProject', (req, res) => {
     const { name, description, endDate, charity } = req.body;
 
     if (!name || !description || !charity) {
@@ -1766,7 +1766,7 @@ router.post('/ttuser/charity/project/add', (req, res) => {
 });
 
 // Delete charity projects in bulk
-router.post('/ttuser/charity/project/delete', (req, res) => {
+router.post('/ttuser/remove/charityProjects', verifyRequestOrigin, (req, res) => {
     const { ids } = req.body;
 
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -1788,28 +1788,35 @@ router.post('/ttuser/charity/project/delete', (req, res) => {
     });
 });
 
-// Get charity projects by charity ID
-router.get('/ttuser/charity/projects', (req, res) => {
-    const { charity_id } = req.query;
-    if (!charity_id) return res.status(400).json({ error: 'charity_id required' });
+// Get charity projects
+router.get('/ttuser/charityProjects', (req, res) => {
+  const { charity_id } = req.query;
+  if (!charity_id) {
+    return res.status(400).json({ error: 'charity_id required' });
+  }
 
-    const query = `
-      SELECT id, name, description, endDate
-      FROM charityProjects
-      WHERE charity = ?
-      ORDER BY endDate ASC
-    `;
+  const query = `
+    SELECT id, name, description, endDate
+    FROM charityProjects
+    WHERE charity = ?
+    ORDER BY endDate ASC
+  `;
 
-    db.query(query, [charity_id], (err, rows) => {
+  db.query(query, [charity_id], (err, rows) => {
+    if (err) {
+      dbR.query(query, [charity_id], (err, rows) => {
         if (err) {
-            dbR.query(query, [charity_id], (err, rows) => {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json(rows);
-            });
-        } else {
-            res.json(rows);
+          res.setHeader('Content-Type', 'application/json');
+          return res.status(500).json({ error: err.message });
         }
-    });
+        res.setHeader('Content-Type', 'application/json');
+        res.json(rows || []);
+      });
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.json(rows || []);
+    }
+  });
 });
 
 // Get all product interests
@@ -1824,22 +1831,6 @@ router.get('/ttuser/interests', verifyRequestOrigin, (req, res) => {
             });
         } else {
             return res.status(200).json(rows || []);
-        }
-    });
-});
-
-// Get client by email, needed when comparing interests and new added product for client notifications
-router.get('/ttuser/client/email/:email', verifyRequestOrigin, (req, res) => {
-    const query = `SELECT * FROM clients WHERE email = ?`;
-
-    db.query(query, [req.params.email], (err, rows) => {
-        if (err) {
-            dbR.query(query, [req.params.email], (err, rows) => {
-                if (err) return res.status(500).send({ error: err.message });
-                return res.status(200).json(rows[0] || {});
-            });
-        } else {
-            return res.status(200).json(rows[0] || {});
         }
     });
 });
@@ -1874,7 +1865,6 @@ router.post('/ttuser/interest', verifyRequestOrigin, (req, res) => {
 
 // Get product alert
 router.get('/ttuser/interest/:email', verifyRequestOrigin, (req, res) => {
-
     const query = `
         SELECT i.*
         FROM interests i
@@ -1897,7 +1887,7 @@ router.get('/ttuser/interest/:email', verifyRequestOrigin, (req, res) => {
 });
 
 // Remove product alert
-router.delete('/ttuser/interest/remove/:id', verifyRequestOrigin, (req, res) => {
+router.delete('/ttuser/remove/interest/:id', verifyRequestOrigin, (req, res) => {
     const query = `DELETE FROM interests WHERE id = ?`;
 
     db.execute(query, [req.params.id], function (err) {
@@ -1909,6 +1899,56 @@ router.delete('/ttuser/interest/remove/:id', verifyRequestOrigin, (req, res) => 
         });
 
         res.status(200).send('Product alert successfully removed');
+    });
+});
+
+// Add product alert notification
+router.get('/ttuser/interest/addNotification/:interestId', verifyRequestOrigin, async (req, res) => {
+    const interestId = req.params.interestId;
+
+    const interestQuery = `UPDATE interests SET unread_notifications = COALESCE(unread_notifications, 0) + 1 WHERE id = ?`;
+
+    try {
+        // Execute update on both db and dbR, but also check affectedRows
+        const results = await Promise.all([
+            new Promise((resolve, reject) => {
+                db.execute(interestQuery, [interestId], (err, result) => {
+                    if (err) reject(err);
+                    else resolve(result);
+                });
+            }),
+            new Promise((resolve, reject) => {
+                dbR.execute(interestQuery, [interestId], (err, result) => {
+                    if (err) reject(err);
+                    else resolve(result);
+                });
+            })
+        ]);
+
+        // Check if either update affected zero rows (meaning interestId not found)
+        if (results.some(r => r.affectedRows === 0)) {
+            return res.status(404).send({ error: `Interest with id ${interestId} not found` });
+        }
+
+        res.send('Notification count updated successfully');
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
+
+// Clear product alert notifications
+router.put('/ttuser/interest/clearNotifications/:id', verifyRequestOrigin, (req, res) => {
+    const query = `UPDATE interests SET unread_notifications = 0 WHERE id = ?`;
+
+    db.execute(query, [req.params.id], function (err) {
+        if (err) return res.status(500).send({ error: err.message });
+
+        // Update replica
+        dbR.execute(query, [req.params.id], function (err) {
+            if (err) return res.status(500).send({ error: err.message });
+        });
+
+        res.send('Notifications cleared successfully');
     });
 });
 
@@ -1926,9 +1966,9 @@ router.post('/ttuser/wishlist', verifyRequestOrigin, (req, res) => {
             if (err) {
                 return res.status(500).send({ error: err.message });
             }
-
-            res.status(201).send('Product successfully added to wishlist');
         });
+
+        res.status(201).send('Product successfully added to wishlist');
     });
 });
 
@@ -1964,7 +2004,7 @@ router.get('/ttuser/wishlist/:email', verifyRequestOrigin, (req, res) => {
 });
 
 // Remove product from wishlist
-router.delete('/ttuser/wishlist/remove/:id', verifyRequestOrigin, (req, res) => {
+router.delete('/ttuser/remove/wishlist/:id', verifyRequestOrigin, (req, res) => {
     const query = `DELETE FROM wishlist WHERE id = ?`;
 
     db.execute(query, [req.params.id], function (err) {
@@ -2373,23 +2413,6 @@ router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {
     });
 });
 
-// Update shipping costs
-router.get('/tttransaction/shipping/update/:newCost', verifyRequestOrigin, (req, res) => {
-    const shipping_cost = req.params.newCost;
-    db.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
-        if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        // Update replica
-        dbR.execute('UPDATE shipping SET current_shipping_cost = ? WHERE id = 1', [shipping_cost], (err, rows) => {
-            if (err) {
-                return res.status(500).send({ error: err.message });
-            }
-        });
-        res.status(200).send('Shipping costs successfully updated');
-    });
-});
-
 // Nominatim OpenStreetMap API
 router.get("/geocode", verifyRequestOrigin, async (req, res) => {
     const query = req.query.q;
@@ -2401,25 +2424,6 @@ router.get("/geocode", verifyRequestOrigin, async (req, res) => {
         console.log(err);
         res.status(500).send(err.message);
     }
-});
-
-// Add notification to user (FOR TESTING ONLY, WILL BE REMOVED)
-// Instead use `/ttuser/client/edit/:id`
-router.get('/ttuser/client/addNotification/:email', verifyRequestOrigin, (req, res) => {
-    const email = req.params.email;
-    const query =
-        `UPDATE clients SET unread_notifications = COALESCE(unread_notifications, 0) + 1 WHERE email = ?`;
-
-    db.execute(query, [email], function (err, results) {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: 'Internal server error.' });
-        }
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ message: 'Client not found.' });
-        }
-        res.status(200).json({ message: 'Unread notifications count updated successfully.' });
-    });
 });
 
 // Export the API routes

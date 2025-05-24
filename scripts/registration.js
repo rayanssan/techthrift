@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     console.log(clientData);
     // Upload Client
-    fetch('/ttuser/client/add', {
+    fetch('/ttuser/add/client', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(clientData)
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             store: data.store,
             internal_number: data.internal_number
           }
-          return fetch('/ttuser/employee/add', {
+          return fetch('/ttuser/add/employee', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(employeeData)
@@ -108,8 +108,8 @@ document.addEventListener('DOMContentLoaded', function () {
             country: data.country
           };
           const endpoint = data.entity_type === 'store'
-            ? '/ttuser/store/add'
-            : '/ttuser/charity/add';
+            ? '/ttuser/add/store'
+            : '/ttuser/add/charity';
   
           return fetch(endpoint, {
             method: 'POST',

@@ -32,31 +32,46 @@ window.addEventListener('userAuthenticated', (event) => {
    * @returns {Promise<Object[]>} - A promise that resolves to an array of matching product objects.
    */
   async function getProductAlertResults(watchData) {
-    // Handle product alert creation
-    const alertCriteria = {
-      name: watchData.product_model,
-      condition: watchData.product_condition ? watchData.product_condition : "",
-      category: watchData.category,
-      brand: watchData.brand,
-      processor: watchData.processor,
-      color: watchData.color,
-      screen: watchData.screen,
-      storage: watchData.storage,
-      os: watchData.os,
-      year: watchData.year ? watchData.year : "",
-      maxPrice: watchData.max_price ? watchData.max_price : "",
-    };
+    try {
+      // Prepare alert criteria
+      const alertCriteria = {
+        name: watchData.product_model,
+        condition: watchData.product_condition || "",
+        category: watchData.category,
+        brand: watchData.brand,
+        processor: watchData.processor,
+        color: watchData.color,
+        screen: watchData.screen,
+        storage: watchData.storage,
+        os: watchData.os,
+        year: watchData.year || "",
+        maxPrice: watchData.max_price || "",
+      };
 
-    const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
-    return await productsResponse.json();
+      const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
+
+      if (!productsResponse.ok) {
+        throw new Error(`HTTP error! status: ${productsResponse.status}`);
+      }
+
+      const data = await productsResponse.json();
+      return data;
+
+    } catch (error) {
+    }
   }
 
   const fetchUserNotifications = async () => {
     try {
       // Fetch user notifications
-      const resUser = await fetch(`/ttuser/client/${loggedInUser.email}`);
-      const user = await resUser.json();
-      let userUnreadNotifications = user.unread_notifications;
+      const resUserInterests = await fetch(`/ttuser/interest/${loggedInUser.email}`);
+      const userInterests = await resUserInterests.json();
+      const userUnreadNotifications = userInterests.reduce((sum, el) => {
+        return sum + (el.unread_notifications || 0);
+      }, 0);
+      if (userUnreadNotifications === 0) {
+        localStorage.setItem("hide-product-alert-notification", "0");
+      }
 
       let wishlistButton = document.getElementById("wishlist");
       if (!wishlistButton) return;
@@ -99,15 +114,18 @@ window.addEventListener('userAuthenticated', (event) => {
             banner.innerHTML = `
           <div class="d-flex align-content-center">
             <strong class="align-self-center">🔔 ${userUnreadNotifications == 1 ?
-                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notification&nbsp;&nbsp;` :
-                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notifications&nbsp;&nbsp;`}
+                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "" : "unread"} notification&nbsp;&nbsp;` :
+                `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "" : "unread"} notifications&nbsp;&nbsp;`}
             </strong>
             <button type="button" class="btn-close ms-2" aria-label="Close"></button>
           </div>
-          ${document.body.id == "wishlistPage" ? "" :
-                `<a class="btn btn-primary w-100 mt-3" 
-          onclick="document.getElementById('wishlist').href+='#alerts-section';
-          document.getElementById('wishlist').click();">Check Product Alerts</a>`}`;
+          ${document.body.id == "wishlistPage" ? "" : `
+            <a class="btn btn-primary w-100 mt-3" 
+              onclick="document.getElementById('wishlist').href += '#alerts-section'; 
+                        document.getElementById('wishlist').click();">
+              Check Product Alerts
+            </a>
+          `}`
             document.body.appendChild(banner);
             banner.querySelector('.btn-close').addEventListener('click', () => {
               localStorage.setItem("hide-product-alert-notification", userUnreadNotifications);
@@ -116,17 +134,17 @@ window.addEventListener('userAuthenticated', (event) => {
           } else {
             const banner = document.getElementById('notification-banner');
             banner.innerHTML = `
-          <div class="d-flex align-content-center">
-            <strong class="align-self-center">🔔 ${userUnreadNotifications == 1 ?
+            <div class="d-flex align-content-center">
+              <strong class="align-self-center">🔔 ${userUnreadNotifications == 1 ?
                 `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notification&nbsp;&nbsp;` :
                 `You have ${userUnreadNotifications} ${document.body.id == "wishlistPage" ? "new" : "unread"} notifications&nbsp;&nbsp;`}
-            </strong>
-            <button type="button" class="btn-close ms-2" aria-label="Close"></button>
-          </div>
-          ${document.body.id == "wishlistPage" ? "" :
+              </strong>
+              <button type="button" class="btn-close ms-2" aria-label="Close"></button>
+            </div>
+            ${document.body.id == "wishlistPage" ? "" :
                 `<a class="btn btn-primary w-100 mt-3" 
-          onclick="onclick="document.getElementById('wishlist').href+='#alerts-section';
-          document.getElementById('wishlist').click()">Check Product Alerts</a>`}`;
+            onclick="document.getElementById('wishlist').href+='#alerts-section';
+            document.getElementById('wishlist').click();">Check Product Alerts</a>`}`;
             banner.querySelector('.btn-close').addEventListener('click', () => {
               localStorage.setItem("hide-product-alert-notification", userUnreadNotifications);
               banner.remove();
@@ -156,27 +174,13 @@ window.addEventListener('userAuthenticated', (event) => {
 
   document.getElementById("wishlist").addEventListener("click", () => {
     if (localStorage.getItem("hide-product-alert-notification")) {
-      localStorage.setItem("hide-product-alert-notification", "0");
+      localStorage.setItem("hide-product-alert-notification", document.getElementById("notification-badge").innerText);
     }
-    fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        unread_notifications: 0
-      })
-    });
   });
 
   if (document.body.id == "wishlistPage") {
     window.addEventListener("beforeunload", () => {
-      localStorage.setItem("hide-product-alert-notification", "0");
-
-      fetch(`/ttuser/client/edit/${loggedInUser.email}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unread_notifications: 0 }),
-        keepalive: true
-      });
+      localStorage.setItem("hide-product-alert-notification", document.getElementById("notification-badge").innerText);
     });
 
     document.getElementById("create-palert-button").addEventListener("click", () => {
@@ -608,7 +612,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 document.querySelector(`#wishlist-item-${item.id} .remove-from-wishlist`)?.addEventListener('click', function () {
                   const wishlistEntryId = this.getAttribute('data-wishlist-entry-id');
 
-                  fetch(`/ttuser/wishlist/remove/${wishlistEntryId}`, {
+                  fetch(`/ttuser/remove/wishlist/${wishlistEntryId}`, {
                     method: 'DELETE'
                   }).then(response => {
                     if (response.ok) {
@@ -696,6 +700,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 && key !== "product_model"
                 && key !== "category"
                 && key !== "max_price"
+                && key !== "unread_notifications"
                 && key !== "allKeys" && value)
               .map(([key, value]) => {
                 const displayKey = fieldMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -708,21 +713,112 @@ window.addEventListener('userAuthenticated', (event) => {
             const card = document.createElement('div');
             card.className = 'card rounded-0 border-0 border-bottom';
             card.innerHTML = `
-          <div class="card-body">
-            <h5 class="card-text"><strong>Alert for:</strong> <i>${item.product_model || 'N/A'}</i></h5>
-            <h6 class="card-text"><strong>Brand:</strong> ${item.brand || 'N/A'}</h6>
-            <h6 class="card-text"><strong>Category:</strong> ${item.category || 'N/A'}</h6>
-            <h6 class="card-text"><strong>Maximum Price:</strong> 
-            ${item.max_price ? "€" + item.max_price : 'No Limit'}</h6>
-            <button class="mb-2 btn btn-primary btn-sm see-matches-btn">See current matches</button>
-            <details class="border rounded py-2 px-3">
-              <summary class="btn-link text-decoration-none">See more details</summary>
-              <ul class="my-2">
-                ${itemDetails}
-              </ul>
-              <button class="ms-3 mb-2 btn btn-danger btn-sm">Delete Product Alert</button>
-            </details>
-          </div>`;
+            <div class="card-body">
+              <h5 class="card-text"><strong>Alert for:</strong> <i>${item.product_model || 'N/A'}</i></h5>
+              <h6 class="card-text"><strong>Brand:</strong> ${item.brand || 'N/A'}</h6>
+              <h6 class="card-text"><strong>Category:</strong> ${item.category || 'N/A'}</h6>
+              <h6 class="card-text"><strong>Maximum Price:</strong> 
+              ${item.max_price ? "€" + item.max_price : 'No Limit'}</h6>
+              <button class="mb-2 d-flex gap-2 btn btn-primary btn see-matches-btn">
+                See current matches
+                ${item.unread_notifications && item.unread_notifications > 0
+                ? `<span class="badge rounded-pill bg-danger" 
+                          style="width: 25px; height: 25px; padding: 0; text-align: center; align-content: center;
+                          border: 1px solid white;">
+                      ${item.unread_notifications}
+                    </span>`
+                : ''}
+              </button>
+              <details class="border rounded py-2 px-3">
+                <summary class="btn-link text-decoration-none">See more details</summary>
+                <ul class="my-2">
+                  ${itemDetails}
+                </ul>
+                <button class="ms-3 mb-2 btn btn-danger btn-sm">Delete Product Alert</button>
+              </details>
+            </div>`;
+
+            // Clear notifications when see matches button is clicked
+            card.querySelector('.see-matches-btn').addEventListener('click', async () => {
+              try {
+                const response = await fetch(`/ttuser/interest/clearNotifications/${item.id}`, {
+                  method: 'PUT'
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  throw new Error(errorText || 'Failed to clear notifications');
+                }
+
+                // On success, remove the badge, if exists
+                const badge = card.querySelector('.see-matches-btn').querySelector('.badge');
+                // Update localStorage
+                const currentValue = Number(localStorage.getItem("hide-product-alert-notification")) || 0;
+                const badgeCount = badge ? Number(badge.innerText) : 0;
+                const newValue = currentValue - badgeCount;
+                localStorage.setItem("hide-product-alert-notification", Math.max(newValue, 0));
+
+                if (badge) {
+                  badge.remove();
+                }
+                // Remove notification, if exists
+                if (document.getElementById("notification-banner")) {
+                  document.getElementById("notification-banner").remove();
+                }
+              } catch (error) {
+                console.error('Error clearing notifications:', error);
+              }
+            });
+
+            setInterval(async () => {
+              try {
+                const response = await fetch(`/ttuser/interest/${loggedInUser.email}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const interests = await response.json();
+
+                // Find the interest that matches the current item.id
+                const interest = interests.find(i => i.id === item.id);
+
+                if (!interest) return; // no matching interest found
+
+                if (interest.unread_notifications !== item.unread_notifications) {
+                  item.unread_notifications = interest.unread_notifications;
+
+                  // Find the badge element inside the button
+                  const badge = card.querySelector('.see-matches-btn .badge');
+
+                  if (item.unread_notifications > 0) {
+                    if (badge) {
+                      // Update existing badge count
+                      badge.innerText = item.unread_notifications;
+                    } else {
+                      // Create badge element if it doesn't exist
+                      const newBadge = document.createElement('span');
+                      newBadge.className = 'badge rounded-pill bg-danger';
+                      newBadge.style.cssText = `
+                        width: 25px; 
+                        height: 25px; 
+                        padding: 0; 
+                        text-align: center; 
+                        align-content: center; 
+                        border: 1px solid white;
+                      `;
+                      newBadge.innerText = item.unread_notifications;
+
+                      // Append the new badge inside the button
+                      const button = card.querySelector('.see-matches-btn');
+                      button.appendChild(newBadge);
+                    }
+                  } else {
+                    // If unread_notifications is 0 or less, remove badge if exists
+                    if (badge) badge.remove();
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching interests:', error);
+              }
+            }, 5000);
 
             // Append to alerts section
             alertsSection.appendChild(card);
@@ -736,47 +832,47 @@ window.addEventListener('userAuthenticated', (event) => {
               modal.id = 'dynamicMatchModal';
               modal.tabIndex = -1;
               modal.innerHTML = `
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Product Alert Matches</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  ${products.length > 0 ? `
-                    <p>We found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
-                    <div class="mt-3 border rounded overflow-auto">
-                      ${products.map(product => `
-                        <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
-                          <div class="d-flex align-items-center gap-3 p-0 card-body">
-                            <img src="../media/images/products/${product.image}" alt="${product.name}" 
-                            class="card-img p-3 border-end rounded-0 product-image"
-                            style="
-                            max-width: 200px;
-                            aspect-ratio: 1;
-                            object-fit: contain;
-                            cursor: pointer;
-                            ">
-                            <div class="ml-3">
-                              <h5
-                              style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
-                              >${product.name} <i class="fa fa-angle-right"></i></h5>
-                              <p class="mb-2">${product.category}</p>
-                              <p><strong>Price:</strong> €${product.price}</p>
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Product Alert Matches</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    ${products.length > 0 ? `
+                      <p>We found ${products.length} product${products.length > 1 ? 's' : ''} matching your alert:</p>
+                      <div class="mt-3 border rounded overflow-auto">
+                        ${products.map(product => `
+                          <div onclick="window.location.href = 'product?is=${product.id}';" class="card rounded-0 border-0 border-bottom">
+                            <div class="d-flex align-items-center gap-3 p-0 card-body">
+                              <img src="../media/images/products/${product.image}" alt="${product.name}" 
+                              class="card-img p-3 border-end rounded-0 product-image"
+                              style="
+                              max-width: 200px;
+                              aspect-ratio: 1;
+                              object-fit: contain;
+                              cursor: pointer;
+                              ">
+                              <div class="ml-3">
+                                <h5
+                                style="cursor: pointer;" class="btn-link text-decoration-none mt-3"
+                                >${product.name} <i class="fa fa-angle-right"></i></h5>
+                                <p class="mb-2">${product.category}</p>
+                                <p><strong>Price:</strong> €${product.price}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      `).join('')}
-                    </div>
-                  ` : `
-                    <p class="mt-3">No matching products found. We will notify you when something becomes available!</p>
-                  `}
+                        `).join('')}
+                      </div>
+                    ` : `
+                      <p class="mt-3">No matching products found. We will notify you when something becomes available!</p>
+                    `}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+                  </div>
                 </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>`;
+              </div>`;
 
               // Append modal to body
               document.body.appendChild(modal);
@@ -786,7 +882,7 @@ window.addEventListener('userAuthenticated', (event) => {
               bsModal.show();
             });
 
-            // Attach event listener to this specific button
+            // Attach event listener to delete alert button
             const deleteBtn = card.querySelector('.btn-danger');
             deleteBtn.addEventListener("click", async () => {
               const confirmed = await showDialog(
@@ -797,7 +893,7 @@ window.addEventListener('userAuthenticated', (event) => {
               );
 
               if (confirmed) {
-                fetch(`/ttuser/interest/remove/${item.id}`, {
+                fetch(`/ttuser/remove/interest/${item.id}`, {
                   method: 'DELETE'
                 })
                   .then(response => {
