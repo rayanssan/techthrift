@@ -2016,6 +2016,7 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
             s.shipping_city,
             s.shipping_country,
             s.sale_status,
+            s.network,
             p.id AS product_id,
             p.name AS product_name,
             pi.image_path AS product_image
@@ -2043,6 +2044,7 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
                     shipping_postal_code: row.shipping_postal_code,
                     shipping_city: row.shipping_city,
                     shipping_country: row.shipping_country,
+                    network: row.network,
                     sale_status: row.sale_status,
                     sold_products: []
                 });
@@ -2089,6 +2091,7 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
             s.shipping_postal_code,
             s.shipping_city,
             s.shipping_country,
+            s.network,
             s.sale_status,
             p.id AS product_id,
             p.name AS product_name,
@@ -2119,6 +2122,7 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
                     shipping_city: row.shipping_city,
                     shipping_country: row.shipping_country,
                     sale_status: row.sale_status,
+                    network: row.network,
                     sold_products: []
                 });
             }
@@ -2155,7 +2159,7 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
 // Add sale transaction
 router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
     let { client, transaction_value, is_online, order_number,
-        employee, store, shipping_address, shipping_postal_code,
+        employee, store, network, shipping_address, shipping_postal_code,
         shipping_city, shipping_country, products } = req.body;
 
     if (!client || !transaction_value ||
@@ -2170,8 +2174,8 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
 
     const saleQuery = `
         INSERT INTO sales (transaction_id, is_online, order_number, employee, store, 
-        shipping_address, shipping_postal_code, shipping_city, shipping_country)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        shipping_address, shipping_postal_code, shipping_city, shipping_country, network)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const soldProductsQuery = `
@@ -2197,7 +2201,7 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
 
         db.query(saleQuery,
             [transactionId, is_online, order_number, employee, store, shipping_address,
-                shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+                shipping_postal_code, shipping_city, shipping_country, network || null], (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).send({ error: err.message });
@@ -2235,7 +2239,7 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
                             // Insert into sales
                             dbR.query(saleQuery,
                                 [transactionId, is_online, order_number, employee, store, shipping_address,
-                                    shipping_postal_code, shipping_city, shipping_country || null], (err) => {
+                                    shipping_postal_code, shipping_city, shipping_country, network || null], (err) => {
                                         if (err) {
                                             console.error(err);
                                             return res.status(500).send({ error: err.message });
@@ -2313,6 +2317,25 @@ router.get('/tttransaction/repairs', verifyRequestOrigin, (req, res) => {
     });
 });
 
+// Get repair transactions from a client
+router.get('/tttransaction/repairs/:email', verifyRequestOrigin, (req, res) => {
+    const query = `SELECT * FROM transactions t 
+    INNER JOIN repairs r ON r.transaction_id = t.id
+    WHERE t.client = ? `
+    db.query(query, [req.params.email], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, [req.params.email], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows);
+            });
+        } else {
+            res.json(rows);
+        }
+    });
+});
 
 // Get donation transactions
 router.get('/tttransaction/donations', verifyRequestOrigin, (req, res) => {

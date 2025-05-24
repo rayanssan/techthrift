@@ -203,6 +203,7 @@ CREATE TABLE IF NOT EXISTS sales (
     shipping_city VARCHAR(255) NOT NULL,
     shipping_country CHAR(2) NOT NULL,
     sale_status ENUM('To be shipped', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'To be shipped',
+    network VARCHAR(255) NOT NULL,
 
     FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (store) REFERENCES entities(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -229,6 +230,8 @@ CREATE TABLE IF NOT EXISTS repairs (
     product_id INT NOT NULL,
     store INT NOT NULL,
     employee INT NOT NULL,
+    repair_status ENUM('In repairs', 'Repaired; Awaiting Collection', 'Repaired; Collected') NOT NULL DEFAULT 'In repairs',
+    network VARCHAR(255) NOT NULL,
 
     FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES repairProducts(id) ON UPDATE CASCADE ON DELETE CASCADE,

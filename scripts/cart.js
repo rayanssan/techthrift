@@ -79,7 +79,6 @@ window.addEventListener('userAuthenticated', (event) => {
                 onApprove: async function (data, actions) {
                     // Triggered when purchase is approved
                     const cartProductIds = JSON.parse(localStorage.getItem('cartProducts')) || [];
-
                     // Check availability before payment capture
                     return fetch('/tttransaction/product-availability', {
                         method: 'POST',
@@ -142,6 +141,7 @@ window.addEventListener('userAuthenticated', (event) => {
                                         products: cartProductIds,
                                         employee: null,
                                         store: null,
+                                        network: details.payment_source?.card?.brand ? details.payment_source.card.brand.charAt(0).toUpperCase() : 'PayPal'
                                     })
                                 }).then(response => {
                                     if (!response.ok) throw new Error("Failed to store transaction.");
@@ -158,7 +158,8 @@ window.addEventListener('userAuthenticated', (event) => {
                                         <h2 class="text-center mb-3">Your order is on its way!</h2>
                                         <p class="text-muted mb-4">Order Code: <code>${details.id}</code></p>
                                         <p class="text-center mb-4">Thank you for your purchase!</p>
-                                        <a href="/" class="btn btn-success btn-lg">Thrift More</a>
+                                        <a href="/" class="btn btn-success btn-lg">Thrift More</a><br>
+                                        <a href="/profile#orders-list" class="btn btn-primary btn">View orders</a>
                                     </div>`;
                                     return response.json();
                                 }).catch(err => {
@@ -317,6 +318,7 @@ window.addEventListener('userAuthenticated', (event) => {
                                         order_number: "APPLE-PAY-",
                                         employee: null,
                                         store: null,
+                                        network: "Apple Pay"
                                     })
                                 });
                                 if (!response.ok) throw new Error("Failed to store transaction.");
@@ -335,7 +337,8 @@ window.addEventListener('userAuthenticated', (event) => {
                                         <h2 class="text-center mb-3">Your order is on its way!</h2>
                                         <p class="text-muted mb-4">Order Code: <code>APPLE-PAY-${resJson.transactionId}</code></p>
                                         <p class="text-center mb-4">Thank you for your purchase!</p>
-                                        <a href="/" class="btn btn-success btn-lg">Thrift More</a>
+                                        <a href="/" class="btn btn-success btn-lg">Thrift More</a><br>
+                                        <a href="/profile#orders-list" class="btn btn-primary btn">View orders</a>
                                     </div>`;
                                 return resJson;
                             } catch (err) {
