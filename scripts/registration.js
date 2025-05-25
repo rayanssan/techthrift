@@ -1,7 +1,22 @@
 "use strict";
 
+if (!localStorage.getItem("loggedInUser")) {
+  location.href = "/";
+} else if (JSON.parse(localStorage.getItem("loggedInUser")).id) {
+  location.href = "/";
+}
+
 let customHourIndex = 1;
 
+/**
+ * Dynamically adds a new row of custom store hours to the form.
+ *
+ * The inputs use `customHourIndex` to uniquely name each group.
+ * The new row is appended to the `#custom-hours-container` element.
+ *
+ * @function addCustomHour
+ * @returns {void}
+ */
 function addCustomHour() {
   const container = document.getElementById('custom-hours-container');
 
@@ -74,6 +89,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('registerForm');
   const fieldGroups = document.querySelectorAll('.user-fields');
 
+  /**
+   * Updates the visibility and enabled/required state of form fields
+   * based on the selected user type and entity subtype (store or charity).
+   *
+   * @function updateFormVisibility
+   * @returns {void}
+   */
   function updateFormVisibility() {
     const selectedOption = userTypeSelect.options[userTypeSelect.selectedIndex];
     const selectedValue = userTypeSelect.value;
@@ -207,10 +229,34 @@ document.addEventListener('DOMContentLoaded', function () {
     const clientData = {};
 
     // Filter fields based on user type
-    const clientFields = ['email', 'first_name', 'last_name', 'name', 'phone_number'];
+    const clientFields = ['email', 'first_name', 'last_name', 'name', 'phone_number',
+      'gender', 'nif', 'nic', 'dob'];
     const employeeFields = ['employee_dob', 'employee_gender', 'store', 'internal_number'];
     const entityFields = ['nipc', 'store_name', 'charity_name', 'street_address',
       'postal_code', 'city', 'country', 'userType'];
+
+    // Check if attributes phone number, nic, or nif already exists
+    // if any of the attributes match existing ones abort
+    const existingUsersRes = await fetch('/ttuser');
+    const existingUsers = await existingUsersRes.json();
+
+    const conflicts = [];
+
+    existingUsers.forEach(user => {
+      if (user.phone_number === data.phone_number) conflicts.push('Phone Number');
+      if (user.nic === data.nic) conflicts.push('NIC');
+      if (user.nif === data.nif) conflicts.push('NIF');
+    });
+
+    if (conflicts.length) {
+      const uniqueConflicts = [...new Set(conflicts)]; // remove duplicates
+      showMessage(
+        "Registration error",
+        `An account already exists with the given information: ${uniqueConflicts.join(', ')}.`,
+        "danger"
+      );
+      return; // abort
+    }
 
     // Copy allowed fields
     clientFields.forEach(field => {
@@ -238,11 +284,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
       clientData.entity_type = document.getElementById('userType').selectedOptions[0].dataset.entityType;
+        const resCharities = await fetch(`/ttuser/charity/${clientData.nipc}`);
+        if (resCharities.status !== 204) {  // if not 204, entity exists
+          showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
+          return; // abort
+        }
+        const resStores = await fetch(`/ttuser/store/${clientData.nipc}`);
+        if (resStores.status !== 204) {  // if not 204, entity exists
+          showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
+          return; // abort
+        }
     } else {
       employeeFields.forEach(f => delete clientData[f]);
       entityFields.forEach(f => delete clientData[f]);
     }
     console.log(clientData);
+
     // Upload Client
     fetch('/ttuser/add/client', {
       method: 'POST',
@@ -339,10 +396,15 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(err => {
         console.error(err);
-        showMessage("Registration error", err.message, "danger");
+        try {
+          showMessage("Registration error", JSON.parse(err.message).error, "danger");
+        } catch (error) {
+          showMessage("Registration error", "An unknown error occurred while trying to register.", "danger");
+        }
       });
   });
 
+  // Fetch countries list
   const countrySelect = document.getElementById('country');
 
   fetch("https://restcountries.com/v3.1/all")
@@ -358,6 +420,13 @@ document.addEventListener('DOMContentLoaded', function () {
       // Clear existing options except placeholder
       countrySelect.innerHTML = '<option value="" disabled>Select a country</option>';
 
+      /**
+       * Converts a 2-letter country code into a flag emoji.
+       * The flag emoji is created using the regional indicator symbols corresponding to the country code.
+       *
+       * @param {string} countryCode - A 2-letter ISO country code.
+       * @returns {string} - The flag emoji for the given country code.
+       */
       function getFlagEmoji(countryCode) {
         return countryCode
           .toUpperCase()
@@ -380,19 +449,5 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error("Error fetching countries:", error);
       countrySelect.innerHTML = '<option value="">Unable to load countries</option>';
     });
-
-
-  function fillStoreHours() {
-    const storeHoursDiv = document.getElementById('store_hours');
-    if (!storeHoursDiv) return;
-
-    // Select all open inputs and close inputs
-    const openInputs = storeHoursDiv.querySelectorAll('input[name$="[open]"]');
-    const closeInputs = storeHoursDiv.querySelectorAll('input[name$="[close]"]');
-
-    openInputs.forEach(input => input.value = "08:00");
-    closeInputs.forEach(input => input.value = "23:00");
-  }
-  fillStoreHours();
 
 });

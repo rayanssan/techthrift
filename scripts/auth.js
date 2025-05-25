@@ -109,6 +109,9 @@ async function getUserProfile(token) {
     if (!localStorage.getItem('loggedInUser')) {
       // Save logged in user to localStorage
       localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+    } else if (!JSON.parse(localStorage.getItem('loggedInUser')).id) {
+      // Save logged in user to localStorage
+      localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
     }
     // Dispatch user authentication event
     const event = new CustomEvent('userAuthenticated', { detail: loggedInUser });

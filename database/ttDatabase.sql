@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS clients (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    phone_number VARCHAR(20),
+    phone_number VARCHAR(20) UNIQUE,
     nif CHAR(9) UNIQUE,
     nic CHAR(9) UNIQUE,
     gender ENUM('Male', 'Female', 'Other'),

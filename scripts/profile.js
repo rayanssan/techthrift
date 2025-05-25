@@ -140,9 +140,14 @@ window.addEventListener('userAuthenticated', (event) => {
                     if (currentValue) {
                         const date = new Date(currentValue);
                         if (!isNaN(date)) {
-                            input.value = date.toISOString().split('T')[0];
+                            // Format date
+                            const yyyy = date.getFullYear();
+                            const mm = String(date.getMonth() + 1).padStart(2, '0');
+                            const dd = String(date.getDate()).padStart(2, '0');
+                            input.value = `${yyyy}-${mm}-${dd}`;
                         }
                     }
+
                 } else if (field === 'nif' || field === 'nic') {
                     input.type = 'text';
                     input.maxLength = 9;
@@ -159,8 +164,8 @@ window.addEventListener('userAuthenticated', (event) => {
                 // Special handling for name input size and label
                 if (field === 'name') {
                     input.style = `min-width: 150px;
-        width: 20vw;
-        font-size: 20px;`
+                    width: 20vw;
+                    font-size: 20px;`
                 } else {
                     input.style.width = 'auto';
                 }
@@ -174,8 +179,8 @@ window.addEventListener('userAuthenticated', (event) => {
                 const label = document.createElement('label');
                 label.textContent = 'Name:';
                 label.style = `font-size: 25px;
-        margin-bottom: 5px;
-        display: flex;`
+                margin-bottom: 5px;
+                display: flex;`
                 p.insertBefore(label, p.firstChild);
             }
 
@@ -223,8 +228,65 @@ window.addEventListener('userAuthenticated', (event) => {
                 button.onclick = null;
                 button.addEventListener('click', onEditClick);
 
-                // TODO: Call Backend to Update Client
-                console.log(`Saved ${field}:`, newValue);
+                // Call Backend to Update Client
+                // Prepare data to send
+                const updatedClient = {
+                    email: loggedInUser.email,
+                };
+                if (field === 'dob' && newValue && newValue !== 'Not given') {
+                    // Parse the date when editing dob
+                    const date = new Date(newValue);
+                    if (!isNaN(date)) {
+                        const yyyy = date.getFullYear();
+                        const mm = String(date.getMonth() + 1).padStart(2, '0');
+                        const dd = String(date.getDate()).padStart(2, '0');
+                        updatedClient[field] = `${yyyy}-${mm}-${dd}`;
+                    } else {
+                        updatedClient[field] = '';
+                    }
+                } else {
+                    updatedClient[field] = newValue === 'Not given' ? '' : newValue;
+                }
+
+                // Send update request to backend
+                fetch('/ttuser/edit/client', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedClient)
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Failed to update client');
+                        return res.text();
+                    })
+                    .then(() => {
+                        // Update UI on success
+                        const newSpan = document.createElement('span');
+                        newSpan.className = 'field-value';
+                        newSpan.dataset.field = field;
+                        newSpan.textContent = newValue;
+
+                        if (field === 'name') {
+                            const label = p.querySelector('label');
+                            if (label) label.remove();
+                        }
+
+                        button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                        button.title = 'Edit ' + field.replace(/_/g, ' ');
+                        cancelBtn.remove();
+
+                        button.onclick = null;
+                        button.addEventListener('click', onEditClick);
+                        currentValue = newValue;
+                        // Update localStorage
+                        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+                        loggedInUser[field] = newValue;
+                        localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+                    })
+                    .catch(err => {
+                        showMessage("Editing error", "Another account already exists with the given value.", "danger");
+                        newSpan.textContent = currentValue;
+                        input.focus();
+                    });
             };
 
             cancelBtn.onclick = () => {

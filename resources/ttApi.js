@@ -986,9 +986,8 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
     const columns = Object.keys(newClient).filter(key => newClient[key] !== undefined);
     const values = columns.map(col => newClient[col]);
 
-    const query = `INSERT INTO clients (${columns.join(', ')
-        }) VALUES (${columns.map(() => '?').join(', ')}) 
-        ON DUPLICATE KEY UPDATE ${columns.map(col => `${col} = VALUES(${col})`).join(', ')}`;
+    const query = `INSERT INTO clients (${columns.join(', ')})
+               VALUES (${columns.map(() => '?').join(', ')})`;
 
     db.execute(query, values, function (err, result) {
         if (err) {
@@ -1017,26 +1016,62 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
 // Edit client
 router.put('/ttuser/edit/client', verifyRequestOrigin, (req, res) => {
     const updatedClient = req.body;
-    const id = updatedClient.id;
 
-    // Determine whether id is numeric or string
-    const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value));
+    // Extract identifiers
+    const { id, email, phone_number, nif, nic } = updatedClient;
 
-    // Since some attributes are optional, extract keys and values from the newClient object,
-    // filtering out any undefined values, and do not allow changing the id
+    // Require at least one identifier
+    if (!id && !email && !phone_number && !nif && !nic) {
+        return res.status(400).send({ error: 'Must provide id, email, phone_number, nif, or nic as identifier' });
+    }
+
+    // Filter fields to update (exclude identifiers and id/email which are immutable)
     const columns = Object.keys(updatedClient).filter(key =>
-        updatedClient[key] !== undefined && key !== 'id'
+        updatedClient[key] !== undefined &&
+        key !== 'id' &&
+        key !== 'email'
     );
+
+    if (columns.length === 0) {
+        return res.status(400).send({ error: 'No fields to update' });
+    }
+
+    // Validate name is not empty if included
+    if (columns.includes('name') && (!updatedClient.name || updatedClient.name.trim() === '')) {
+        return res.status(400).send({ error: 'Name cannot be empty' });
+    }
+
     const values = columns.map(col => updatedClient[col]);
 
-    values.push(isNumeric(id) ? parseInt(id) : null,
-        isNumeric(id) ? parseInt(id) : null,
-        isNumeric(id) ? parseInt(id) : null,
-        id,
-        id);
+    // Build WHERE clause dynamically based on identifiers provided
+    const whereClauses = [];
+    const whereValues = [];
 
-    const query = `UPDATE clients SET ${columns.map(col => `${col} = ?`).join(', ')} 
-    WHERE id = ? OR nif = ? OR nic = ? OR email = ? OR phone_number = ?`;
+    if (id !== undefined) {
+        whereClauses.push('id = ?');
+        whereValues.push(id);
+    }
+    if (email !== undefined) {
+        whereClauses.push('email = ?');
+        whereValues.push(email);
+    }
+    if (phone_number !== undefined) {
+        whereClauses.push('phone_number = ?');
+        whereValues.push(phone_number);
+    }
+    if (nif !== undefined) {
+        whereClauses.push('nif = ?');
+        whereValues.push(nif);
+    }
+    if (nic !== undefined) {
+        whereClauses.push('nic = ?');
+        whereValues.push(nic);
+    }
+
+    const whereSql = whereClauses.join(' OR ');
+    values.push(...whereValues);
+
+    const query = `UPDATE clients SET ${columns.map(col => `${col} = ?`).join(', ')} WHERE ${whereSql}`;
 
     db.execute(query, values, function (err) {
         if (err) {
@@ -1142,7 +1177,7 @@ router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
     });
 });
 
-//Add new employee
+// Add new employee
 router.post('/ttuser/add/employee', verifyRequestOrigin, (req, res) => {
     const newEmployee = req.body;
 
