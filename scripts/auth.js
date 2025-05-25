@@ -94,7 +94,8 @@ async function getUserProfile(token) {
       ...(employeeData || {}),
       ...(storeData || {}),
       ...(charityData || {}),
-      ...loggedInUser
+      ...loggedInUser,
+      nickname: clientData.name
     };
 
     // Alter UI accordingly
@@ -103,9 +104,7 @@ async function getUserProfile(token) {
     return loggedInUser;
   } catch (err) {
     console.error("Error while trying to obtain profile:", err);
-    setTimeout(() => {
-      location.reload();
-    }, 3000);
+    logout();
   } finally {
     if (!localStorage.getItem('loggedInUser')) {
       // Save logged in user to localStorage
@@ -126,14 +125,6 @@ async function getUserProfile(token) {
  */
 function adjustUI(loggedInUser) {
   if (!loggedInUser) {
-    const loginBtn = document.getElementById("btn-login");
-    const logoutBtn = document.getElementById("btn-logout");
-    const infoEl = document.getElementById("user-info");
-
-    if (loginBtn) loginBtn.classList.remove("d-none");
-    if (logoutBtn) logoutBtn.classList.add("d-none");
-    if (infoEl) infoEl.classList.add("d-none");
-
     if (document.getElementById('username')) {
       document.querySelector('#username p').textContent = "Sign in";
     }
@@ -149,18 +140,6 @@ function adjustUI(loggedInUser) {
     const event = new CustomEvent('userAuthenticated', { detail: null });
     window.dispatchEvent(event);
   } else {
-    const nameEl = document.getElementById("user-name");
-    const picEl = document.getElementById("user-pic");
-    const infoEl = document.getElementById("user-info");
-
-    if (nameEl) nameEl.textContent = loggedInUser.name || loggedInUser.nickname;
-    if (picEl) picEl.src = loggedInUser.picture;
-    if (infoEl) infoEl.classList.remove("d-none");
-
-    const loginBtn = document.getElementById("btn-login");
-    const logoutBtn = document.getElementById("btn-logout");
-    if (loginBtn) loginBtn.classList.add("d-none");
-    if (logoutBtn) logoutBtn.classList.remove("d-none");
     const usernameBtn = document.getElementById('username');
 
     ["My orders", "Refunds"].forEach(
@@ -173,8 +152,15 @@ function adjustUI(loggedInUser) {
       usernameBtn.innerHTML = `
       <img alt="User Picture" src=${loggedInUser.picture} alt="User Picture" 
       class="rounded-circle me-md-2" style="scale:1.1;" width="22" height="22">
-      <p class="d-none d-md-block mb-0">${loggedInUser.nickname}</p>`;
+      <p class="d-none d-md-block mb-0">${loggedInUser.user_type == "client" ? loggedInUser.nickname.split(" ")[0] : loggedInUser.nickname
+        }</p>`;
       usernameBtn.href = "";
+
+      if (loggedInUser.user_type !== "client") {
+        if (!window.location.pathname.startsWith('/admin')) {
+          location.href = "/adminDashboard";
+        }
+      }
 
       usernameBtn.addEventListener("click", (event) => {
         event.preventDefault();
@@ -196,7 +182,8 @@ function adjustUI(loggedInUser) {
 
         // Add menu items
         dropdown.innerHTML = `
-          <a class="dropdown-item" style="cursor:pointer;" href="/profile"><i class="fa fa-user me-2"></i> My Profile</a>
+          <a class="dropdown-item" style="cursor:pointer;" 
+          href="${loggedInUser.user_type == 'client' ? '/profile' : '/adminProfile'}"><i class="fa fa-user me-2"></i> My Profile</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" style="cursor:pointer;" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i>  Logout</a>
         `;
@@ -226,6 +213,7 @@ function adjustUI(loggedInUser) {
         window.location.href = "/profile";
       });
     }
+
   }
 }
 

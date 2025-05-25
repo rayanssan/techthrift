@@ -370,6 +370,12 @@ select:focus {
 select:hover {
   background-color: rgba(169, 169, 169, 0.5);
 }
+select:invalid {
+  color: gray;
+}
+select option {
+  color: black;
+}
 
 .slider-container {
   display: flex;

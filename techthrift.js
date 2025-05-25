@@ -168,6 +168,17 @@ app.get('/profile', (req, res) => {
     });
 });
 
+// Admin Profile
+app.get('/adminProfile', (req, res) => {
+    const pagePath = path.join(__dirname, 'html/adminProfile.html');
+    res.sendFile(pagePath, (err) => {
+        if (err) {
+            console.error('Error serving adminProfile.html:', err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
+
 // Admin Dashboard
 app.get('/adminDashboard', (req, res) => {
     const pagePath = path.join(__dirname, 'html/adminDashboard.html');

@@ -29,57 +29,86 @@
 
 <body id="registrationPage">
 
-  <!-- Header -->
-  <header class="p-3 bg-white border-bottom">
-    <div class="container">
-      <div class="row align-items-center gap-3">
-        <!-- Header Elements -->
-        <div class="d-flex align-items-center gap-2">
-          <a id="header-brand" href="/homepage">
-            <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
-          </a>
-        </div>
-        <!-- Header Elements -->
-      </div>
-    </div>
-  </header>
-  <!-- Header -->
-
   <!-- Registration -->
   <section id="registrationSection">
-    <div class="container my-5">
-      <header>
-        <h3>Welcome to TechThrift</h3>
+    <div class="d-flex my-0 my-md-5 mx-auto mx-md-auto border-0 justify-content-center
+    flex-column bg-white p-4 p-md-5 rounded shadow" style="max-width: 700px;zoom:0.9">
+      <header class="d-flex flex-column justify-content-center mb-3 align-items-center">
+        <h4 class="text-center">Welcome to</h4>
+        <img alt="TechThrift's logo" src="../media/images/logo_hor.png" style="width: 300px; 
+          height: 130px;
+          object-fit: cover;">
       </header>
       <form id="registerForm" class="form-content">
-        <!-- Tipo de utilizador -->
+        <p class="text-center text-muted mb-4">You are almost there! Just add a few more details to complete your
+          account.</p>
+        <!-- User type selection -->
         <div class="mb-3">
-          <label for="userType" class="form-label">What type of user are you?</label>
-          <select id="userType" name="userType" class="form-select">
+          <label class="form-label d-block mb-2">What type of user are you?</label>
+          <!-- Hidden select -->
+          <select id="userType" name="userType" class="form-select" style="display:none;">
             <option value="client">Client</option>
-            <option value="entity">Store or Charity</option>
+            <option value="entity" data-entity-type="store">Store</option>
             <option value="employee">Employee</option>
+            <option value="entity" data-entity-type="charity">Charity</option>
           </select>
+          <!-- Hidden select -->
+          <div id="userTypeButtons" class="btn-group w-100" role="group" aria-label="User type selection">
+            <button type="button" class="user-type-btn btn btn-outline-secondary" data-value="client">Client</button>
+            <button type="button" class="user-type-btn btn btn-outline-secondary" data-value="entity"
+              data-entity-type="store">Store</button>
+            <button type="button" class="user-type-btn btn btn-outline-secondary"
+              data-value="employee">Employee</button>
+            <button type="button" class="user-type-btn btn btn-outline-secondary" data-value="entity"
+              data-entity-type="charity">Charity</button>
+          </div>
+        </div>
+        <!-- User type selection -->
+
+        <div class="mb-3">
+          <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+          <input id="first_name" name="first_name" type="text" class="form-control" placeholder="Enter your first name"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+          <input id="last_name" name="last_name" type="text" class="form-control" placeholder="Enter your last name"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label for="store_name" class="form-label">Store Name <span class="text-danger">*</span></label>
+          <input id="store_name" name="store_name" type="text" class="form-control" placeholder="Enter the store name"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label for="charity_name" class="form-label">Charity Name <span class="text-danger">*</span></label>
+          <input id="charity_name" name="charity_name" type="text" class="form-control"
+            placeholder="Enter the charity name" required>
         </div>
 
         <div class="mb-3">
           <label for="phone_number" class="form-label">Phone Number</label>
-          <input id="phone_number" name="phone_number" type="text" class="form-control" />
+          <input id="phone_number" name="phone_number" type="text" class="form-control"
+            placeholder="Enter phone number">
         </div>
 
-        <!-- CLIENT -->
+        <!-- Client Fields -->
         <div data-type="client" class="user-fields">
           <div class="mb-3">
             <label for="nif" class="form-label">NIF</label>
-            <input id="nif" name="nif" type="text" maxlength="9" class="form-control" />
+            <input id="nif" name="nif" type="text" maxlength="9" class="form-control" placeholder="Enter NIF">
           </div>
           <div class="mb-3">
             <label for="nic" class="form-label">NIC</label>
-            <input id="nic" name="nic" type="text" maxlength="9" class="form-control" />
+            <input id="nic" name="nic" type="text" maxlength="9" class="form-control" placeholder="Enter NIC">
           </div>
           <div class="mb-3">
-            <label for="gender" class="form-label">Gender</label>
-            <select id="gender" name="gender" class="form-select">
+            <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+            <select id="gender" name="gender" class="form-select" required>
+              <option value="" disabled selected>Select gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
@@ -87,52 +116,147 @@
           </div>
           <div class="mb-3">
             <label for="dob" class="form-label">Date of Birth</label>
-            <input id="dob" name="dob" type="date" class="form-control" />
+            <input id="dob" name="dob" type="date" class="form-control">
           </div>
         </div>
+        <!-- Client Fields -->
 
-        <!-- ENTIDADE -->
+        <!-- Store/Charity Fields -->
         <div data-type="entity" class="user-fields" hidden>
           <div class="mb-3">
-            <label for="nipc" class="form-label">NIPC</label>
-            <input id="nipc" name="nipc" type="text" maxlength="9" class="form-control" />
+            <label for="nipc" class="form-label">NIPC <span class="text-danger">*</span></label>
+            <input id="nipc" name="nipc" type="text" maxlength="9" class="form-control" placeholder="Enter NIPC"
+              required>
           </div>
           <div class="mb-3">
-            <label for="entity_type" class="form-label">Type</label>
-            <select id="entity_type" name="entity_type" class="form-select">
-              <option value="store">Store</option>
-              <option value="charity">Charity</option>
+            <label for="street_address" class="form-label">Street Address <span class="text-danger">*</span></label>
+            <input id="street_address" name="street_address" type="text" class="form-control"
+              placeholder="Enter address" required>
+          </div>
+          <div class="mb-3">
+            <label for="postal_code" class="form-label">Postal Code <span class="text-danger">*</span></label>
+            <input id="postal_code" name="postal_code" type="text" class="form-control" placeholder="Enter postal code"
+              required>
+          </div>
+          <div class="mb-3">
+            <label for="city" class="form-label">City <span class="text-danger">*</span></label>
+            <input id="city" name="city" type="text" class="form-control" placeholder="Enter city" required>
+          </div>
+          <div class="mb-3">
+            <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
+            <input id="country" name="country" type="text" class="form-control" placeholder="Enter country" required>
+          </div>
+          <!-- Store Hours Section -->
+          <div data-type="entity" id="store_hours" class="user-fields" hidden>
+            <div class="mb-3">
+              <label class="form-label">Store Hours <span class="text-danger">*</span></label>
+              <div class="border p-3 rounded bg-light">
+                <div class="row fw-bold mb-2">
+                  <div class="col">Day</div>
+                  <div class="col">Open</div>
+                  <div class="col">Close</div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Monday</div>
+                  <div class="col"><input type="time" name="hours[Monday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Monday][close]" class="form-control" required></div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Tuesday</div>
+                  <div class="col"><input type="time" name="hours[Tuesday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Tuesday][close]" class="form-control" required></div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Wednesday</div>
+                  <div class="col"><input type="time" name="hours[Wednesday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Wednesday][close]" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Thursday</div>
+                  <div class="col"><input type="time" name="hours[Thursday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Thursday][close]" class="form-control" required></div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Friday</div>
+                  <div class="col"><input type="time" name="hours[Friday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Friday][close]" class="form-control" required></div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Saturday</div>
+                  <div class="col"><input type="time" name="hours[Saturday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Saturday][close]" class="form-control" required></div>
+                </div>
+
+                <div class="row mb-2 align-items-center">
+                  <div class="col">Sunday</div>
+                  <div class="col"><input type="time" name="hours[Sunday][open]" class="form-control" required></div>
+                  <div class="col"><input type="time" name="hours[Sunday][close]" class="form-control" required></div>
+                </div>
+
+                <hr>
+
+                <label class="form-label">Holiday Hours</label>
+                <div id="custom-hours-container">
+                  <div class="row mb-2 align-items-center custom-hour-entry">
+                    <div class="col">
+                      <input type="text" name="custom_hours[0][label]" placeholder="Custom Day" class="form-control">
+                    </div>
+                    <div class="col">
+                      <input type="time" name="custom_hours[0][open]" class="form-control">
+                    </div>
+                    <div class="col">
+                      <input type="time" name="custom_hours[0][close]" class="form-control">
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="w-100 my-2 btn btn-sm btn-outline-primary" onclick="addCustomHour()">
+                  + Add Holiday
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Store Hours Section -->
+        </div>
+        <!-- Store/Charity Fields -->
+
+        <!-- Employee Fields -->
+        <div data-type="employee" class="user-fields" hidden>
+          <div class="mb-3">
+            <label for="store" class="form-label">Store NIPC <span class="text-danger">*</span></label>
+            <input id="store" name="store" type="text" maxlength="9" class="form-control"
+              placeholder="Enter the NIPC of the store you work for" required>
+          </div>
+          <div class="mb-3">
+            <label for="internal_number" class="form-label">Internal Number <span class="text-danger">*</span></label>
+            <input id="internal_number" name="internal_number" type="text" required pattern="\d+" class="form-control"
+              placeholder="Enter your internal number" required>
+          </div>
+          <div class="mb-3">
+            <label for="employee_gender" class="form-label">Gender <span class="text-danger">*</span></label>
+            <select id="employee_gender" name="employee_gender" class="form-select" required>
+              <option value="" disabled selected>Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div class="mb-3">
-            <label for="address" class="form-label">Address</label>
-            <input id="address" name="address" type="text" class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="city" class="form-label">City</label>
-            <input id="city" name="city" type="text" class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="country" class="form-label">Country</label>
-            <input id="country" name="country" type="text" class="form-control" />
+            <label for="employee_dob" class="form-label">Date of Birth</label>
+            <input id="employee_dob" name="employee_dob" type="date" class="form-control">
           </div>
         </div>
+        <!-- Employee Fields -->
 
-        <!-- EMPLOYEE -->
-        <div data-type="employee" class="user-fields" hidden>
-          <div class="mb-3">
-            <label for="store" class="form-label">Store NIPC</label>
-            <input id="store" name="store" type="text" maxlength="9" class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="internal_number" class="form-label">Internal Number</label>
-            <input id="internal_number" name="internal_number" type="number" class="form-control" />
-          </div>
-        </div>
-
-        <div class="d-flex gap-2 mt-3">
-          <button type="submit" class="btn btn-dark">Register</button>
-          <button type="button" onclick="logout()" class="btn btn-outline-secondary">Cancel</button>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" onclick="logout()" class="btn btn-outline-secondary" style="zoom: 1.15">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="zoom: 1.2">Register</button>
         </div>
       </form>
     </div>

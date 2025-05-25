@@ -967,6 +967,20 @@ router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
 router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
     const newClient = req.body;
 
+    const firstName = newClient.first_name?.trim() || '';
+    const lastName = newClient.last_name?.trim() || '';
+    const fullName = (firstName + ' ' + lastName).trim();
+
+    const storeName = newClient.store_name?.trim() || '';
+    const charityName = newClient.charity_name?.trim() || '';
+
+    newClient.name = fullName || storeName || charityName || '';
+
+    delete newClient.first_name;
+    delete newClient.last_name;
+    delete newClient.store_name;
+    delete newClient.charity_name;
+
     /* Since some attributes are optional, extract keys and values from the newClient object, 
     filtering out any undefined values */
     const columns = Object.keys(newClient).filter(key => newClient[key] !== undefined);
@@ -1790,33 +1804,33 @@ router.post('/ttuser/remove/charityProjects', verifyRequestOrigin, (req, res) =>
 
 // Get charity projects
 router.get('/ttuser/charityProjects', (req, res) => {
-  const { charity_id } = req.query;
-  if (!charity_id) {
-    return res.status(400).json({ error: 'charity_id required' });
-  }
+    const { charity_id } = req.query;
+    if (!charity_id) {
+        return res.status(400).json({ error: 'charity_id required' });
+    }
 
-  const query = `
+    const query = `
     SELECT id, name, description, endDate
     FROM charityProjects
     WHERE charity = ?
     ORDER BY endDate ASC
   `;
 
-  db.query(query, [charity_id], (err, rows) => {
-    if (err) {
-      dbR.query(query, [charity_id], (err, rows) => {
+    db.query(query, [charity_id], (err, rows) => {
         if (err) {
-          res.setHeader('Content-Type', 'application/json');
-          return res.status(500).json({ error: err.message });
+            dbR.query(query, [charity_id], (err, rows) => {
+                if (err) {
+                    res.setHeader('Content-Type', 'application/json');
+                    return res.status(500).json({ error: err.message });
+                }
+                res.setHeader('Content-Type', 'application/json');
+                res.json(rows || []);
+            });
+        } else {
+            res.setHeader('Content-Type', 'application/json');
+            res.json(rows || []);
         }
-        res.setHeader('Content-Type', 'application/json');
-        res.json(rows || []);
-      });
-    } else {
-      res.setHeader('Content-Type', 'application/json');
-      res.json(rows || []);
-    }
-  });
+    });
 });
 
 // Get all product interests
