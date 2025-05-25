@@ -162,7 +162,6 @@ window.addEventListener('userAuthenticated', (event) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching or processing alerts:', error);
     }
   }
   fetchUserNotifications();

@@ -67,31 +67,31 @@
 
         <div class="mb-3">
           <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
-          <input id="first_name" name="first_name" type="text" class="form-control" placeholder="Enter your first name"
-            required>
+          <input id="first_name" name="first_name" type="text" maxlength="250" class="form-control"
+            placeholder="Enter your first name" required>
         </div>
 
         <div class="mb-3">
           <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
-          <input id="last_name" name="last_name" type="text" class="form-control" placeholder="Enter your last name"
-            required>
+          <input id="last_name" name="last_name" type="text" maxlength="250" class="form-control"
+            placeholder="Enter your last name" required>
         </div>
 
         <div class="mb-3">
           <label for="store_name" class="form-label">Store Name <span class="text-danger">*</span></label>
-          <input id="store_name" name="store_name" type="text" class="form-control" placeholder="Enter the store name"
-            required>
+          <input id="store_name" name="store_name" maxlength="250" type="text" class="form-control"
+            placeholder="Enter the store name" required>
         </div>
 
         <div class="mb-3">
           <label for="charity_name" class="form-label">Charity Name <span class="text-danger">*</span></label>
-          <input id="charity_name" name="charity_name" type="text" class="form-control"
+          <input id="charity_name" name="charity_name" maxlength="250" type="text" class="form-control"
             placeholder="Enter the charity name" required>
         </div>
 
         <div class="mb-3">
           <label for="phone_number" class="form-label">Phone Number</label>
-          <input id="phone_number" name="phone_number" type="text" class="form-control"
+          <input id="phone_number" name="phone_number" maxlength="20" type="text" class="form-control"
             placeholder="Enter phone number">
         </div>
 
@@ -99,11 +99,13 @@
         <div data-type="client" class="user-fields">
           <div class="mb-3">
             <label for="nif" class="form-label">NIF</label>
-            <input id="nif" name="nif" type="text" maxlength="9" class="form-control" placeholder="Enter NIF">
+            <input id="nif" name="nif" type="text" maxlength="9" pattern="(\d{9})?" class="form-control"
+              placeholder="Enter NIF">
           </div>
           <div class="mb-3">
             <label for="nic" class="form-label">NIC</label>
-            <input id="nic" name="nic" type="text" maxlength="9" class="form-control" placeholder="Enter NIC">
+            <input id="nic" name="nic" type="text" maxlength="9" pattern="(\d{9})?" class="form-control"
+              placeholder="Enter NIC">
           </div>
           <div class="mb-3">
             <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
@@ -125,26 +127,29 @@
         <div data-type="entity" class="user-fields" hidden>
           <div class="mb-3">
             <label for="nipc" class="form-label">NIPC <span class="text-danger">*</span></label>
-            <input id="nipc" name="nipc" type="text" maxlength="9" class="form-control" placeholder="Enter NIPC"
-              required>
+            <input id="nipc" name="nipc" type="text" maxlength="9" pattern="\d{9}" class="form-control"
+              placeholder="Enter NIPC" required>
           </div>
           <div class="mb-3">
             <label for="street_address" class="form-label">Street Address <span class="text-danger">*</span></label>
-            <input id="street_address" name="street_address" type="text" class="form-control"
+            <input id="street_address" name="street_address" maxlength="250" type="text" class="form-control"
               placeholder="Enter address" required>
           </div>
           <div class="mb-3">
             <label for="postal_code" class="form-label">Postal Code <span class="text-danger">*</span></label>
-            <input id="postal_code" name="postal_code" type="text" class="form-control" placeholder="Enter postal code"
-              required>
+            <input id="postal_code" name="postal_code" type="text" maxlength="30" class="form-control"
+              placeholder="Enter postal code" required>
           </div>
           <div class="mb-3">
             <label for="city" class="form-label">City <span class="text-danger">*</span></label>
-            <input id="city" name="city" type="text" class="form-control" placeholder="Enter city" required>
+            <input id="city" name="city" type="text" class="form-control" maxlength="250" placeholder="Enter city"
+              required>
           </div>
           <div class="mb-3">
             <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
-            <input id="country" name="country" type="text" class="form-control" placeholder="Enter country" required>
+            <select id="country" name="country" class="form-select" required>
+              <option value="" disabled selected>Select a country</option>
+            </select>
           </div>
           <!-- Store Hours Section -->
           <div data-type="entity" id="store_hours" class="user-fields" hidden>
@@ -204,20 +209,9 @@
 
                 <label class="form-label">Holiday Hours</label>
                 <div id="custom-hours-container">
-                  <div class="row mb-2 align-items-center custom-hour-entry">
-                    <div class="col">
-                      <input type="text" name="custom_hours[0][label]" placeholder="Custom Day" class="form-control">
-                    </div>
-                    <div class="col">
-                      <input type="time" name="custom_hours[0][open]" class="form-control">
-                    </div>
-                    <div class="col">
-                      <input type="time" name="custom_hours[0][close]" class="form-control">
-                    </div>
-                  </div>
                 </div>
                 <button type="button" class="w-100 my-2 btn btn-sm btn-outline-primary" onclick="addCustomHour()">
-                  + Add Holiday
+                  + Add Holiday Hours
                 </button>
               </div>
             </div>
@@ -230,13 +224,13 @@
         <div data-type="employee" class="user-fields" hidden>
           <div class="mb-3">
             <label for="store" class="form-label">Store NIPC <span class="text-danger">*</span></label>
-            <input id="store" name="store" type="text" maxlength="9" class="form-control"
+            <input id="store" name="store" type="text" maxlength="9" pattern="\d{9}" class="form-control"
               placeholder="Enter the NIPC of the store you work for" required>
           </div>
           <div class="mb-3">
             <label for="internal_number" class="form-label">Internal Number <span class="text-danger">*</span></label>
-            <input id="internal_number" name="internal_number" type="text" required pattern="\d+" class="form-control"
-              placeholder="Enter your internal number" required>
+            <input id="internal_number" name="internal_number" maxlength="250" type="text" required pattern="\d+"
+              class="form-control" placeholder="Enter your internal number" required>
           </div>
           <div class="mb-3">
             <label for="employee_gender" class="form-label">Gender <span class="text-danger">*</span></label>

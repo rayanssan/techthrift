@@ -15,13 +15,13 @@ function addCustomHour() {
       onclick="this.closest('.custom-hour-entry').remove()">
         <i class="fas fa-times"></i>
       </button>
-      <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Custom Day" class="form-control">
+      <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Custom Day" class="form-control" required>
     </div>
     <div class="col">
-      <input type="time" name="custom_hours[${customHourIndex}][open]" class="form-control">
+      <input type="time" name="custom_hours[${customHourIndex}][open]" class="form-control" required>
     </div>
     <div class="col">
-      <input type="time" name="custom_hours[${customHourIndex}][close]" class="form-control">
+      <input type="time" name="custom_hours[${customHourIndex}][close]" class="form-control" required>
     </div>
   `;
 
@@ -84,13 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
         group.hidden = false;
         Array.from(group.querySelectorAll('input, select')).forEach(el => {
           el.disabled = false;
-          el.required = true;
         });
       } else {
         group.hidden = true;
         Array.from(group.querySelectorAll('input, select')).forEach(el => {
           el.disabled = true;
-          el.required = false;
         });
       }
     });
@@ -159,20 +157,17 @@ document.addEventListener('DOMContentLoaded', function () {
       // Disable inputs inside store hours
       Array.from(storeHoursSection.querySelectorAll('input, select')).forEach(el => {
         el.disabled = true;
-        el.required = false;
       });
     } else if (selectedValue === 'entity' && selectedEntityType === 'store') {
       storeHoursSection.hidden = false;
       Array.from(storeHoursSection.querySelectorAll('input, select')).forEach(el => {
         el.disabled = false;
-        el.required = true;
       });
     } else {
       // Hide or disable store hours if not store entity
       storeHoursSection.hidden = true;
       Array.from(storeHoursSection.querySelectorAll('input, select')).forEach(el => {
         el.disabled = true;
-        el.required = false;
       });
     }
   }
@@ -180,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
   userTypeSelect.addEventListener('change', updateFormVisibility);
   updateFormVisibility();
 
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     if (!form.checkValidity()) {
@@ -209,17 +204,40 @@ document.addEventListener('DOMContentLoaded', function () {
     const userType = data.userType;
     delete data.userType;
 
-    // Filter fields based on user type
-    const employeeFields = ['store', 'internal_number'];
-    const entityFields = ['nipc', 'entity_type', 'address', 'city', 'country'];
+    const clientData = {};
 
-    const clientData = { ...data };
+    // Filter fields based on user type
+    const clientFields = ['email', 'first_name', 'last_name', 'name', 'phone_number'];
+    const employeeFields = ['employee_dob', 'employee_gender', 'store', 'internal_number'];
+    const entityFields = ['nipc', 'store_name', 'charity_name', 'street_address',
+      'postal_code', 'city', 'country', 'userType'];
+
+    // Copy allowed fields
+    clientFields.forEach(field => {
+      if (data[field] !== undefined) {
+        clientData[field] = data[field];
+      }
+    });
+
     if (userType === 'employee') {
-      employeeFields.forEach(f => delete clientData[f]);
-      entityFields.forEach(f => delete clientData[f]);
+      // Check store existence before deleting fields
+      const storeRes = await fetch(`/ttuser/store/${data.store}`);
+      if (storeRes.status === 204) {
+        showMessage("Registration error", `The store with the NIPC "${data.store}" is not registered in the system.`, "danger");
+        form.reset();
+        return;
+      }
+      clientData.gender = data.employee_gender;
+      delete clientData.employee_gender;
+      clientData.dob = data.employee_dob;
+      delete clientData.employee_dob;
     } else if (userType === 'entity') {
-      employeeFields.forEach(f => delete clientData[f]);
-      entityFields.forEach(f => delete clientData[f]);
+      entityFields.forEach(field => {
+        if (data[field] !== undefined) {
+          clientData[field] = data[field];
+        }
+      });
+      clientData.entity_type = document.getElementById('userType').selectedOptions[0].dataset.entityType;
     } else {
       employeeFields.forEach(f => delete clientData[f]);
       entityFields.forEach(f => delete clientData[f]);
@@ -229,7 +247,8 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch('/ttuser/add/client', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify((( { street_address, postal_code, city, country, ...rest }) => rest)(clientData))
+      body: JSON.stringify((({
+        nipc, entity_type, street_address, postal_code, city, country, ...rest }) => rest)(clientData))
     })
       .then(async res => {
         if (!res.ok) {
@@ -254,17 +273,50 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (userType === 'entity') {
+
+          let storeHours = {};
+          if (clientData.entity_type == "store") {
+            // Gather store hours
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            days.forEach(day => {
+              const open = document.querySelector(`input[name="hours[${day}][open]"]`)?.value;
+              const close = document.querySelector(`input[name="hours[${day}][close]"]`)?.value;
+              if (open && close) {
+                storeHours[day] = `${open}-${close}`;
+              }
+            });
+
+            // Custom holiday hours
+            const customHoursEntries = document.querySelectorAll('.custom-hour-entry');
+            customHoursEntries.forEach(entry => {
+              const labelInput = entry.querySelector('input[name$="[label]"]');
+              const openInput = entry.querySelector('input[name$="[open]"]');
+              const closeInput = entry.querySelector('input[name$="[close]"]');
+
+              if (labelInput && openInput && closeInput) {
+                const label = labelInput.value.trim();
+                const open = openInput.value;
+                const close = closeInput.value;
+                if (label && open && close) {
+                  storeHours[label] = `${open}-${close}`;
+                }
+              }
+            });
+          } else {
+            storeHours = {};
+          }
+
           const entityData = {
             id: insertedClient.id,
             nipc: data.nipc,
-            entity_type: data.entity_type,
-            address: data.address,
+            entity_type: clientData.entity_type,
+            address: `${clientData.street_address}, ${clientData.postal_code}`,
             city: data.city,
-            country: data.country
+            country: data.country,
+            opening_hours: storeHours
           };
-          const endpoint = data.entity_type === 'store'
-            ? '/ttuser/add/store'
-            : '/ttuser/add/charity';
+          const endpoint = clientData.entity_type === 'charity' ?
+            '/ttuser/add/charity' : '/ttuser/add/store';
 
           return fetch(endpoint, {
             method: 'POST',
@@ -290,5 +342,57 @@ document.addEventListener('DOMContentLoaded', function () {
         showMessage("Registration error", err.message, "danger");
       });
   });
+
+  const countrySelect = document.getElementById('country');
+
+  fetch("https://restcountries.com/v3.1/all")
+    .then(response => response.json())
+    .then(data => {
+      const countries = data
+        .map(country => ({
+          name: country.name.common,
+          code: country.cca2
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      // Clear existing options except placeholder
+      countrySelect.innerHTML = '<option value="" disabled>Select a country</option>';
+
+      function getFlagEmoji(countryCode) {
+        return countryCode
+          .toUpperCase()
+          .split('')
+          .map(char => String.fromCodePoint(0x1F1E6 - 65 + char.charCodeAt(0)))
+          .join('');
+      }
+
+      countries.forEach(country => {
+        const option = document.createElement("option");
+        option.value = country.name;
+        option.textContent = `${getFlagEmoji(country.code)} ${country.name}`;
+        countrySelect.appendChild(option);
+      });
+
+      // Default to Portugal
+      countrySelect.value = "Portugal";
+    })
+    .catch(error => {
+      console.error("Error fetching countries:", error);
+      countrySelect.innerHTML = '<option value="">Unable to load countries</option>';
+    });
+
+
+  function fillStoreHours() {
+    const storeHoursDiv = document.getElementById('store_hours');
+    if (!storeHoursDiv) return;
+
+    // Select all open inputs and close inputs
+    const openInputs = storeHoursDiv.querySelectorAll('input[name$="[open]"]');
+    const closeInputs = storeHoursDiv.querySelectorAll('input[name$="[close]"]');
+
+    openInputs.forEach(input => input.value = "08:00");
+    closeInputs.forEach(input => input.value = "23:00");
+  }
+  fillStoreHours();
 
 });

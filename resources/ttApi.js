@@ -1425,6 +1425,23 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                     return res.status(500).send({ error: err.message });
                 }
 
+                // If store hours are provided, insert into entityHours table
+                if (newStore.opening_hours) {
+                    const hoursEntries = Object.entries(newStore.opening_hours);
+
+                    hoursEntries.forEach(([day, hours]) => {
+                        db.execute(
+                            'INSERT INTO entityHours (entity, day, hours) VALUES (?, ?, ?)',
+                            [newStore.id, day, hours],
+                            (err) => {
+                                if (err) {
+                                    console.error(`Failed to insert hours for ${day}:`, err.message);
+                                }
+                            }
+                        );
+                    });
+                }
+
                 // Update replica
                 dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
                     if (err) {
@@ -1440,6 +1457,23 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                         function (err) {
                             if (err) {
                                 return res.status(500).send({ error: err.message });
+                            }
+
+                            // If store hours are provided, insert into entityHours table
+                            if (newStore.opening_hours) {
+                                const hoursEntries = Object.entries(newStore.opening_hours);
+
+                                hoursEntries.forEach(([day, hours]) => {
+                                    dbR.execute(
+                                        'INSERT INTO entityHours (entity, day, hours) VALUES (?, ?, ?)',
+                                        [newStore.id, day, hours],
+                                        (err) => {
+                                            if (err) {
+                                                console.error(`Failed to insert hours for ${day}:`, err.message);
+                                            }
+                                        }
+                                    );
+                                });
                             }
                         }
                     );

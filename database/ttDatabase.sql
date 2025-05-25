@@ -45,7 +45,7 @@ END;
 CREATE TABLE IF NOT EXISTS employees (
     id INT PRIMARY KEY,
     store CHAR(9) NOT NULL,
-    internal_number INT,
+    internal_number VARCHAR(255),
 
     FOREIGN KEY (id) REFERENCES clients(id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (store) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE

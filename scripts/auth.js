@@ -176,9 +176,11 @@ function adjustUI(loggedInUser) {
         const dropdown = document.createElement("div");
         dropdown.className = "dropdown-menu mt-1 show position-absolute";
         dropdown.id = "profileDropdown";
+        const dropdownWidth = usernameBtn.offsetWidth + 100;
+        document.body.appendChild(dropdown);
         dropdown.style.top = `${usernameBtn.offsetTop + usernameBtn.offsetHeight}px`;
-        dropdown.style.left = `${usernameBtn.offsetLeft}px`;
-        dropdown.style.width = `${usernameBtn.offsetWidth}px`;
+        dropdown.style.left = `${usernameBtn.offsetLeft + usernameBtn.offsetWidth - dropdownWidth}px`;
+        dropdown.style.width = `${dropdownWidth}px`;
 
         // Add menu items
         dropdown.innerHTML = `
@@ -203,8 +205,8 @@ function adjustUI(loggedInUser) {
         }, 0);
         window.addEventListener("resize", () => {
           dropdown.style.top = `${usernameBtn.offsetTop + usernameBtn.offsetHeight}px`;
-          dropdown.style.left = `${usernameBtn.offsetLeft}px`;
-          dropdown.style.width = `${usernameBtn.offsetWidth}px`;
+          dropdown.style.left = `${usernameBtn.offsetLeft + usernameBtn.offsetWidth - dropdownWidth}px`;
+          dropdown.style.width = `${dropdownWidth}px`;
         });
       });
 
