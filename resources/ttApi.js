@@ -991,11 +991,7 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, values, function (err, result) {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        // If no rows were inserted, the user already exists
-        if (result.affectedRows === 0) {
-            return res.status(200).send('User already exists');
+            console.error('DB write failed:', err.message);
         }
 
         // Update replica
