@@ -1001,14 +1001,14 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
         // Update replica
         dbR.execute(query, values, function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('Replica DB write failed:', err.message);
             }
-        });
 
-        res.status(201).json({
-            message: 'Client successfully added or updated',
-            id: result.insertId,
-            clientData: newClient
+            res.status(201).json({
+                message: 'Client successfully added or updated',
+                id: result.insertId,
+                clientData: newClient
+            });
         });
     });
 });
