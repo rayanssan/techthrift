@@ -995,7 +995,7 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
         }
 
         // Update replica
-        dbR.execute(query, values, function (err) {
+        dbR.execute(query, values, function (err, result) {
             if (err) {
                 console.error('Replica DB write failed:', err.message);
             }
