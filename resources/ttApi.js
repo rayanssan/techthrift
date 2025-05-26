@@ -107,9 +107,10 @@ router.get('/tt', verifyRequestOrigin, (req, res) => {
             // Fallback to replica DB
             dbR.query(query, params, (replicaErr, replicaRows) => {
                 if (replicaErr) {
-                    return res.status(500).json({ error: replicaErr.message });
+                    return res.status(500).json({ error: err.message });
+                } else {
+                    res.json(replicaRows);
                 }
-                res.json(replicaRows);
             });
         } else {
             res.json(rows);
@@ -179,7 +180,7 @@ router.get('/tt/product', verifyRequestOrigin, (req, res) => {
             // Fallback to replica DB
             dbR.query(query, params, (replicaErr, replicaRows) => {
                 if (replicaErr) {
-                    return res.status(500).json({ error: replicaErr.message });
+                    return res.status(500).json({ error: err.message });
                 }
                 res.json(replicaRows);
             });
@@ -230,23 +231,24 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
                 dbR.query(query, params, (err, rows) => {
                     if (err || rows.length === 0) {
                         return res.status(404).send('Product not found');
+                    } else {
+                        // Create images object with keys as image_order and values as image_path
+                        const product = rows[0];
+                        const images = {};
+
+                        rows.forEach(row => {
+                            // Assign the image path to the key being the image_order
+                            images[row.image_order] = row.image_path;
+                        });
+
+                        // Build the response object
+                        const response = {
+                            ...product, // product info
+                            images: images // image info
+                        };
+
+                        res.json(response);
                     }
-                    // Create images object with keys as image_order and values as image_path
-                    const product = rows[0];
-                    const images = {};
-
-                    rows.forEach(row => {
-                        // Assign the image path to the key being the image_order
-                        images[row.image_order] = row.image_path;
-                    });
-
-                    // Build the response object
-                    const response = {
-                        ...product, // product info
-                        images: images // image info
-                    };
-
-                    res.json(response);
                 });
             });
         } else {
@@ -274,25 +276,26 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
             db.query(query, params, (err, rows) => {
                 if (err || rows.length === 0) {
                     return res.status(404).send('Product not found');
+                } else {
+                    // Create images object with keys as image_order and values as image_path
+                    const product = rows[0];
+                    const images = {};
+
+                    rows.forEach(row => {
+                        // Assign the image path to the key being the image_order
+                        images[row.image_order] = row.image_path;
+                    });
+
+                    // Build the response object
+                    const { image_path, product: productId, image_order, ...filteredProduct } = product;
+
+                    const response = {
+                        ...filteredProduct,
+                        images: images
+                    };
+
+                    res.json(response);
                 }
-                // Create images object with keys as image_order and values as image_path
-                const product = rows[0];
-                const images = {};
-
-                rows.forEach(row => {
-                    // Assign the image path to the key being the image_order
-                    images[row.image_order] = row.image_path;
-                });
-
-                // Build the response object
-                const { image_path, product: productId, image_order, ...filteredProduct } = product;
-
-                const response = {
-                    ...filteredProduct,
-                    images: images
-                };
-
-                res.json(response);
             });
         }
     });
@@ -301,11 +304,6 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
 // Add product
 router.post('/tt/add', verifyRequestOrigin, (req, res) => {
     const newProduct = req.body;
-
-    // Temporary default for store_nipc
-    if (!newProduct.store_nipc) {
-        newProduct.store_nipc = '112233445';
-    }
 
     // Construct the fields
     const columns = [
@@ -339,24 +337,22 @@ router.post('/tt/add', verifyRequestOrigin, (req, res) => {
         VALUES (${columns.map(() => '?').join(', ')})
     `;
 
-    db.execute(query, values, function (err, result) {
+    db.execute(query, values, function (err) {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
 
-        const insertedProduct = {
-            id: result.insertId,
-            ...newProduct
-        };
-
         // Update replica
-        dbR.execute(query, values, function (err) {
+        dbR.execute(query, values, function (err, result) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-        });
 
-        res.status(201).json(insertedProduct); // Send back the newly added product
+            res.status(201).json({
+                id: result.insertId,
+                ...newProduct
+            }); // Send back the newly added product
+        });
     });
 });
 
@@ -383,16 +379,16 @@ router.post('/tt/upload', (req, res) => {
 
     db.execute(query, flatValues, (err) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
 
         dbR.execute(query, flatValues, (err) => {
             if (err) {
-                return res.status(500).json({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-        });
 
-        res.status(200).json({ message: 'Image metadata inserted successfully.' });
+            res.status(200).json({ message: 'Image metadata inserted successfully.' });
+        });
     });
 });
 
@@ -403,24 +399,29 @@ router.delete('/tt/remove/:id', (req, res) => {
     // First, delete images associated with the product
     db.execute('DELETE FROM productImages WHERE product = ?', [productId], function (err) {
         if (err) {
-            return res.status(500).send({ error: 'Failed to delete related images: ' + err.message });
+            console.error('DB operation failed:', err.message);
         }
 
         // Then, delete the product itself
         db.execute('DELETE FROM products WHERE id = ?', [productId], function (err) {
             if (err) {
-                return res.status(500).send({ error: 'Failed to delete product: ' + err.message });
+                console.error('DB operation failed:', err.message);
             }
-
             // Also delete from replica
-            dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => { });
-            dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => { });
-
-            res.status(200).send('Product and related images successfully removed');
+            dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => {
+                if (err) {
+                    console.error('DB operation failed:', err.message);
+                }
+            });
+            dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => {
+                if (err) {
+                    console.error('DB operation failed:', err.message);
+                }
+                res.status(200).send('Product and related images successfully removed');
+            });
         });
     });
 });
-
 
 // Set product up for sale
 router.post('/tt/sale/add', verifyRequestOrigin, (req, res) => {
@@ -429,34 +430,28 @@ router.post('/tt/sale/add', verifyRequestOrigin, (req, res) => {
     // Check if product exists in the products table
     db.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row) {
-            return res.status(404).send('Product not found');
+            console.error('DB operation failed:', err.message);
         }
         // Insert the product into the saleProducts table
         db.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
             [newSaleProduct.id, newSaleProduct.price], function (err) {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
+                    console.error('DB operation failed:', err.message);
                 }
                 // Update replica
                 dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (!row) {
-                        return res.status(404).send('Product not found');
+                        console.error('DB operation failed:', err.message);
                     }
                     // Insert the product into the saleProducts table
                     dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
                         [newSaleProduct.id, newSaleProduct.price], function (err) {
                             if (err) {
-                                return res.status(500).send({ error: err.message });
+                                console.error('DB operation failed:', err.message);
                             }
+                            res.status(201).json({ message: 'Product set for sale', product: row });
                         });
                 });
-                res.status(201).json({ message: 'Product set for sale', product: row });
             });
     });
 });
@@ -466,32 +461,27 @@ router.put('/tt/sale/remove/:id', verifyRequestOrigin, (req, res) => {
     // Check if the product exists in the saleProducts table
     db.query('SELECT * FROM saleProducts WHERE id = ?', [req.params.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row) {
-            return res.status(404).send('Product not found on sale');
+            console.error('DB operation failed:', err.message);
         }
         // Remove the product from the saleProducts table
         db.execute('DELETE FROM saleProducts WHERE id = ?', [req.params.id], function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
             // Update replica
             dbR.query('SELECT * FROM saleProducts WHERE id = ?', [req.params.id], (err, row) => {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                if (!row) {
-                    return res.status(404).send('Product not found on sale');
+                    console.error('DB operation failed:', err.message);
                 }
                 // Remove the product from the saleProducts table
                 dbR.execute('DELETE FROM saleProducts WHERE id = ?', [req.params.id], function (err) {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
+                        console.error('DB operation failed:', err.message);
+                    } else {
+                        res.status(200).json({ message: 'Product removed from sale', productId });
                     }
                 });
             });
-            res.status(200).json({ message: 'Product removed from sale', productId });
         });
     });
 });
@@ -583,8 +573,9 @@ router.get('/tt/repair/:id', verifyRequestOrigin,
                             }
                             if (rows.length === 0) {
                                 return res.status(404).send('Product not found');
+                            } else {
+                                res.json(rows[0]);
                             }
-                            res.json(rows[0]);
                         });
                 } else if (rows.length === 0) {
                     return res.status(404).send('Product not found');
@@ -600,32 +591,27 @@ router.post('/tt/repair/add', verifyRequestOrigin, (req, res) => {
     // Check if product exists in the products table
     db.query('SELECT * FROM products WHERE id = ?', [newRepairProduct.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row) {
-            return res.status(404).send('Product not found');
+            console.error('DB operation failed:', err.message);
         }
         // Insert the product into the repairProducts table
         db.execute('INSERT INTO repairProducts (id) VALUES (?)', [newRepairProduct.id], function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
             // Update replica
             dbR.query('SELECT * FROM products WHERE id = ?', [newRepairProduct.id], (err, row) => {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                if (!row) {
-                    return res.status(404).send('Product not found');
+                    console.error('DB operation failed:', err.message);
                 }
                 // Insert the product into the repairProducts table
                 dbR.execute('INSERT INTO repairProducts (id) VALUES (?)', [newRepairProduct.id], function (err) {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
+                        console.error('DB operation failed:', err.message);
                     }
+
+                    res.status(201).json({ message: 'Product set for repair', product: row });
                 });
             });
-            res.status(201).json({ message: 'Product set for repair', product: row });
         });
     });
 });
@@ -635,32 +621,26 @@ router.put('/tt/repair/remove/:id', verifyRequestOrigin, (req, res) => {
     // Check if the product exists in the repairProducts table
     db.query('SELECT * FROM repairProducts WHERE id = ?', [req.params.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row) {
-            return res.status(404).send('Product not found on repair');
+            console.error('DB operation failed:', err.message);
         }
         // Remove the product from the repairProducts table
         db.execute('DELETE FROM repairProducts WHERE id = ?', [req.params.id], function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
             // Update replica
             dbR.query('SELECT * FROM repairProducts WHERE id = ?', [req.params.id], (err, row) => {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                if (!row) {
-                    return res.status(404).send('Product not found on repair');
+                    console.error('DB operation failed:', err.message);
                 }
                 // Remove the product from the repairProducts table
                 dbR.execute('DELETE FROM repairProducts WHERE id = ?', [req.params.id], function (err) {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
+                        console.error('DB operation failed:', err.message);
                     }
+                    res.status(200).json({ message: 'Product removed from repair', productId: req.params.id });
                 });
             });
-            res.status(200).json({ message: 'Product removed from repair', productId });
         });
     });
 });
@@ -759,14 +739,13 @@ router.get('/tt/donation/:id', verifyRequestOrigin,
                         [req.params.id], (err, rows) => {
                             if (err) {
                                 return res.status(500).json({ error: err.message });
-                            }
-                            if (rows.length === 0) {
+                            } else if (rows.length === 0) {
                                 return res.status(404).send('Product not found');
+                            } else {
+                                res.json(rows[0]);
                             }
-                            res.json(rows[0]);
                         });
-                }
-                else if (rows.length === 0) {
+                } else if (rows.length === 0) {
                     return res.status(404).send('Product not found');
                 } else {
                     res.json(rows[0]);
@@ -784,71 +763,62 @@ router.post('/tt/donation/add', (req, res) => {
 
     // Check if product exists
     db.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
-        if (err) return res.status(500).send({ error: err.message });
-        if (rows.length === 0) return res.status(404).send('Product not found');
-
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
         // Insert into donationProducts
         const insertQuery = `
             INSERT INTO donationProducts (id, charity_nipc, donor_nif)
             VALUES (?, ?, ?)
-        `;
+            `;
         const insertValues = [id, charity, donor];
 
         db.execute(insertQuery, insertValues, function (err) {
-            if (err) return res.status(500).send({ error: err.message });
+            if (err) console.error('DB operation failed:', err.message);
 
             // Update replica DB
             dbR.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
-                if (err) return res.status(500).send({ error: err.message });
+                if (err) console.error('DB operation failed:', err.message);
 
                 dbR.execute(insertQuery, insertValues, function (err) {
-                    if (err) return res.status(500).send({ error: err.message });
+                    if (err) console.error('DB operation failed:', err.message);
+                    res.status(201).json({ message: 'Product set for donation' });
                 });
-
-                res.status(201).json({ message: 'Product set for donation' });
             });
         });
     });
 });
-
 
 // Remove product from donation
 router.put('/tt/donation/remove/:id', verifyRequestOrigin, (req, res) => {
     // Check if the product exists in the donationProducts table
     db.query('SELECT * FROM donationProducts WHERE id = ?', [req.params.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row) {
-            return res.status(404).send('Product not found on donation');
+            console.error('DB operation failed:', err.message);
         }
         // Remove the product from the donationProducts table
         db.execute('DELETE FROM donationProducts WHERE id = ?', [req.params.id], function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
 
             // Update replica
             dbR.query('SELECT * FROM donationProducts WHERE id = ?', [req.params.id], (err, row) => {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                if (!row) {
-                    return res.status(404).send('Product not found on donation');
+                    console.error('DB operation failed:', err.message);
                 }
                 // Remove the product from the donationProducts table
                 dbR.execute('DELETE FROM donationProducts WHERE id = ?', [req.params.id], function (err) {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
+                        console.error('DB operation failed:', err.message);
                     }
+                    res.status(200).json({ message: 'Product removed from donation', product: row });
                 });
             });
-
-            res.status(200).json({ message: 'Product removed from donation', product: row });
         });
+
     });
 });
-
 
 // Get all categories
 router.get('/tt/categories', verifyRequestOrigin,
@@ -946,13 +916,12 @@ router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
-
-                if (rows.length === 0) {
+                else if (rows.length === 0) {
                     return res.status(204).send();
+                } else {
+                    // Send the client details in the response
+                    res.json(rows[0]);
                 }
-
-                // Send the client details in the response
-                res.json(rows[0]);
             });
         } else if (rows.length === 0) {
             return res.status(204).send();
@@ -989,15 +958,15 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
     const query = `INSERT INTO clients (${columns.join(', ')})
                VALUES (${columns.map(() => '?').join(', ')})`;
 
-    db.execute(query, values, function (err, result) {
+    db.execute(query, values, function (err) {
         if (err) {
-            console.error('DB write failed:', err.message);
+            console.error('DB operation failed:', err.message);
         }
 
         // Update replica
         dbR.execute(query, values, function (err, result) {
             if (err) {
-                console.error('Replica DB write failed:', err.message);
+                console.error('DB operation failed:', err.message);
             }
 
             res.status(201).json({
@@ -1071,25 +1040,15 @@ router.put('/ttuser/edit/client', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, values, function (err) {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
-
-        if (this.changes === 0) {
-            return res.status(404).send('Client not found');
-        }
-
         // Update replica
         dbR.execute(query, values, function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-
-            if (this.changes === 0) {
-                return res.status(404).send('Client not found');
-            }
+            res.send('Client successfully updated');
         });
-
-        res.send('Client successfully updated');
     });
 });
 
@@ -1097,25 +1056,15 @@ router.put('/ttuser/edit/client', verifyRequestOrigin, (req, res) => {
 router.delete('/ttuser/remove/client/:id', verifyRequestOrigin, (req, res) => {
     db.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
-
-        if (this.changes === 0) {
-            return res.status(404).send('Client not found');
-        }
-
         // Update replica
         dbR.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-
-            if (this.changes === 0) {
-                return res.status(404).send('Client not found');
-            }
+            res.send('Client successfully removed');
         });
-
-        res.send('Client successfully removed');
     });
 });
 
@@ -1126,9 +1075,10 @@ router.get('/ttuser/employee', verifyRequestOrigin, (req, res) => {
             // Fallback to replica DB
             dbR.query('SELECT * FROM employees e INNER JOIN clients c WHERE c.id = e.id', [], (err, rows) => {
                 if (err) {
-                    return res.status(404).send('No registered employees');
+                    return res.status(500).json({ error: err.message });
+                } else {
+                    res.json(rows);
                 }
-                res.json(rows);
             });
         } else {
             res.json(rows);
@@ -1156,13 +1106,12 @@ router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
-
-                if (rows.length === 0) {
+                else if (rows.length === 0) {
                     return res.status(204).send();
+                } else {
+                    // Send the employee details in the response
+                    res.json(rows[0]);
                 }
-
-                // Send the employee details in the response
-                res.json(rows[0]);
             });
         } else if (rows.length === 0) {
             return res.status(204).send();
@@ -1183,34 +1132,29 @@ router.post('/ttuser/add/employee', verifyRequestOrigin, (req, res) => {
 
     // Check if clients exists
     db.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, rows) => {
-        if (err) return res.status(500).send({ error: err.message });
-        if (rows.length === 0) return res.status(404).send('Client not found');
+        if (err) console.error('DB operation failed:', err.message);
 
         // Insert into employees table
         db.query(
             'INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
             [newEmployee.id, newEmployee.store, newEmployee.internal_number],
             (err) => {
-                if (err) return res.status(500).send({ error: err.message });
+                if (err) console.error('DB operation failed:', err.message);
 
                 // Update replica
                 dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, row) => {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (!row) {
-                        return res.status(404).send('Client not found');
+                        console.error('DB operation failed:', err.message);
                     }
                     // Insert the user into the employees table
                     dbR.execute('INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
                         [newEmployee.id, newEmployee.store, newEmployee.internal_number], function (err) {
                             if (err) {
-                                return res.status(500).send({ error: err.message });
+                                console.error('DB operation failed:', err.message);
                             }
+                            res.status(201).json({ message: 'Employee successfully added' });
                         });
                 });
-
-                res.status(201).json({ message: 'Employee successfully added' });
             }
         );
     });
@@ -1235,21 +1179,16 @@ router.put('/ttuser/edit/employee', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, values, function (err) {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
-        if (this.changes === 0) {
-            return res.status(404).send('Employee not found');
-        }
+
         // Update replica
         dbR.execute(query, values, function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-            if (this.changes === 0) {
-                return res.status(404).send('Employee not found');
-            }
+            res.send('Employee successfully updated');
         });
-        res.send('Employee successfully updated');
     });
 });
 
@@ -1441,10 +1380,7 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
     // Check if new store exists in the clients table
     db.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row || row.length === 0) {
-            return res.status(404).send('Client not found');
+            console.error('DB operation failed:', err.message);
         }
 
         // Insert the store into the entities table including address, city, country
@@ -1453,7 +1389,7 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
             [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
             function (err) {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
+                    console.error('DB operation failed:', err.message);
                 }
 
                 // If store hours are provided, insert into entityHours table
@@ -1476,10 +1412,7 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                 // Update replica
                 dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (!row || row.length === 0) {
-                        return res.status(404).send('Client not found');
+                        console.error('DB operation failed:', err.message);
                     }
 
                     dbR.execute(
@@ -1487,7 +1420,7 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                         [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
                         function (err) {
                             if (err) {
-                                return res.status(500).send({ error: err.message });
+                                console.error('DB operation failed:', err.message);
                             }
 
                             // If store hours are provided, insert into entityHours table
@@ -1506,11 +1439,11 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                                     );
                                 });
                             }
+                            res.status(201).json({ message: 'Store successfully added', product: row });
                         }
                     );
                 });
 
-                res.status(201).json({ message: 'Store successfully added', product: row });
             }
         );
     });
@@ -1534,21 +1467,16 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, values, function (err) {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).send('Store not found');
+            console.error('DB operation failed:', err.message);
         }
         // Update replica
         dbR.execute(query, values, function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-            if (this.changes === 0) {
-                return res.status(404).send('Store not found');
-            }
+
+            res.send('Store successfully updated');
         });
-        res.send('Store successfully updated');
     });
 });
 
@@ -1740,10 +1668,7 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
     // Check if charity exists in clients table
     db.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
         if (err) {
-            return res.status(500).send({ error: err.message });
-        }
-        if (!row || row.length === 0) {
-            return res.status(404).send('Client not found');
+            console.error('DB operation failed:', err.message);
         }
 
         // Insert charity into entities table including address, city, country
@@ -1752,16 +1677,13 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
             [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
             function (err) {
                 if (err) {
-                    return res.status(500).send({ error: err.message });
+                    console.error('DB operation failed:', err.message);
                 }
 
                 // Update replica
                 dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
                     if (err) {
-                        return res.status(500).send({ error: err.message });
-                    }
-                    if (!row || row.length === 0) {
-                        return res.status(404).send('Client not found');
+                        console.error('DB operation failed:', err.message);
                     }
 
                     dbR.execute(
@@ -1769,13 +1691,13 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
                         [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
                         function (err) {
                             if (err) {
-                                return res.status(500).send({ error: err.message });
+                                console.error('DB operation failed:', err.message);
                             }
+
+                            res.status(201).json({ message: 'Charity successfully added', product: row });
                         }
                     );
                 });
-
-                res.status(201).json({ message: 'Charity successfully added', product: row });
             }
         );
     });
@@ -1799,21 +1721,16 @@ router.put('/ttuser/edit/charity', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, values, function (err) {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
-        if (this.changes === 0) {
-            return res.status(404).send('Charity not found');
-        }
+
         // Update replica
         dbR.execute(query, values, function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
-            if (this.changes === 0) {
-                return res.status(404).send('Charity not found');
-            }
+            res.send('Charity successfully updated');
         });
-        res.send('Charity successfully updated');
     });
 });
 
@@ -1835,7 +1752,7 @@ router.post('/ttuser/add/charityProject', (req, res) => {
     db.query(query, values, (err, result) => {
         if (err) {
             dbR.query(query, values, (err, result) => {
-                if (err) return res.status(500).json({ error: err.message });
+                if (err) console.error('DB operation failed:', err.message);
                 res.json({ success: true, insertedId: result.insertId });
             });
         } else {
@@ -1857,13 +1774,13 @@ router.post('/ttuser/remove/charityProjects', verifyRequestOrigin, (req, res) =>
 
     db.query(query, ids, (err, result) => {
         if (err) {
-            dbR.query(query, ids, (err, result) => {
-                if (err) return res.status(500).json({ error: err.message });
-                return res.json({ success: true, deleted: result.affectedRows });
-            });
-        } else {
-            res.json({ success: true, deleted: result.affectedRows });
+            console.error('DB operation failed:', err.message);
         }
+        dbR.query(query, ids, (err, result) => {
+            if (err) console.error('DB operation failed:', err.message);
+
+            return res.json({ success: true, deleted: result.affectedRows });
+        });
     });
 });
 
@@ -1931,14 +1848,14 @@ router.post('/ttuser/interest', verifyRequestOrigin, (req, res) => {
     const query = `INSERT INTO interests (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
 
     db.execute(query, values, function (err) {
-        if (err) return res.status(500).send({ error: err.message });
+        if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
         dbR.execute(query, values, function (err) {
-            if (err) return res.status(500).send({ error: err.message });
-        });
+            if (err) console.error('DB operation failed:', err.message);
 
-        res.status(201).send('Product alert successfully added');
+            res.status(201).send('Product alert successfully added');
+        });
     });
 });
 
@@ -1970,14 +1887,14 @@ router.delete('/ttuser/remove/interest/:id', verifyRequestOrigin, (req, res) => 
     const query = `DELETE FROM interests WHERE id = ?`;
 
     db.execute(query, [req.params.id], function (err) {
-        if (err) return res.status(500).send({ error: err.message });
+        if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
         dbR.execute(query, [req.params.id], function (err) {
-            if (err) return res.status(500).send({ error: err.message });
-        });
+            if (err) console.error('DB operation failed:', err.message);
 
-        res.status(200).send('Product alert successfully removed');
+            res.status(200).send('Product alert successfully removed');
+        });
     });
 });
 
@@ -2020,14 +1937,14 @@ router.put('/ttuser/interest/clearNotifications/:id', verifyRequestOrigin, (req,
     const query = `UPDATE interests SET unread_notifications = 0 WHERE id = ?`;
 
     db.execute(query, [req.params.id], function (err) {
-        if (err) return res.status(500).send({ error: err.message });
+        if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
         dbR.execute(query, [req.params.id], function (err) {
-            if (err) return res.status(500).send({ error: err.message });
-        });
+            if (err) console.error('DB operation failed:', err.message);
 
-        res.send('Notifications cleared successfully');
+            res.send('Notifications cleared successfully');
+        });
     });
 });
 
@@ -2037,17 +1954,16 @@ router.post('/ttuser/wishlist', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err, result) {
         if (err) {
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
 
         // Update replica
         dbR.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err) {
             if (err) {
-                return res.status(500).send({ error: err.message });
+                console.error('DB operation failed:', err.message);
             }
+            res.status(201).send('Product successfully added to wishlist');
         });
-
-        res.status(201).send('Product successfully added to wishlist');
     });
 });
 
@@ -2087,14 +2003,14 @@ router.delete('/ttuser/remove/wishlist/:id', verifyRequestOrigin, (req, res) => 
     const query = `DELETE FROM wishlist WHERE id = ?`;
 
     db.execute(query, [req.params.id], function (err) {
-        if (err) return res.status(500).send({ error: err.message });
+        if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
         dbR.execute(query, [req.params.id], function (err) {
-            if (err) return res.status(500).send({ error: err.message });
-        });
+            if (err) console.error('DB operation failed:', err.message);
 
-        return res.status(200).send("Product successfully removed from the user's wishlist");
+            return res.status(200).send("Product successfully removed from the user's wishlist");
+        });
     });
 });
 
@@ -2274,7 +2190,6 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
     });
 });
 
-
 // Add sale transaction
 router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
     let { client, transaction_value, is_online, order_number,
@@ -2309,8 +2224,7 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
     // Insert transaction
     db.query(transactionQuery, [client, transaction_value], (err, result) => {
         if (err) {
-            console.error(err);
-            return res.status(500).send({ error: err.message });
+            console.error('DB operation failed:', err.message);
         }
 
         const transactionId = result.insertId;
@@ -2322,21 +2236,15 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
             [transactionId, is_online, order_number, employee, store, shipping_address,
                 shipping_postal_code, shipping_city, shipping_country, network || null], (err) => {
                     if (err) {
-                        console.error(err);
-                        return res.status(500).send({ error: err.message });
+                        console.error('DB operation failed:', err.message);
                     }
 
                     // Insert sold products
-                    if (products.length === 0) {
-                        return res.status(400).send({ error: 'No products provided' });
-                    }
-
                     const soldProductsData = products.map(productId => [productId, transactionId]);
 
                     db.query(soldProductsQuery, [soldProductsData], (err) => {
                         if (err) {
-                            console.error(err);
-                            return res.status(500).send({ error: err.message });
+                            console.error('DB operation failed:', err.message);
                         }
 
                         // Update availability of sold products
@@ -2349,8 +2257,7 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
                         // Update replica
                         dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
                             if (err) {
-                                console.error(err);
-                                return res.status(500).send({ error: err.message });
+                                console.error('DB operation failed:', err.message);
                             }
 
                             const transactionId = result.insertId;
@@ -2360,21 +2267,15 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
                                 [transactionId, is_online, order_number, employee, store, shipping_address,
                                     shipping_postal_code, shipping_city, shipping_country, network || null], (err) => {
                                         if (err) {
-                                            console.error(err);
-                                            return res.status(500).send({ error: err.message });
+                                            console.error('DB operation failed:', err.message);
                                         }
 
                                         // Insert sold products
-                                        if (products.length === 0) {
-                                            return res.status(400).send({ error: 'No products provided' });
-                                        }
-
                                         const soldProductsData = products.map(productId => [productId, transactionId]);
 
                                         dbR.query(soldProductsQuery, [soldProductsData], (err) => {
                                             if (err) {
-                                                console.error(err);
-                                                return res.status(500).send({ error: err.message });
+                                                console.error('DB operation failed:', err.message);
                                             }
 
                                             // Update availability of sold products
@@ -2384,10 +2285,10 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
                                                 });
                                             });
                                         });
+
+                                        res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
                                     });
                         });
-
-                        res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
                     });
                 });
     });
@@ -2415,7 +2316,6 @@ router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, re
         });
     });
 });
-
 
 // Get repair transactions
 router.get('/tttransaction/repairs', verifyRequestOrigin, (req, res) => {
