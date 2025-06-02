@@ -2,7 +2,7 @@
 
 import { Router } from 'express';
 const router = Router();
-import { createConnection } from 'mysql2';
+import { createPool } from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config({ path: 'resources/dbCredentials.env' });
 
@@ -28,15 +28,31 @@ let dbR;
 
 const connectToDb = async () => {
     try {
-        db = createConnection(connection);
-        dbR = createConnection(connectionReplica);
-        await new Promise((resolve, reject) => {
-            db.connect((err) => (err ? reject(err) : resolve()));
-            dbR.connect((err) => (err ? reject(err) : resolve()));
-        });
+        db = createPool(connection);
+        dbR = createPool(connectionReplica);
+
+        // Test connections by acquiring a connection from each pool
+        await Promise.all([
+            new Promise((resolve, reject) => {
+                db.getConnection((err, connection) => {
+                    if (err) return reject(err);
+                    connection.release();
+                    resolve();
+                });
+            }),
+            new Promise((resolve, reject) => {
+                dbR.getConnection((err, connection) => {
+                    if (err) return reject(err);
+                    connection.release();
+                    resolve();
+                });
+            }),
+        ]);
+
         console.log('Connected to the TechThrift databases.');
         return true;
     } catch (err) {
+        // Fallback to local connection configs
         connection = {
             host: 'localhost',
             user: 'root',
@@ -51,16 +67,33 @@ const connectToDb = async () => {
             database: 'tt_database_replica',
             multipleStatements: true
         };
-        db = createConnection(connection);
-        dbR = createConnection(connectionReplica);
-        await new Promise((resolve, reject) => {
-            db.connect((err) => (err ? reject(err) : resolve()));
-            dbR.connect((err) => (err ? reject(err) : resolve()));
-        });
+
+        db = createPool(connection);
+        dbR = createPool(connectionReplica);
+
+        // Test local connections
+        await Promise.all([
+            new Promise((resolve, reject) => {
+                db.getConnection((err, connection) => {
+                    if (err) return reject(err);
+                    connection.release();
+                    resolve();
+                });
+            }),
+            new Promise((resolve, reject) => {
+                dbR.getConnection((err, connection) => {
+                    if (err) return reject(err);
+                    connection.release();
+                    resolve();
+                });
+            }),
+        ]);
+
         console.log('Connected to the TechThrift databases (locally).');
         return true;
     }
 };
+
 
 // Flag for database connection
 const dbReady = connectToDb();
