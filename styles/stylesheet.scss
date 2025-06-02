@@ -443,3 +443,109 @@ button[data-bs-target="#filtersCollapse"] {
         filter: brightness(0.8);
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    body:not(.light-mode):not(.dark-mode) {
+        filter: invert(1) hue-rotate(180deg);
+        background-color: black;
+
+        img:not(.card img, .main-banner img, header img, footer img) {
+            filter: invert(1) hue-rotate(180deg);
+            background-color: black;
+        }
+
+        video,
+        picture,
+        iframe,
+        .main-banner:has(#main-banner-brand),
+        #payment-section .card,
+        #cart-section .card,
+        #paypal,
+        apple-pay-button,
+        #productCarousel *,
+        #store-map {
+            filter: invert(1) hue-rotate(180deg);
+        }
+
+        .card img:not(#cart-section .card img, #featuredContainer .card img),
+        #main-banner img {
+            filter: invert(1) hue-rotate(180deg);
+        }
+
+        .card img:not(#featuredContainer .card img) {
+            background-color: white;
+        }
+
+        .img-thumbnail:hover {
+            filter: brightness(0.9) invert(1) hue-rotate(180deg) !important;
+        }
+
+        .img-thumbnail:active {
+            filter: brightness(0.8) invert(1) hue-rotate(180deg) !important;
+        }
+
+        #productCarousel img,
+        .modal-content img,
+        .img-thumbnail {
+            background-color: white !important;
+        }
+
+        :root {
+            --bs-shadow-sm: 0 1px 2px rgba(255, 255, 255, 0.1);
+            --bs-shadow: 0 4px 6px rgba(255, 255, 255, 0.15);
+            --bs-shadow-lg: 0 10px 15px rgba(255, 255, 255, 0.2);
+        }
+    }
+}
+
+body.dark-mode {
+    filter: invert(1) hue-rotate(180deg);
+    background-color: black;
+
+    img:not(.card img, .main-banner img, header img, footer img) {
+        filter: invert(1) hue-rotate(180deg);
+        background-color: black;
+    }
+
+    video,
+    picture,
+    iframe,
+    .main-banner:has(#main-banner-brand),
+    #payment-section .card,
+    #cart-section .card,
+    #paypal,
+    apple-pay-button,
+    #productCarousel *,
+    #store-map {
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    .card img:not(#cart-section .card img, #featuredContainer .card img),
+    #main-banner img {
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    .card img:not(#featuredContainer .card img) {
+        background-color: white;
+    }
+
+    .img-thumbnail:hover {
+        filter: brightness(0.9) invert(1) hue-rotate(180deg) !important;
+    }
+
+    .img-thumbnail:active {
+        filter: brightness(0.8) invert(1) hue-rotate(180deg) !important;
+    }
+
+    #productCarousel img,
+    .modal-content img,
+    .img-thumbnail {
+        background-color: white !important;
+    }
+
+    :root {
+        --bs-shadow-sm: 0 1px 2px rgba(255, 255, 255, 0.1);
+        --bs-shadow: 0 4px 6px rgba(255, 255, 255, 0.15);
+        --bs-shadow-lg: 0 10px 15px rgba(255, 255, 255, 0.2);
+    }
+}

@@ -68,8 +68,7 @@
                         </a>
                         <a href="/stores" class="border 
                         rounded py-1 px-3 nav-link d-flex 
-                        align-items-center btn btn-light"
-                        style="background-color: navy; color: white">
+                        align-items-center btn btn-light" style="background-color: navy; color: white">
                             <i class="fas fa-store m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Stores</p>
                         </a>
@@ -83,6 +82,10 @@
                             <i class="fas fa-shopping-cart m-1 me-md-2"></i>
                             <p class="d-none d-md-block mb-0">Cart</p>
                         </a>
+                        <button id="toggle-mode"
+                            class="btn border rounded py-1 px-3 nav-link d-flex align-items-center btn btn-light">
+                            &nbsp;<i id="mode-icon" class="fas fa-moon"></i>&nbsp;
+                        </button>
                     </div>
                 </div>
 
@@ -284,7 +287,7 @@
                             <li>
                                 <a class="text-muted" href="/help">
                                     Help center
-                                  </a>
+                                </a>
                             </li>
                             <li>
                                 <a class="text-muted footer-modal-link" href="#" data-title="Shipping Information"
