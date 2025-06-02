@@ -21,10 +21,6 @@ import { exposeApi } from '../techthrift.js';
  * @param {import('express').NextFunction} next - The callback to pass control to the next middleware.
  */
 function verifyRequestOrigin(req, res, next) {
-    if (!db || !dbR) {
-        console.error("Database connection not ready.");
-        return res.status(503).json({ error: "Service temporarily unavailable. Try again later." });
-    }
     if (exposeApi) {
         return next();
     }
