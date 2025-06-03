@@ -2294,6 +2294,69 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
     });
 });
 
+// Update sale transaction status
+router.post('/tttransaction/sales/updateStatus/:saleId', verifyRequestOrigin, (req, res) => {
+    const { saleId } = req.params;
+    const { newStatus } = req.body;
+
+    if (!newStatus || typeof newStatus !== 'string') {
+        return res.status(400).send({ error: 'Missing or invalid newStatus in request body' });
+    }
+
+    const updateQuery = `
+        UPDATE sales
+        SET sale_status = ?
+        WHERE transaction_id = ?
+    `;
+
+    // Update sale status
+    db.query(updateQuery, [newStatus, saleId], (err, result) => {
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
+
+        // Update replica
+        dbR.query(updateQuery, [newStatus, saleId], (err) => {
+            if (err) {
+                console.error('DB operation failed:', err.message);
+            }
+
+            // If order is cancelled, relist the products
+            if (newStatus.toLowerCase() === 'cancelled') {
+                const getProductsQuery = `
+                    SELECT product_id FROM soldProducts WHERE sale_id = ?
+                `;
+
+                db.query(getProductsQuery, [saleId], (err, rows) => {
+                    if (err) {
+                        console.error('DB operation failed:', err.message);
+                    }
+
+                    const productIds = rows.map(r => r.product_id);
+
+                    if (productIds.length === 0) {
+                        // No products to update, just respond success
+                        return res.status(200).send({ message: 'Sale status updated, no products to relist.' });
+                    } else {
+                        const relistQuery = `UPDATE products SET availability = 1 WHERE id IN (${productIds.map(() => '?').join(',')})`;
+
+                        db.query(relistQuery, productIds, (err) => {
+                            if (err) console.error('DB operation failed:', err.message);
+                            // Update replica
+                            dbR.query(relistQuery, productIds, (err) => {
+                                if (err) console.error('DB operation failed:', err.message);
+                            });
+                        });
+                        res.status(200).send({ message: 'Sale status updated successfully' });
+                    }
+                });
+            } else {
+                res.status(200).send({ message: 'Sale status updated successfully' });
+            }
+        });
+    });
+});
+
 // Check availability of products
 router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, res) => {
     const { productIds } = req.body;
@@ -2306,7 +2369,17 @@ router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, re
 
     db.query(query, productIds, (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            dbR.query(query, productIds, (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+
+                const unavailable = rows.map(row => row.id);
+                res.json({
+                    allAvailable: unavailable.length === 0,
+                    unavailable
+                });
+            });
         }
 
         const unavailable = rows.map(row => row.id);

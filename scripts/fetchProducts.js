@@ -467,7 +467,7 @@ if (document.body.id === "homepage") {
                             modalEl.id = "image-popup";
                             modalEl.tabIndex = -1;
                             modalEl.innerHTML = `
-                            <div class="modal-dialog modal-dialog-centered" style="zoom: 1.3;">
+                            <div class="modal-dialog modal-dialog-centered" style="zoom: 1.2;">
                             <div class="modal-content border-0 text-center rounded bg-white m-auto">
                                 <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" 
                                 data-bs-dismiss="modal" aria-label="Close"></button>

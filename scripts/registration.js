@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
       lastNameInput.disabled = true;
       firstNameInput.required = false;
       lastNameInput.required = false;
+      document.querySelector('img[alt="TechThrift\'s logo"]').src = "../media/images/logo_hor_partners.png";
     } else {
       firstNameInput.closest('.mb-3').hidden = false;
       lastNameInput.closest('.mb-3').hidden = false;
@@ -133,6 +134,10 @@ document.addEventListener('DOMContentLoaded', function () {
       lastNameInput.disabled = false;
       firstNameInput.required = true;
       lastNameInput.required = true;
+      document.querySelector('img[alt="TechThrift\'s logo"]').src = "../media/images/logo_hor.png";
+    }
+    if (selectedValue === "employee") {
+      document.querySelector('img[alt="TechThrift\'s logo"]').src = "../media/images/logo_hor_partners.png";
     }
 
     // Show store name field only if entity type is store
@@ -284,16 +289,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
       clientData.entity_type = document.getElementById('userType').selectedOptions[0].dataset.entityType;
-        const resCharities = await fetch(`/ttuser/charity/${clientData.nipc}`);
-        if (resCharities.status !== 204) {  // if not 204, entity exists
-          showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
-          return; // abort
-        }
-        const resStores = await fetch(`/ttuser/store/${clientData.nipc}`);
-        if (resStores.status !== 204) {  // if not 204, entity exists
-          showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
-          return; // abort
-        }
+      const resCharities = await fetch(`/ttuser/charity/${clientData.nipc}`);
+      if (resCharities.status !== 204) {  // if not 204, entity exists
+        showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
+        return; // abort
+      }
+      const resStores = await fetch(`/ttuser/store/${clientData.nipc}`);
+      if (resStores.status !== 204) {  // if not 204, entity exists
+        showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
+        return; // abort
+      }
     } else {
       employeeFields.forEach(f => delete clientData[f]);
       entityFields.forEach(f => delete clientData[f]);

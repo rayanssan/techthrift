@@ -332,38 +332,90 @@ window.addEventListener('userAuthenticated', (event) => {
                 orderItem.className = 'list-group-item p-3';
 
                 const orderDate = new Date(order.date_inserted).toLocaleString();
+                const orderDateObj = new Date(order.date_inserted)
+                const daysSinceOrder = (Date.now() - orderDateObj.getTime()) / (1000 * 60 * 60 * 24);
                 const shipping = `${order.shipping_address || 'N/A'}, 
             ${order.shipping_postal_code || ''} ${order.shipping_city || ''} ${order.shipping_country || ''}`.trim();
 
                 orderItem.innerHTML = `
-            <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1"><i class="fa fa-receipt me-1"></i> Order code: <code>${order.order_number}</code></h6>
-                <small>${orderDate}</small>
-            </div>
-            <h4 class="mb-1">Status: <strong>${order.sale_status || 'Unknown'}</strong></h4>
-            <h6 class="mb-1">Total Order Price: <span class="fw-bold">
-            ${(Number(order.transaction_value)).toLocaleString('en-PT', { style: 'currency', currency: 'EUR' })}</span></h6>
-            <h6 class="mb-1">Paid with <span class="fw-bold">${order.network}</span></h6>
-            ${!order.is_online ? `
-            <h6 class="mb-1">Store: ${order.store_of_sale || 'N/A'}</h6>
-            ` : ''}
-            <h6 class="mb-1">Shipping Address: ${shipping}</h6>
-            <br>
-            <div class="d-flex flex-wrap gap-3">
-                ${order.sold_products.map(p => `
-                    <div class="card" onclick = "location.href='/product?is=${p.id}'" style="max-width: 210px;cursor:pointer;">
-                    <img src="../media/images/products/${p.product_image}" 
-                        class="card-img-top mt-2 px-3" 
-                        alt="${p.name}" 
-                        style="object-fit: contain;">
-                    <div class="card-body p-2">
-                        <p class="card-text text-center small mb-0">${p.name}</p>
-                    </div>
-                    </div>
-                `).join('')}
-            </div>
-            `;
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1"><i class="fa fa-receipt me-1"></i> Order code: <code>${order.order_number}</code></h6>
+                    <small>${orderDate}</small>
+                </div>
+                <h4 class="mb-1 mt-1">Status: <strong>${order.sale_status || 'Unknown'}</strong></h4>
+                <h6 class="mb-1">Total Order Price: <span class="fw-bold">
+                ${(Number(order.transaction_value)).toLocaleString('en-PT', { style: 'currency', currency: 'EUR' })}</span></h6>
+                <h6 class="mb-1">Paid with <span class="fw-bold">${order.network}</span></h6>
+                ${!order.is_online ? `
+                <h6 class="mb-1">Store: ${order.store_of_sale || 'N/A'}</h6>
+                ` : ''}
+                <h6 class="mb-3">Shipping Address: ${shipping}</h6>
+                <div class="d-flex flex-wrap gap-3">
+                    ${order.sold_products.map(p => `
+                        <div class="card" onclick = "location.href='/product?is=${p.id}'" style="max-width: 210px;cursor:pointer;">
+                        <img src="../media/images/products/${p.product_image}" 
+                            class="card-img-top px-3" 
+                            alt="${p.name}" 
+                            style="object-fit: contain;height:200px">
+                        <div class="card-body p-2">
+                            <p class="card-text text-center small mb-0">${p.name}</p>
+                        </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ${order.sale_status.toLowerCase() !== 'cancelled' && daysSinceOrder <= 14 ? `
+                <details class="border rounded mt-3 py-2 px-3">
+                    <summary class="btn-link text-decoration-none">See more options</summary>
+                    ${order.sale_status.toLowerCase() === 'to be shipped' ?
+                            `<button class="btn btn-danger mt-2 mb-1">Cancel Order</button>` :
+                            (order.sale_status.toLowerCase() === 'shipped'
+                                || order.sale_status.toLowerCase() === 'delivered' ?
+                                `<button class="btn btn-danger mt-2 mb-1">Return Item</button>` : ``)}
+                </details>` : ''}
+                `;
                 ordersList.prepend(orderItem);
+                orderItem.querySelector('.btn-danger')?.addEventListener("click", async (e) => {
+                    const btn = e.currentTarget;
+                    const isCancel = btn.textContent.includes("Cancel");
+                    const title = isCancel ? "Cancel Order" : "Return Item";
+                    const confirmText = isCancel ? "Yes, Cancel" : "Yes, Return";
+
+                    const action = isCancel
+                        ? `Your order has not been shipped yet, so it will be cancelled immediately and we will process your refund.`
+                        : `Your order has already been ${order.sale_status.toLowerCase()}.<br><br>Please contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a> with your order number and the reason why you would like to return this order.`;
+
+                    if (isCancel) {
+                        const confirmed = await showDialog(
+                            title,
+                            `${action}<br><br>Are you sure you want to ${isCancel ? "cancel this order" : "proceed"}?`,
+                            confirmText,
+                            "No"
+                        );
+
+                        if (!confirmed) return;
+
+                        const response = await fetch(`/tttransaction/sales/updateStatus/${order.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ newStatus: 'Cancelled' })
+                        });
+
+                        if (!response.ok) {
+                            showMessage("Order Cancellation Failure", `Your order <code>${order.order_number}</code> could not be cancelled.<br><br>Please contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a>.`, "danger");
+                        } else {
+                            await showMessage("Order Cancelled",
+                                `Your order <code>${order.order_number}</code> has been cancelled and a refund will be processed.<br><br>Contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a> if you have any questions or issues.`,
+                                "dark").then(() =>
+                                    location.reload()
+                                );
+                        }
+                    } else {
+                        await showMessage("Return Item", action, "dark");
+                    }
+                });
+
             });
         })
         .catch(err => {
@@ -392,7 +444,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 <h6 class="mb-1"><i class="fa fa-wrench me-1"></i> Repair Order Code: <code>${repair.repair_order_number}</code></h6>
                 <small>${repairDate}</small>
                 </div>
-                <h4 class="mb-1">Status: <strong>${repair.status || 'Unknown'}</strong></h4>
+                <h4 class="mb-1 mt-1">Status: <strong>${repair.status || 'Unknown'}</strong></h4>
                 <h6 class="mb-1">Device: ${repair.device_name || 'N/A'}</h6>
                 <h6 class="mb-1">Description: ${repair.description || 'No description provided.'}</h6>
                 <br>

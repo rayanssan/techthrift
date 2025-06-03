@@ -494,9 +494,17 @@ button[data-bs-target="#filtersCollapse"] {
     filter: invert(1) hue-rotate(180deg);
     background-color: black;
   }
-  body:not(.light-mode):not(.dark-mode) img:not(.card img, .main-banner img, header img, footer img) {
+  body:not(.light-mode):not(.dark-mode) img:not(.card img, .main-banner img, header img, footer img),
+  body:not(.light-mode):not(.dark-mode) select {
     filter: invert(1) hue-rotate(180deg);
     background-color: black;
+  }
+  body:not(.light-mode):not(.dark-mode) select {
+    color: white;
+    border-color: rgb(22, 26, 30);
+  }
+  body:not(.light-mode):not(.dark-mode) select:hover {
+    background-color: rgb(37, 37, 37);
   }
   body:not(.light-mode):not(.dark-mode) video,
   body:not(.light-mode):not(.dark-mode) picture,
@@ -505,7 +513,6 @@ button[data-bs-target="#filtersCollapse"] {
   body:not(.light-mode):not(.dark-mode) #payment-section .card,
   body:not(.light-mode):not(.dark-mode) #cart-section .card,
   body:not(.light-mode):not(.dark-mode) #paypal,
-  body:not(.light-mode):not(.dark-mode) apple-pay-button,
   body:not(.light-mode):not(.dark-mode) #productCarousel *,
   body:not(.light-mode):not(.dark-mode) #store-map {
     filter: invert(1) hue-rotate(180deg);
@@ -538,9 +545,17 @@ body.dark-mode {
   filter: invert(1) hue-rotate(180deg);
   background-color: black;
 }
-body.dark-mode img:not(.card img, .main-banner img, header img, footer img) {
+body.dark-mode img:not(.card img, .main-banner img, header img, footer img),
+body.dark-mode select {
   filter: invert(1) hue-rotate(180deg);
   background-color: black;
+}
+body.dark-mode select {
+  color: white;
+  border-color: rgb(22, 26, 30);
+}
+body.dark-mode select:hover {
+  background-color: rgb(37, 37, 37);
 }
 body.dark-mode video,
 body.dark-mode picture,
@@ -549,7 +564,6 @@ body.dark-mode .main-banner:has(#main-banner-brand),
 body.dark-mode #payment-section .card,
 body.dark-mode #cart-section .card,
 body.dark-mode #paypal,
-body.dark-mode apple-pay-button,
 body.dark-mode #productCarousel *,
 body.dark-mode #store-map {
   filter: invert(1) hue-rotate(180deg);
