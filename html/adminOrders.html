@@ -137,32 +137,33 @@
                     </li>
                 </ul>
 
-                <form id="orderForm" class="mt-3">
+                <form id="orderForm" class="mt-3" novalidate>
                     <!-- Repair Form Fields -->
                     <div id="repairFields">
                         <div class="mb-3">
                             <label for="repair-product-name" class="form-label">Selected Product</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="repair-product-name"
-                                    placeholder="No product selected" readonly>
-                                <input type="hidden" id="repair-product-id" required>
+                                       placeholder="No product selected" readonly>
+                                <input type="hidden" id="repair-product-id" name="repair-product-id" required>
                                 <button type="button" class="btn btn-outline-secondary"
-                                    onclick="openProductForm('repair')">Select Product</button>
+                                        onclick="openProductForm('repair')">Select Product</button>
                             </div>
                         </div>
-
+                    
                         <div class="mb-3">
                             <label for="repair-description" class="form-label">Issue Description</label>
-                            <textarea class="form-control" id="repair-description" placeholder="Enter Issue Description"
-                                required></textarea>
+                            <textarea class="form-control" id="repair-description" name="repair-description"
+                                      placeholder="Enter Issue Description" required></textarea>
                         </div>
+                    
                         <div class="mb-3">
                             <label for="repair-price" class="form-label">Repair Price</label>
-                            <input type="number" class="form-control" id="repair-price" placeholder="Enter Repair Price"
-                                required>
+                            <input type="number" class="form-control" id="repair-price" name="repair-price"
+                                   placeholder="Enter Repair Price" required>
                         </div>
                     </div>
-
+                    
                     <!-- You can include sellFields if needed -->
                     <div id="sellFields" style="display: none;">
                         <div class="mb-3">
@@ -545,6 +546,13 @@
                 if (typeof data.availability === 'string') {
                     data.availability = data.availability === 'true';
                 }
+                const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                if (loggedInUser && loggedInUser.store) {
+                    data.store_nipc = loggedInUser.store;
+                } else {
+                    alert('No store information found for the logged-in user.');
+                    return;
+                }
 
                 try {
                     // Submit product
@@ -728,17 +736,16 @@
                 }
             }
 
-            // Fetch and display repair orders in the table
             async function fetchRepairOrders() {
+                const repairList = document.getElementById('order-list');
+                repairList.innerHTML = '';
+
+                // Fetch Repair Orders
                 try {
-                    const res = await fetch('/tt/repair');
-                    const repairs = await res.json();
+                    const resRepairs = await fetch('/tt/repair');
+                    const repairs = await resRepairs.json();
 
-                    // Debug: log the full JSON response
                     console.log('Fetched repair orders:', repairs);
-
-                    const repairList = document.getElementById('order-list');
-                    repairList.innerHTML = '';
 
                     repairs.forEach(repair => {
                         const row = document.createElement('tr');
@@ -761,8 +768,43 @@
 
                         repairList.appendChild(row);
                     });
+
                 } catch (err) {
                     console.error('Error fetching repair orders:', err);
+                }
+
+                // Fetch Sales Orders
+                try {
+                    const resSales = await fetch('/tttransaction/sales');
+                    const sales = await resSales.json();
+
+                    console.log('Fetched sales orders:', sales);
+
+                    sales.forEach(sale => {
+                        const row = document.createElement('tr');
+
+                        const orderIdCell = document.createElement('td');
+                        orderIdCell.textContent = sale.id || 'N/A';
+                        row.appendChild(orderIdCell);
+
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = 'Sales Order';
+                        row.appendChild(typeCell);
+
+                        const detailsCell = document.createElement('td');
+                        const productNames = sale.sold_products.map(p => p.name).join(', ');
+                        detailsCell.textContent = productNames || 'No products';
+                        row.appendChild(detailsCell);
+
+                        const statusCell = document.createElement('td');
+                        statusCell.textContent = sale.sale_status || 'N/A';
+                        row.appendChild(statusCell);
+
+                        repairList.appendChild(row);
+                    });
+
+                } catch (err) {
+                    console.error('Error fetching sales orders:', err);
                 }
             }
 
@@ -772,11 +814,14 @@
                 e.preventDefault();
 
                 const isRepair = document.getElementById("repairTab").classList.contains("active");
+                const isSell = document.getElementById("sellTab").classList.contains("active");
 
-                // ✅ Disable hidden required fields to prevent validation errors
-                const sellFields = document.getElementById("sellFields");
-                sellFields.querySelectorAll("input").forEach(input => {
-                    input.disabled = (sellFields.style.display === "none");
+                // Disable inputs in hidden fields
+                document.querySelectorAll("#repairFields input, #repairFields textarea").forEach(el => {
+                    el.disabled = !isRepair;
+                });
+                document.querySelectorAll("#sellFields input, #sellFields textarea").forEach(el => {
+                    el.disabled = !isSell;
                 });
 
                 if (isRepair) {
@@ -789,13 +834,10 @@
                         return;
                     }
 
-
                     try {
                         const response = await fetch('/tt/repair/add', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 id: productId,
                                 description: description,
@@ -816,17 +858,63 @@
                         console.error("Submit failed:", err);
                         alert("An unexpected error occurred.");
                     }
+
+                } else if (isSell) {
+                    const productId = document.getElementById("sell-product-id").value.trim();
+                    const clientEmail = document.getElementById("purchase-product-seller-email").value.trim();
+                    const price = parseFloat(document.getElementById("purchase-price").value.trim());
+
+                    if (!productId || !clientEmail || isNaN(price)) {
+                        alert("Please fill in all required buy-back fields.");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/tttransaction/sales/add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                client: clientEmail,
+                                transaction_value: price,
+                                is_online: false,
+                                order_number: null,
+                                employee: null,
+                                store: null,
+                                network: null,
+                                shipping_address: null,
+                                shipping_postal_code: null,
+                                shipping_city: null,
+                                shipping_country: null,
+                                products: [productId]
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            alert("Buy-back transaction recorded successfully.");
+                            showOrdersTable();
+                        } else {
+                            alert("Error: " + (result.error || response.statusText));
+                        }
+                    } catch (err) {
+                        console.error("Buy-back submit failed:", err);
+                        alert("An unexpected error occurred.");
+                    }
                 }
 
-                // ✅ Optional: Re-enable the sell inputs if needed (e.g., for switching tabs again)
-                sellFields.querySelectorAll("input").forEach(input => {
-                    input.disabled = false;
+                // Re-enable all fields after submission for future use
+                document.querySelectorAll("#repairFields input, #repairFields textarea").forEach(el => {
+                    el.disabled = false;
+                });
+                document.querySelectorAll("#sellFields input, #sellFields textarea").forEach(el => {
+                    el.disabled = false;
                 });
             });
 
+
             // Initial load
             window.onload = function () {
-
                 fetchRepairOrders();
             };
         </script>

@@ -309,6 +309,9 @@
 
           let lastAddedProduct = null;
 
+          window.hideAddProductForm = function () {
+            document.getElementById('add-product-form').classList.add('d-none');
+        };
 
           function showAddProductForm() {
             const formSection = document.getElementById('add-product-form');
@@ -599,6 +602,13 @@
             if (typeof data.availability === 'string') {
               data.availability = data.availability === 'true';
             }
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                if (loggedInUser && loggedInUser.store) {
+                    data.store_nipc = loggedInUser.store;
+                } else {
+                    alert('No store information found for the logged-in user.');
+                    return;
+                }
 
             try {
               // Submit product

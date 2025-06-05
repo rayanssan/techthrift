@@ -305,6 +305,7 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
 router.post('/tt/add', verifyRequestOrigin, (req, res) => {
     const newProduct = req.body;
 
+    
     // Construct the fields
     const columns = [
         'name',
@@ -453,6 +454,47 @@ router.post('/tt/sale/add', verifyRequestOrigin, (req, res) => {
                         });
                 });
             });
+    });
+});
+
+router.post('/tt/sale/set', verifyRequestOrigin, (req, res) => {
+    const { id, price } = req.body;
+
+    if (!id || price == null) {
+        return res.status(400).json({ error: 'Missing id or price' });
+    }
+
+    // Step 1: Add to saleProducts in main DB
+    db.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)', [id, price], (err) => {
+        if (err) {
+            console.error('Main DB insert failed:', err.message);
+            return res.status(500).json({ error: 'Failed to insert into main saleProducts' });
+        }
+
+        // Step 2: Update availability in main DB
+        db.execute('UPDATE products SET availability = 1 WHERE id = ?', [id], (err) => {
+            if (err) {
+                console.error('Main DB availability update failed:', err.message);
+            }
+
+            // Step 3: Insert into replica DB
+            dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)', [id, price], (err) => {
+                if (err) {
+                    console.error('Replica DB insert failed:', err.message);
+                }
+
+                // Step 4: Update availability in replica DB
+                dbR.execute('UPDATE products SET availability = 1 WHERE id = ?', [id], (err) => {
+                    if (err) {
+                        console.error('Replica DB availability update failed:', err.message);
+                    }
+
+                    res.status(201).json({
+                        message: 'Product added to saleProducts and marked as available in both DBs'
+                    });
+                });
+            });
+        });
     });
 });
 
