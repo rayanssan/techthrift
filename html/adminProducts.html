@@ -432,7 +432,7 @@
             const price = document.getElementById('set-sale-price').value;
 
             try {
-                const res = await fetch('/tt/sale/add', {
+                const res = await fetch('/tt/sale/set', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: productId, price })
@@ -1203,6 +1203,13 @@
                     data.availability = data.availability === 'true';
                 }
 
+                const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                if (loggedInUser && loggedInUser.store) {
+                    data.store_nipc = loggedInUser.store;
+                } else {
+                    alert('No store information found for the logged-in user.');
+                    return;
+                }
                 try {
                     // Submit product
                     const res = await fetch('/tt/add', {
