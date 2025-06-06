@@ -159,6 +159,12 @@ function adjustUI(loggedInUser) {
         }</p>`;
       usernameBtn.href = "";
 
+      if (loggedInUser.user_type == "store") {
+        if (!window.location.pathname.startsWith('/adminProfile')) {
+          location.href = "/adminProfile";
+        }
+      }
+
       if (loggedInUser.user_type !== "client") {
         if (!window.location.pathname.startsWith('/admin')) {
           location.href = "/adminDashboard";
