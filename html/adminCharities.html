@@ -241,7 +241,7 @@
           .then(res => res.json())
           .then(result => {
             if (result.success) {
-              loadProjects();
+              loadCharityProjects();
             } else {
               console.error("Deletion failed:", result.error);
             }
