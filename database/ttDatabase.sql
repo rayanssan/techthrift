@@ -111,10 +111,10 @@ CREATE TABLE IF NOT EXISTS products (
     product_condition ENUM('Like New', 'Excellent', 'Good', 'Needs Repair') NOT NULL,
     availability BOOLEAN NOT NULL,
     category VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Optional product specs
+    description VARCHAR(255),
     brand VARCHAR(255),
     model_code VARCHAR(255),
     color VARCHAR(255),
@@ -269,7 +269,7 @@ CREATE TABLE IF NOT EXISTS interests (
     storage VARCHAR(255),
     year YEAR,
     date_inserted TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    unread_notifications INT,
+    unread_notifications INT DEFAULT 0,
 
     FOREIGN KEY (interested_user) REFERENCES clients(email) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (category) REFERENCES categories(category) ON UPDATE CASCADE ON DELETE CASCADE

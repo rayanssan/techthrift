@@ -7,6 +7,7 @@ import { db, dbR } from './dbConnection.js';
 import path from 'path';
 import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { exposeApi } from '../techthrift.js';
 
@@ -37,6 +38,19 @@ function verifyRequestOrigin(req, res, next) {
     }
     next();
 }
+
+// Setup multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../media/images/products'));
+    },
+    filename: function (req, file, cb) {
+        const uniqueName = Date.now() + '-' + file.originalname;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({ storage });
 
 // Get all products up for sale
 router.get('/tt', verifyRequestOrigin, (req, res) => {
@@ -305,7 +319,7 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
 router.post('/tt/add', verifyRequestOrigin, (req, res) => {
     const newProduct = req.body;
 
-    
+
     // Construct the fields
     const columns = [
         'name',
@@ -358,17 +372,25 @@ router.post('/tt/add', verifyRequestOrigin, (req, res) => {
 });
 
 // Upload Images
-router.post('/tt/upload', (req, res) => {
-    const { product_id, images, orders } = req.body;
+router.post('/tt/upload', verifyRequestOrigin, upload.array('images'), (req, res) => {
+    const product_id = req.body.product_id;
+    let orders = req.body.orders;
 
-    if (!product_id || !Array.isArray(images) || images.length === 0) {
+    // Parse order array if needed
+    try {
+        if (typeof orders === 'string') orders = JSON.parse(orders);
+    } catch (e) {
+        orders = [];
+    }
+
+    if (!product_id || !req.files || req.files.length === 0) {
         return res.status(400).json({ error: 'Missing product_id or images.' });
     }
 
-    const insertValues = images.map((filename, i) => [
+    const insertValues = req.files.map((file, i) => [
         product_id,
-        filename,
-        parseInt(orders[i]) || (i + 1)
+        file.filename,
+        parseInt(orders[i]) || i + 1
     ]);
 
     const query = `
@@ -388,13 +410,13 @@ router.post('/tt/upload', (req, res) => {
                 console.error('DB operation failed:', err.message);
             }
 
-            res.status(200).json({ message: 'Image metadata inserted successfully.' });
+            res.status(200).json({ message: 'Images uploaded and metadata saved.' });
         });
     });
 });
 
 // Remove Product
-router.delete('/tt/remove/:id', (req, res) => {
+router.delete('/tt/remove/:id', verifyRequestOrigin, (req, res) => {
     const productId = req.params.id;
 
     // First, delete images associated with the product
@@ -439,62 +461,32 @@ router.post('/tt/sale/add', verifyRequestOrigin, (req, res) => {
                 if (err) {
                     console.error('DB operation failed:', err.message);
                 }
-                // Update replica
-                dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
+                db.execute('UPDATE products SET availability = 1 WHERE id = ?', [newSaleProduct.id], (err) => {
                     if (err) {
                         console.error('DB operation failed:', err.message);
                     }
-                    // Insert the product into the saleProducts table
-                    dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
-                        [newSaleProduct.id, newSaleProduct.price], function (err) {
-                            if (err) {
-                                console.error('DB operation failed:', err.message);
-                            }
-                            res.status(201).json({ message: 'Product set for sale', product: row });
-                        });
-                });
-            });
-    });
-});
+                    // Update replica
+                    dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
+                        if (err) {
+                            console.error('DB operation failed:', err.message);
+                        }
+                        // Insert the product into the saleProducts table
+                        dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
+                            [newSaleProduct.id, newSaleProduct.price], function (err) {
+                                if (err) {
+                                    console.error('DB operation failed:', err.message);
+                                }
+                                dbR.execute('UPDATE products SET availability = 1 WHERE id = ?', [newSaleProduct.id], (err) => {
+                                    if (err) {
+                                        console.error('DB operation failed:', err.message);
+                                    }
 
-router.post('/tt/sale/set', verifyRequestOrigin, (req, res) => {
-    const { id, price } = req.body;
-
-    if (!id || price == null) {
-        return res.status(400).json({ error: 'Missing id or price' });
-    }
-
-    // Step 1: Add to saleProducts in main DB
-    db.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)', [id, price], (err) => {
-        if (err) {
-            console.error('Main DB insert failed:', err.message);
-            return res.status(500).json({ error: 'Failed to insert into main saleProducts' });
-        }
-
-        // Step 2: Update availability in main DB
-        db.execute('UPDATE products SET availability = 1 WHERE id = ?', [id], (err) => {
-            if (err) {
-                console.error('Main DB availability update failed:', err.message);
-            }
-
-            // Step 3: Insert into replica DB
-            dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)', [id, price], (err) => {
-                if (err) {
-                    console.error('Replica DB insert failed:', err.message);
-                }
-
-                // Step 4: Update availability in replica DB
-                dbR.execute('UPDATE products SET availability = 1 WHERE id = ?', [id], (err) => {
-                    if (err) {
-                        console.error('Replica DB availability update failed:', err.message);
-                    }
-
-                    res.status(201).json({
-                        message: 'Product added to saleProducts and marked as available in both DBs'
+                                    res.status(201).json({ message: 'Product set for sale', product: row });
+                                });
+                            });
                     });
                 });
             });
-        });
     });
 });
 
@@ -796,7 +788,7 @@ router.get('/tt/donation/:id', verifyRequestOrigin,
     });
 
 // Set product up for donation
-router.post('/tt/donation/add', (req, res) => {
+router.post('/tt/donation/add', verifyRequestOrigin, (req, res) => {
     const { id, donor, charity } = req.body;
 
     if (!id || !donor || !charity) {
@@ -1777,7 +1769,7 @@ router.put('/ttuser/edit/charity', verifyRequestOrigin, (req, res) => {
 });
 
 // Add new charity project
-router.post('/ttuser/add/charityProject', (req, res) => {
+router.post('/ttuser/add/charityProject', verifyRequestOrigin, (req, res) => {
     const { name, description, endDate, charity } = req.body;
 
     if (!name || !description || !charity) {
@@ -1827,7 +1819,7 @@ router.post('/ttuser/remove/charityProjects', verifyRequestOrigin, (req, res) =>
 });
 
 // Get charity projects
-router.get('/ttuser/charityProjects', (req, res) => {
+router.get('/ttuser/charityProjects', verifyRequestOrigin, (req, res) => {
     const { charity_id } = req.query;
     if (!charity_id) {
         return res.status(400).json({ error: 'charity_id required' });
@@ -1976,7 +1968,7 @@ router.get('/ttuser/interest/addNotification/:interestId', verifyRequestOrigin, 
 
 // Clear product alert notifications
 router.put('/ttuser/interest/clearNotifications/:id', verifyRequestOrigin, (req, res) => {
-    const query = `UPDATE interests SET unread_notifications = 0 WHERE id = ?`;
+    const query = `UPDATE interests SET unread_notifications = 0 WHERE id = ?;`;
 
     db.execute(query, [req.params.id], function (err) {
         if (err) console.error('DB operation failed:', err.message);

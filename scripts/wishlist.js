@@ -824,6 +824,7 @@ window.addEventListener('userAuthenticated', (event) => {
 
             card.querySelector('.see-matches-btn').addEventListener("click", async () => {
               const products = await getProductAlertResults(item);
+              products.sort((a, b) => b.id - a.id);
 
               // Create modal container
               const modal = document.createElement('div');

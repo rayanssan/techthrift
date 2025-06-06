@@ -481,7 +481,7 @@ button[data-bs-target="#filtersCollapse"] {
         #cart-section .card,
         #paypal,
         #productCarousel *,
-        #store-map, #username img {
+        #store-map, #username img, input[type="file"] {
             filter: invert(1) hue-rotate(180deg);
         }
 
@@ -543,7 +543,7 @@ body.dark-mode {
     #cart-section .card,
     #paypal,
     #productCarousel *,
-    #store-map, #username img {
+    #store-map, #username img, input[type="file"] {
         filter: invert(1) hue-rotate(180deg);
     }
 

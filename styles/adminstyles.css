@@ -15,4 +15,13 @@
 
 table {
   margin-bottom: 0 !important;
+  overflow: scroll;
+}
+table input[type=checkbox] {
+  zoom: 2;
+  cursor: pointer;
+}
+
+.content {
+  overflow: scroll;
 }/*# sourceMappingURL=adminstyles.css.map */

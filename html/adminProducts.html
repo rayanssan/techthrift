@@ -119,8 +119,8 @@
 
             <!-- Table to select products -->
             <div class="table-responsive" id="product-table">
-                <div class="rounded-3 border overflow-hidden">
-                    <table class="table table-borderless table-striped table-hover rounded-3 overflow-hidden">
+                <div class="rounded-3 border overflow-auto">
+                    <table class="table table-borderless table-striped table-hover rounded-3">
                         <thead class="table-light">
                             <tr>
                                 <th><input type="checkbox" id="select-all" onclick="toggleAllProducts(this)"></th>
@@ -130,6 +130,7 @@
                                 <th>Category</th>
                                 <th>Condition</th>
                                 <th>Availability</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="product-list" class="animate-list"></tbody>
@@ -227,14 +228,6 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="product-availability" class="form-label">Availability</label>
-                                <select id="product-availability" name="availability" class="form-select" required>
-                                    <option value="1">Available</option>
-                                    <option value="0">Not Available</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
                                 <label for="product-category" class="form-label">Category</label>
                                 <select id="product-category" name="category" class="form-select" required>
                                     <option>Smartphones</option>
@@ -253,25 +246,27 @@
 
                             <div class="mb-3">
                                 <label for="product-brand" class="form-label">Brand</label>
-                                <select id="product-brand" name="brand" class="form-select" required>
-                                    <option disabled selected>Select a brand</option>
-                                    <option>Apple</option>
-                                    <option>Samsung</option>
-                                    <option>Dell</option>
-                                    <option>HP</option>
-                                    <option>Microsoft</option>
-                                    <option>Xiaomi</option>
-                                    <option>LG</option>
-                                    <option>Sony</option>
-                                    <option>Fitbit</option>
-                                    <option>Nintendo</option>
-                                    <option>Razer</option>
-                                    <option>Bose</option>
-                                    <option>GoPro</option>
-                                    <option>Canon</option>
-                                    <option>Other</option>
-                                </select>
+                                <input type="text" id="product-brand" name="brand" class="form-control"
+                                    list="brand-suggestions" required>
+                                <datalist id="brand-suggestions">
+                                    <option value="Apple">
+                                    <option value="Samsung">
+                                    <option value="Dell">
+                                    <option value="HP">
+                                    <option value="Microsoft">
+                                    <option value="Xiaomi">
+                                    <option value="LG">
+                                    <option value="Sony">
+                                    <option value="Fitbit">
+                                    <option value="Nintendo">
+                                    <option value="Razer">
+                                    <option value="Bose">
+                                    <option value="GoPro">
+                                    <option value="Canon">
+                                    <option value="Other">
+                                </datalist>
                             </div>
+
 
                             <div class="mb-3" id="form-group-model_code">
                                 <label for="product-model-code" class="form-label">Model Code</label>
@@ -342,7 +337,7 @@
                     <div class="mb-3 mt-4">
                         <label for="product-description" class="form-label">Description</label>
                         <textarea id="product-description" name="description" rows="5" class="form-control"
-                            placeholder="Enter Description" required></textarea>
+                            placeholder="Enter Description"></textarea>
                     </div>
 
                     <!-- IMAGENS -->
@@ -365,7 +360,6 @@
     <script src="../scripts/auth.js"></script>
     <script src="../scripts/ui.js"></script>
     <script type="module">
-        import { checkProductInterestsAndNotifyClients } from '../scripts/checkProductInterestsAndNotifyClients.js';
 
 
         const setSaleForm = document.getElementById('set-sale-form');
@@ -428,11 +422,12 @@
 
         setSaleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const productId = document.getElementById('set-sale-product-id').value;
+            // Get innerText of <td> element that comes after marked checkbox in #product-table for productId
+            const productId = document.querySelector('#product-table input[type="checkbox"]:checked')?.closest('tr')?.querySelector('td:nth-child(2)')?.innerText;
             const price = document.getElementById('set-sale-price').value;
 
             try {
-                const res = await fetch('/tt/sale/set', {
+                const res = await fetch('/tt/sale/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: productId, price })
@@ -442,7 +437,78 @@
 
                 alert('Product set for sale!');
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('set-sale-modal')).hide();
-                setSaleForm.reset();
+
+                // * Send Notifications to Interested Clients *
+
+                /**
+                 * Fetches matching products from the `/tt` endpoint based on the provided product alert criteria.
+                 *
+                 * Converts the `watchData` object into query parameters for the backend product search.
+                 * Fields such as `condition`, `year`, and `maxPrice` are included only if present.
+                 *
+                 * @async
+                 * @function getProductAlertResults
+                 * @param {Object} watchData - The user-defined alert data containing product preferences.
+                 * @param {string} [watchData.product_model] - Name or model of the product to watch.
+                 * @param {string} [watchData.product_condition] - Desired condition (e.g., "Like New", "Excellent").
+                 * @param {string} [watchData.category] - Product category (e.g., "Smartphones").
+                 * @param {string} [watchData.brand] - Brand of the product (e.g., "Apple").
+                 * @param {string} [watchData.processor] - Processor type (e.g., "A13 Bionic").
+                 * @param {string} [watchData.color] - Preferred product color.
+                 * @param {string} [watchData.screen] - Screen type or size.
+                 * @param {string} [watchData.storage] - Storage capacity (e.g., "128GB").
+                 * @param {string} [watchData.os] - Operating system (e.g., "Android").
+                 * @param {string|number} [watchData.year] - Manufacturing year of the product.
+                 * @param {string|number} [watchData.max_price] - Maximum acceptable price.
+                 * @returns {Promise<Object[]>} - A promise that resolves to an array of matching product objects.
+                 */
+                async function getProductAlertResults(watchData) {
+                    try {
+                        // Prepare alert criteria
+                        const alertCriteria = {
+                            name: watchData.product_model,
+                            condition: watchData.product_condition || "",
+                            category: watchData.category,
+                            brand: watchData.brand,
+                            processor: watchData.processor,
+                            color: watchData.color,
+                            screen: watchData.screen,
+                            storage: watchData.storage,
+                            os: watchData.os,
+                            year: watchData.year || "",
+                            maxPrice: watchData.max_price || "",
+                        };
+
+                        const productsResponse = await fetch(`/tt?${new URLSearchParams(alertCriteria)}`);
+
+                        if (!productsResponse.ok) {
+                            throw new Error(`HTTP error! status: ${productsResponse.status}`);
+                        }
+
+                        const data = await productsResponse.json();
+                        return data;
+
+                    } catch (error) {
+                    }
+                }
+
+                try {
+                    const interestsRes = await fetch('/ttuser/interests/');
+                    if (!interestsRes.ok) throw new Error(`Failed to fetch interests: ${interestsRes.status}`);
+
+                    const interests = await interestsRes.json();
+
+                    for (const interest of interests) {
+                        const results = await getProductAlertResults(interest);
+                        if (results.length > 0) {
+                            await fetch(`/ttuser/interest/addNotification/${interest.id}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating user alerts:', error);
+                }
+
+                fetchAdminProducts(filters);
             } catch (err) {
                 alert('Error: ' + err.message);
             }
@@ -791,7 +857,6 @@
 
 
 
-
         function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
             if (!container) return;
@@ -860,10 +925,11 @@
                 <td><input type="checkbox" class="product-checkbox"></td>
                 <td>${product.id}</td>
                 <td class="product-name">${product.name}</td>
-                <td class="product-price">€${price !== null && price !== undefined ? parseFloat(price).toFixed(2) : '0.00'}</td>
+                <td class="product-price">${price !== null && price !== undefined ? `€${parseFloat(price).toFixed(2)}` : '-'}</td>
                 <td>${product.category || 'N/A'}</td>
                 <td>${product.product_condition || 'N/A'}</td>
                 <td>${product.availability ? 'Available' : 'Unavailable'}</td>
+                <td>${price ? 'Up for Sale' : 'Not for Sale'}</td>
             `;
 
             return productRow;
@@ -1199,9 +1265,7 @@
                     }
                 });
 
-                if (typeof data.availability === 'string') {
-                    data.availability = data.availability === 'true';
-                }
+                data.availability = 'true' ? 1 : 0;
 
                 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
                 if (loggedInUser && loggedInUser.store) {
@@ -1226,21 +1290,12 @@
 
                     const addedProduct = await res.json();
 
-                    // Notify users with matching interests
-                    console.log("🔍 Checking interests for added product:", addedProduct);
-
-                    try {
-                        const notifyResult = await checkProductInterestsAndNotifyClients(addedProduct);
-                        console.log("📬 Notification result:", notifyResult);
-                    } catch (err) {
-                        console.error("❌ Error while notifying clients:", err);
-                    }
-
-
-
                     // Collect image filenames and orders
                     const rows = document.querySelectorAll('#image-input-group > div');
-                    const images = [];
+                    const formData = new FormData();
+
+                    formData.append('product_id', addedProduct.id);
+
                     const orders = [];
 
                     rows.forEach((row, idx) => {
@@ -1248,30 +1303,24 @@
                         const orderInput = row.querySelector('input[type="number"]');
 
                         if (fileInput.files[0]) {
-                            const fileName = fileInput.files[0].name;
+                            const file = fileInput.files[0];
+                            formData.append('images', file); // append each file
                             const imageOrder = orderInput.value || (idx + 1);
-                            images.push(fileName);
                             orders.push(parseInt(imageOrder));
                         }
                     });
 
-                    // Submit image metadata
-                    if (images.length > 0) {
-                        const imgRes = await fetch('/tt/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                product_id: addedProduct.id,
-                                images,
-                                orders
-                            })
-                        });
+                    formData.append('orders', JSON.stringify(orders)); // send orders array as string
 
-                        if (!imgRes.ok) {
-                            const err = await imgRes.json();
-                            alert('Images upload failed: ' + err.error);
-                            return;
-                        }
+                    const imgRes = await fetch('/tt/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!imgRes.ok) {
+                        const err = await imgRes.json();
+                        alert('Images upload failed: ' + err.error);
+                        return;
                     }
 
                     alert('Product added successfully!');

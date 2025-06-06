@@ -523,7 +523,7 @@ button[data-bs-target="#filtersCollapse"] {
   body:not(.light-mode):not(.dark-mode) #cart-section .card,
   body:not(.light-mode):not(.dark-mode) #paypal,
   body:not(.light-mode):not(.dark-mode) #productCarousel *,
-  body:not(.light-mode):not(.dark-mode) #store-map, body:not(.light-mode):not(.dark-mode) #username img {
+  body:not(.light-mode):not(.dark-mode) #store-map, body:not(.light-mode):not(.dark-mode) #username img, body:not(.light-mode):not(.dark-mode) input[type=file] {
     filter: invert(1) hue-rotate(180deg);
   }
   body:not(.light-mode):not(.dark-mode) .card img:not(#cart-section .card img, #featuredContainer .card img),
@@ -574,7 +574,7 @@ body.dark-mode #payment-section .card,
 body.dark-mode #cart-section .card,
 body.dark-mode #paypal,
 body.dark-mode #productCarousel *,
-body.dark-mode #store-map, body.dark-mode #username img {
+body.dark-mode #store-map, body.dark-mode #username img, body.dark-mode input[type=file] {
   filter: invert(1) hue-rotate(180deg);
 }
 body.dark-mode .card img:not(#cart-section .card img, #featuredContainer .card img),
