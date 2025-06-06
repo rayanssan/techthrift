@@ -294,7 +294,7 @@ window.addEventListener('userAuthenticated', (event) => {
                             }
 
                             const shippingAddress = {
-                                address: (formData.streetAddress + ", " + formData.town).trim(),
+                                address: `${formData.streetAddress.trim()}${formData.town ? ', ' + formData.town.trim() : ''}`,
                                 postal_code: formData.postalCode.trim(),
                                 city: formData.city.trim(),
                                 country: formData.country.trim()
