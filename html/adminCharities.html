@@ -233,7 +233,7 @@
 
         if (!confirm("Are you sure you want to delete the selected projects?")) return;
 
-        fetch('/ttuser/remove/charityProject', {
+        fetch('/ttuser/remove/charityProjects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: selectedIds })
