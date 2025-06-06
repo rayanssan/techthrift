@@ -438,7 +438,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     document.body.insertAdjacentHTML("beforeend", modalHtml);
                     const countrySelect = document.getElementById("country");
 
-                    fetch("https://restcountries.com/v3.1/all")
+                    fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
                         .then(response => response.json())
                         .then(data => {
                             // Sort countries alphabetically by their common name
