@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Fetch countries list
   const countrySelect = document.getElementById('country');
 
-  fetch("https://restcountries.com/v3.1/all")
+  fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
     .then(response => response.json())
     .then(data => {
       const countries = data

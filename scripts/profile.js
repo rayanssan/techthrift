@@ -24,7 +24,7 @@ window.addEventListener('userAuthenticated', (event) => {
             <h2 class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-value" data-field="name">${loggedInUser.nickname || ''}</span>
                 <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
-                        title="Edit name" style="width: 35px; height: 35px; cursor: pointer;">
+                        title="Edit name" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                     <i class="fa fa-pen fs-6"></i>
                 </button>
              </h2>
@@ -34,17 +34,21 @@ window.addEventListener('userAuthenticated', (event) => {
             <span class="field-value" data-field="email">${loggedInUser.email}</span>
             </p>
             ` : ''}
-            <p class="d-flex justify-content-center align-items-center gap-2">
                 ${loggedInUser.email_verified
-            ? '<span class="text-success">Email Verified &#10003;</span>'
-            : '<span class="text-danger">Email Not Verified</span>'
+            ? `<p class="d-flex justify-content-center align-items-center gap-2">
+                <span class="text-success">Email Verified &#10003;</span>
+            </p>`
+            : `<div class="flex-column my-3 d-flex">
+                <span class="text-danger">Email Not Verified</span>
+                <button id="resendVerificationBtn"
+                class="btn btn-link p-0">Resend Verification Email</button>
+            </div>`
         }
-            </p>
             <p class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-label">Phone:</span>
                 <span class="field-value" data-field="phone_number">${loggedInUser.phone_number || 'Not given'}</span>
                 <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
-                        title="Edit phone" style="width: 35px; height: 35px; cursor: pointer;">
+                        title="Edit phone" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
@@ -52,7 +56,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 <span class="field-label">NIF:</span>
                 <span class="field-value" data-field="nif">${loggedInUser.nif || 'Not given'}</span>
                 <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
-                        title="Edit NIF" style="width: 35px; height: 35px; cursor: pointer;">
+                        title="Edit NIF" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
@@ -60,7 +64,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 <span class="field-label">NIC:</span>
                 <span class="field-value" data-field="nic">${loggedInUser.nic || 'Not given'}</span>
                 <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
-                        title="Edit NIC" style="width: 35px; height: 35px; cursor: pointer;">
+                        title="Edit NIC" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
@@ -68,7 +72,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 <span class="field-label">Gender:</span>
                 <span class="field-value" data-field="gender">${loggedInUser.gender || 'Not given'}</span>
                 <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
-                        title="Edit gender" style="width: 35px; height: 35px; cursor: pointer;">
+                        title="Edit gender" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
@@ -76,7 +80,7 @@ window.addEventListener('userAuthenticated', (event) => {
                 <span class="field-label">Date of Birth:</span>
                 <span class="field-value" data-field="dob">${loggedInUser.dob ? new Date(loggedInUser.dob).toLocaleDateString() : 'Not given'}</span>
                 <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
-                        title="Edit date of birth" style="width: 35px; height: 35px; cursor: pointer;">
+                        title="Edit date of birth" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
@@ -100,6 +104,43 @@ window.addEventListener('userAuthenticated', (event) => {
         </button>
     </div>
     `;
+
+    /**
+     * Sends a request to the server to resend the Auth0 verification email
+     * for the currently logged-in user, identified by their `sub` field.
+     *
+     * On success, replaces the button with a confirmation message.
+     * On failure, displays an error message using `showMessage()`.
+     *
+     * @async
+     * @function resendVerificationEmail
+     * @returns {Promise<void>}
+     */
+    async function resendVerificationEmail() {
+        try {
+            const response = await fetch(`/auth-verification?user_id=${encodeURIComponent(loggedInUser.sub)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            await response.json();
+            const btn = document.querySelector('#resendVerificationBtn');
+            if (btn) {
+                const p = document.createElement('p');
+                p.className = "mb-0";
+                p.textContent = 'Verification email sent! Please check your inbox.';
+                btn.replaceWith(p);
+            }
+        } catch (error) {
+            showMessage('Error', 'There was an error sending the verification email. Please try later.', 'danger');
+        }
+    }
+
+    profileInfo.querySelector("#resendVerificationBtn")?.addEventListener("click", resendVerificationEmail);
 
     profileInfo.querySelectorAll('button.btn-outline-secondary').forEach(button => {
         button.addEventListener('click', function onEditClick() {
@@ -135,6 +176,13 @@ window.addEventListener('userAuthenticated', (event) => {
 
                 if (field === 'email') {
                     input.type = 'email';
+                    input.maxLength = 255;
+                    input.value = currentValue;
+                } else if (field === 'phone_number') {
+                    input.type = 'tel';
+                    input.pattern = '^\\+?\\d{1,19}$';
+                    input.title = 'Enter a valid phone number starting with optional + and digits only';
+                    input.value = currentValue;
                 } else if (field === 'dob') {
                     input.type = 'date';
                     if (currentValue) {
@@ -151,11 +199,19 @@ window.addEventListener('userAuthenticated', (event) => {
                 } else if (field === 'nif' || field === 'nic') {
                     input.type = 'text';
                     input.maxLength = 9;
-                    input.pattern = '[A-Za-z0-9]{9}';
-                    input.title = 'Exactly 9 alphanumeric characters';
+                    input.pattern = '\\d{9}'
+                    input.title = 'Exactly 9 numeric characters';
+                    input.value = currentValue;
+                } else if (field === 'name') {
+                    input.type = 'text';
+                    input.required = true;
+                    input.maxLength = 255;
+                    input.pattern = '\\S.*';
+                    input.title = 'Name cannot be empty';
                     input.value = currentValue;
                 } else {
                     input.type = 'text';
+                    input.maxLength = 255;
                     input.value = currentValue;
                 }
 
@@ -201,71 +257,69 @@ window.addEventListener('userAuthenticated', (event) => {
             p.appendChild(cancelBtn);
 
             button.onclick = () => {
-                let newValue = input.value.trim();
-                if (!newValue) newValue = 'Not given';
-
-                if (field === 'dob' && newValue !== 'Not given') {
-                    const d = new Date(newValue);
-                    newValue = isNaN(d) ? 'Not given' : d.toLocaleDateString();
-                }
-
-                const newSpan = document.createElement('span');
-                newSpan.className = 'field-value';
-                newSpan.dataset.field = field;
-                newSpan.textContent = newValue;
-
-                p.replaceChild(newSpan, input);
-                if (field === 'name') {
-                    // Remove the label too
-                    const label = p.querySelector('label');
-                    if (label) label.remove();
-                }
-
-                button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
-                button.title = 'Edit ' + field.replace(/_/g, ' ');
-                cancelBtn.remove();
-
-                button.onclick = null;
-                button.addEventListener('click', onEditClick);
-
-                // Call Backend to Update Client
-                // Prepare data to send
-                const updatedClient = {
-                    email: loggedInUser.email,
-                };
-                if (field === 'dob' && newValue && newValue !== 'Not given') {
-                    // Parse the date when editing dob
-                    const date = new Date(newValue);
-                    if (!isNaN(date)) {
-                        const yyyy = date.getFullYear();
-                        const mm = String(date.getMonth() + 1).padStart(2, '0');
-                        const dd = String(date.getDate()).padStart(2, '0');
-                        updatedClient[field] = `${yyyy}-${mm}-${dd}`;
-                    } else {
-                        updatedClient[field] = '';
-                    }
-                } else {
-                    updatedClient[field] = newValue === 'Not given' ? '' : newValue;
-                }
-
-                // Send update request to backend
-                fetch('/ttuser/edit/client', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedClient)
-                })
+                fetch(`/ttuser/client/${encodeURIComponent(input.value ? input.value : " ")}`)
                     .then(res => {
-                        if (!res.ok) throw new Error('Failed to update client');
-                        return res.text();
+                        if (res.status === 204) return {};
+                        return res.json();
                     })
-                    .then(() => {
-                        // Update UI on success
+                    .then(userResult => {
+                        if (!input.reportValidity()) {
+                            // Invalid input: don't proceed
+                            return;
+                        }
+                        if (
+                            (field === 'dob' && new Date(input.value).setHours(0, 0, 0, 0) === new Date(currentValue).setHours(0, 0, 0, 0)
+                            ) ||
+                            (field !== 'dob' &&
+                                input.value.trim() === currentValue.trim())
+                        ) {
+                            const newSpan = document.createElement('span');
+                            newSpan.className = 'field-value';
+                            newSpan.dataset.field = field;
+                            newSpan.textContent = currentValue;
+                            p.replaceChild(newSpan, input);
+
+                            if (field === 'name') {
+                                const label = p.querySelector('label');
+                                if (label) label.remove();
+                            }
+
+                            button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                            button.title = 'Edit ' + field.replace(/_/g, ' ');
+                            cancelBtn.remove();
+
+                            button.onclick = null;
+                            button.addEventListener('click', onEditClick);
+                            return;
+                        }
+
+                        if (field === 'email' || field === 'nif' || field === 'nic' || field === 'phone_number') {
+                            if (userResult[field] === input.value) {
+                                showMessage("Editing error",
+                                    `Another account already exists with the given ${(field === "nic" || field === "nif") ? field.toUpperCase() : field.replace("_", " ")}.`, "danger");
+
+                                // Revert UI state
+                                newSpan.textContent = currentValue;
+                                input.focus();
+                                return;
+                            }
+                        }
+                        let newValue = input.value.trim();
+                        if (!newValue) newValue = 'Not given';
+
+                        if (field === 'dob' && newValue !== 'Not given') {
+                            const d = new Date(newValue);
+                            newValue = isNaN(d) ? 'Not given' : d.toLocaleDateString();
+                        }
+
                         const newSpan = document.createElement('span');
                         newSpan.className = 'field-value';
                         newSpan.dataset.field = field;
                         newSpan.textContent = newValue;
 
+                        p.replaceChild(newSpan, input);
                         if (field === 'name') {
+                            // Remove the label too
                             const label = p.querySelector('label');
                             if (label) label.remove();
                         }
@@ -276,18 +330,83 @@ window.addEventListener('userAuthenticated', (event) => {
 
                         button.onclick = null;
                         button.addEventListener('click', onEditClick);
-                        currentValue = newValue;
-                        // Update localStorage
-                        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
-                        loggedInUser[field] = newValue;
-                        localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+
+                        // Call Backend to Update Client
+                        // Prepare data to send
+                        const updatedClient = {
+                            email: loggedInUser.email,
+                        };
+                        if (field === 'dob' && newValue && newValue !== 'Not given') {
+                            // Parse the date when editing dob
+                            const date = new Date(newValue);
+                            if (!isNaN(date)) {
+                                const yyyy = date.getFullYear();
+                                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                                const dd = String(date.getDate()).padStart(2, '0');
+                                updatedClient[field] = `${yyyy}-${mm}-${dd}`;
+                            } else {
+                                updatedClient[field] = '';
+                            }
+                        } else if (field === 'dob' && newValue == 'Not given') {
+                            updatedClient.dob = null;
+                        } else {
+                            updatedClient[field] = newValue === 'Not given' ? '' : newValue;
+                        }
+
+                        // Send update request to backend
+                        fetch('/ttuser/edit/client', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updatedClient)
+                        })
+                            .then(res => {
+                                if (!res.ok) throw new Error('Failed to update client');
+                                return res.text();
+                            })
+                            .then(() => {
+                                // Update UI on success
+                                const newSpan = document.createElement('span');
+                                newSpan.className = 'field-value';
+                                newSpan.dataset.field = field;
+                                newSpan.textContent = newValue;
+
+                                if (field === 'name') {
+                                    const label = p.querySelector('label');
+                                    if (label) label.remove();
+                                    document.querySelector('#username p').innerText = newValue.split(" ")[0];
+                                }
+
+                                button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                                button.title = 'Edit ' + field.replace(/_/g, ' ');
+                                cancelBtn.remove();
+
+                                button.onclick = null;
+                                button.addEventListener('click', onEditClick);
+                                currentValue = newValue;
+                                // Update localStorage
+                                const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+                                if (newValue.toLowerCase() == "not given") {
+                                    newValue = null;
+                                }
+                                loggedInUser[field] = newValue;
+                                localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+
+                                showMessage("Editing successful",
+                                    `Your ${(field === "nic" || field === "nif") ? field.toUpperCase() :
+                                        field === "dob" ? "date of birth" : field.replace("_", " ")} was successfully edited.`,
+                                    "success");;
+                            })
+                            .catch(err => {
+                                showMessage("Editing error", `An unknown error happened while editing your ${(field === "nic" || field === "nif") ? field.toUpperCase() :
+                                    field === "dob" ? "date of birth" : field.replace("_", " ")}.`, "danger");
+                                newSpan.textContent = currentValue;
+                                input.focus();
+                            });
                     })
                     .catch(err => {
-                        showMessage("Editing error", "Another account already exists with the given value.", "danger");
-                        newSpan.textContent = currentValue;
-                        input.focus();
+                        return;
                     });
-            };
+            }
 
             cancelBtn.onclick = () => {
                 p.replaceChild(valueSpan, input);
@@ -301,7 +420,7 @@ window.addEventListener('userAuthenticated', (event) => {
 
                 button.onclick = null;
                 button.addEventListener('click', onEditClick);
-            };
+            }
 
             input.focus();
         });

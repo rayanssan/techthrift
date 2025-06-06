@@ -2520,5 +2520,54 @@ router.get("/geocode", verifyRequestOrigin, async (req, res) => {
     }
 });
 
+// Send verification email
+router.get("/auth-verification", verifyRequestOrigin, async (req, res) => {
+    try {
+        const userId = req.query.user_id;
+        if (!userId) {
+            return res.status(400).send({ error: "Missing user id" });
+        }
+        const auth0Domain = "dev-1qdq127lj6aekksz.us.auth0.com";
+        const clientID = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
+
+        // Get Management API token
+        const tokenResponse = await fetch(`https://${auth0Domain}/oauth/token`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                client_id: clientID,
+                client_secret: "gQiNS0xg6HQBdJs6fGTnX8yYAcrM6HZhL08jl0ORj9zIr62kNisBtDrFFaiEqxms",
+                audience: `https://${auth0Domain}/api/v2/`,
+                grant_type: "client_credentials"
+            })
+        });
+        const tokenData = await tokenResponse.json();
+        if (!tokenResponse.ok) {
+            console.error('Token error:', tokenData);
+            return res.status(500).send({ error: 'Failed to get Auth0 token' });
+        }
+
+        // Send verification email
+        const verifyResponse = await fetch(`https://${auth0Domain}/api/v2/jobs/verification-email`, {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                Authorization: `Bearer ${tokenData.access_token}`
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        if (!verifyResponse.ok) {
+            const errData = await verifyResponse.json();
+            console.error('Verification email error:', errData);
+            return res.status(500).send({ error: 'Failed to send verification email' });
+        }
+
+        res.status(200).send({ message: "Verification email sent." });
+    } catch (error) {
+        console.error("Error sending verification email:", error);
+        res.status(500).send({ error: "Failed to send verification email." });
+    }
+});
+
 // Export the API routes
 export { router };

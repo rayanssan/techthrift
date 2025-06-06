@@ -54,6 +54,15 @@ body.loaded::before {
     font-weight: bold;
 }
 
+span, p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#username {
+    max-width: 250px;
+}
+
 #header-brand {
     padding-right: 10px;
 
@@ -472,7 +481,7 @@ button[data-bs-target="#filtersCollapse"] {
         #cart-section .card,
         #paypal,
         #productCarousel *,
-        #store-map {
+        #store-map, #username img {
             filter: invert(1) hue-rotate(180deg);
         }
 
@@ -534,7 +543,7 @@ body.dark-mode {
     #cart-section .card,
     #paypal,
     #productCarousel *,
-    #store-map {
+    #store-map, #username img {
         filter: invert(1) hue-rotate(180deg);
     }
 
