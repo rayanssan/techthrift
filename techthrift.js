@@ -258,41 +258,32 @@ app.get('/registration', (req, res) => {
     });
 });
 
-// Reports Authentication
-app.get('/reports', (req, res) => {
-    res.setHeader('Content-Type', 'text/html');
-    res.send(`
-        <html>
-            <head>
-                <script>
-                    alert("login");
-                    setTimeout(() => {
-                        window.location.href = "/report";
-                    }, 5000); // 5 seconds
-                </script>
-            </head>
-            <body>
-                <h1>Redirecting to report in 5 seconds...</h1>
-            </body>
-        </html>
-    `);
-});
-
 // Reports
 app.get('/report', (req, res) => {
-    // Create a new PDF document
     const doc = new PDFDocument();
 
-    // Set the response headers to tell the browser it's a PDF
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="report.pdf"');
 
-    // Pipe the PDF into the response
     doc.pipe(res);
 
-    // Add some content to the PDF
-    doc.fontSize(25).text('Hello, World!', 100, 100);
+    doc
+      .fillColor('#000080')
+      .font('Helvetica-Bold')
+      .fontSize(30)
+      .text('TechThirft', { align: 'center' });
 
-    // Finalize the PDF and end the stream
+    doc
+      .moveDown(0.5)
+      .fillColor('black')
+      .font('Helvetica')
+      .fontSize(20)
+      .text('Usage Reports', { align: 'center' });
+
+    doc
+      .moveDown(1)
+      .fontSize(14)
+      .text('There are no reports at the moment.', { align: 'center' });
+
     doc.end();
 });
