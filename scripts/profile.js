@@ -72,6 +72,11 @@ window.addEventListener('userAuthenticated', async (event) => {
     profileInfo.innerHTML = `
     <div class="container">
         <div class="my-4 text-center">
+            ${loggedInUser.user_type == "store" ? `
+            <p>Welcome to TechThrift Partners!<br>
+            This is a store account. On this page, you can visualize and edit information about this store.</p>
+            <hr class="mb-4">
+            ` : ''}
             ${loggedInUser.picture ? `
             <img 
                 src="${loggedInUser.picture}" 
