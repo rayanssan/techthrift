@@ -62,6 +62,7 @@ p {
 
 #username {
     max-width: 250px;
+    white-space: nowrap;
 }
 
 #header-brand {
@@ -465,6 +466,11 @@ button[data-bs-target="#filtersCollapse"] {
             background-color: black;
         }
 
+        span[data-field='country'] {
+            filter: invert(1) hue-rotate(180deg);
+            color: rgba(255, 255, 255, 0.85);
+        }
+
         select:not(select:disabled) {
             color: white;
             border-color: rgb(22, 26, 30);
@@ -539,6 +545,11 @@ body.dark-mode {
     select {
         filter: invert(1) hue-rotate(180deg);
         background-color: black;
+    }
+
+    span[data-field='country'] {
+        filter: invert(1) hue-rotate(180deg);
+        color: rgba(255, 255, 255, 0.85);
     }
 
     select:not(select:disabled) {

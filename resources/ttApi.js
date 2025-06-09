@@ -874,39 +874,67 @@ router.get('/tt/categories', verifyRequestOrigin,
 
 // Get all clients in the system
 router.get('/ttuser', verifyRequestOrigin, (req, res) => {
-    const { user_type } = req.query;
+    const { user_type, id, nif, nic, email, phone_number } = req.query;
 
-    let whereClause = '';
+    let conditions = [];
     const params = [];
 
+    // User type filter
     if (user_type === 'store') {
-        whereClause = 'WHERE e.entity_type = "store"';
+        conditions.push('e.entity_type = "store"');
     } else if (user_type === 'charity') {
-        whereClause = 'WHERE e.entity_type = "charity"';
+        conditions.push('e.entity_type = "charity"');
     } else if (user_type === 'employee') {
-        whereClause = 'WHERE em.id IS NOT NULL';
+        conditions.push('em.id IS NOT NULL');
     } else if (user_type === 'client') {
-        whereClause = `
-        WHERE e.entity_type IS NULL 
-        AND em.id IS NULL
-        `;
+        conditions.push('e.entity_type IS NULL');
+        conditions.push('em.id IS NULL');
     }
 
-    const query = `
-    SELECT 
-      c.*,
-      CASE 
-        WHEN e.entity_type = 'store' THEN 'store'
-        WHEN e.entity_type = 'charity' THEN 'charity'
-        WHEN em.id IS NOT NULL THEN 'employee'
-        ELSE 'client'
-      END AS user_type
-    FROM clients c
-    LEFT JOIN entities e ON e.id = c.id
-    LEFT JOIN employees em ON em.id = c.id
-    ${whereClause}
-  `;
+    // Optional filters
+    if (id) {
+        conditions.push('c.id = ?');
+        params.push(id);
+    }
 
+    if (nif) {
+        conditions.push('c.nif = ?');
+        params.push(nif);
+    }
+
+    if (nic) {
+        conditions.push('c.nic = ?');
+        params.push(nic);
+    }
+
+    if (email) {
+        conditions.push('c.email = ?');
+        params.push(email);
+    }
+
+    if (phone_number) {
+        conditions.push('c.phone_number = ?');
+        params.push(phone_number);
+    }
+
+    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+
+    const query = `
+        SELECT 
+            c.*,
+            CASE 
+                WHEN e.entity_type = 'store' THEN 'store'
+                WHEN e.entity_type = 'charity' THEN 'charity'
+                WHEN em.id IS NOT NULL THEN 'employee'
+                ELSE 'client'
+            END AS user_type
+        FROM clients c
+        LEFT JOIN entities e ON e.id = c.id
+        LEFT JOIN employees em ON em.id = c.id
+        ${whereClause}
+    `;
+
+    // Query
     db.query(query, params, (err, rows) => {
         if (err) {
             // Fallback to replica DB
@@ -914,63 +942,16 @@ router.get('/ttuser', verifyRequestOrigin, (req, res) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
-                res.json(rows);
-            });
-        } else {
-            res.json(rows);
-        }
-    });
-});
-
-// Get details about a client
-router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
-    const { id } = req.params;
-    const { user_type } = req.query;
-
-    // Check all possibilities (id, nif, nic, email, phone_number)
-    let query = `
-    SELECT 
-      c.*,
-      CASE 
-        WHEN e.entity_type = 'store' THEN 'store'
-        WHEN e.entity_type = 'charity' THEN 'charity'
-        WHEN em.id IS NOT NULL THEN 'employee'
-        ELSE 'client'
-      END AS user_type
-    FROM clients c
-    LEFT JOIN entities e ON e.id = c.id
-    LEFT JOIN employees em ON em.id = c.id
-    WHERE (c.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?)`;
-
-    const values = [id, id, id, id, id];
-
-    // Add filtering by user_type if specified
-    if (user_type) {
-        query += `
-        HAVING user_type = ?`;
-        values.push(user_type);
-    }
-
-    // Use the `id` parameter for all possible search options
-    db.query(query, values, (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query(query, values, (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                else if (rows.length === 0) {
+                if (rows.length === 0) {
                     return res.status(204).send();
-                } else {
-                    // Send the client details in the response
-                    res.json(rows[0]);
                 }
+                res.json(rows.length === 1 ? rows[0] : rows);
             });
-        } else if (rows.length === 0) {
-            return res.status(204).send();
         } else {
-            // Send the client details in the response
-            res.json(rows[0]);
+            if (rows.length === 0) {
+                return res.status(204).send();
+            }
+            res.json(rows.length === 1 ? rows[0] : rows);
         }
     });
 });
@@ -1113,54 +1094,49 @@ router.delete('/ttuser/remove/client/:id', verifyRequestOrigin, (req, res) => {
 
 // Get all employees
 router.get('/ttuser/employee', verifyRequestOrigin, (req, res) => {
-    db.query('SELECT * FROM employees e INNER JOIN clients c WHERE c.id = e.id', [], (err, rows) => {
+    const { id, email, phone_number } = req.query;
+
+    let sql = 'SELECT * FROM employees e INNER JOIN clients c ON c.id = e.id';
+    const conditions = [];
+    const values = [];
+
+    if (id) {
+        conditions.push('e.id = ?');
+        values.push(id);
+    }
+
+    if (email) {
+        conditions.push('c.email = ?');
+        values.push(email);
+    }
+
+    if (phone_number) {
+        conditions.push('c.phone_number = ?');
+        values.push(phone_number);
+    }
+
+    if (conditions.length > 0) {
+        sql += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    // Query
+    db.query(sql, values, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query('SELECT * FROM employees e INNER JOIN clients c WHERE c.id = e.id', [], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                } else {
-                    res.json(rows);
-                }
-            });
-        } else {
-            res.json(rows);
-        }
-    });
-});
-
-// Get details about an employee
-router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
-    const { id } = req.params;
-
-    // Check all possibilities (id, email, phone_number)
-    let query = `
-        SELECT * 
-        FROM employees e
-        INNER JOIN clients c ON c.id = e.id
-        WHERE e.id = ? OR c.email = ? OR c.phone_number = ?
-    `;
-
-    // Use the `id` parameter for all possible search options
-    db.query(query, [id, id, id], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query(query, [id, id, id], (err, rows) => {
+            dbR.query(sql, values, (err, rows) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
-                else if (rows.length === 0) {
+                if (rows.length === 0) {
                     return res.status(204).send();
-                } else {
-                    // Send the employee details in the response
-                    res.json(rows[0]);
                 }
+                res.json(rows.length === 1 ? rows[0] : rows);
             });
-        } else if (rows.length === 0) {
-            return res.status(204).send();
         } else {
-            // Send the employee details in the response
-            res.json(rows[0]);
+            if (rows.length === 0) {
+                return res.status(204).send();
+            }
+            res.json(rows.length === 1 ? rows[0] : rows);
         }
     });
 });
@@ -1282,181 +1258,91 @@ router.put('/ttuser/edit/employee', verifyRequestOrigin, async (req, res) => {
 
 // Get all stores
 router.get('/ttuser/store', verifyRequestOrigin, (req, res) => {
-    db.query(`SELECT * FROM entities e
-        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "store"
-        LEFT JOIN entityHours eh ON eh.entity = e.id 
-        `, [], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query(`SELECT * FROM entities e
-                INNER JOIN clients c ON c.id = e.id AND e.entity_type = "store"
-                LEFT JOIN entityHours eh ON eh.entity = e.id 
-                `, [], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                // Process the rows
-                const result = rows.reduce((acc, row) => {
-                    const existingStore = acc.find(store => store.name === row.name);
+    const { id, nipc, email, phone_number } = req.query;
 
-                    if (existingStore) {
-                        // Push the opening hours to the existing store object
-                        existingStore.opening_hours.push({
-                            day: row.day,
-                            hours: row.hours
-                        });
-                    } else {
-                        // Push organized data into the accumulator
-                        acc.push({
-                            id: row.id,
-                            nipc: row.nipc,
-                            name: row.name,
-                            email: row.email,
-                            phone_number: row.phone_number,
-                            address: row.address,
-                            city: row.city,
-                            country: row.country,
-                            opening_hours: [{
-                                day: row.day,
-                                hours: row.hours
-                            }]
-                        });
-                    }
-
-                    return acc;
-                }, []);
-
-                res.json(result);
-            });
-        } else {
-            // Process the rows
-            const result = rows.reduce((acc, row) => {
-                const existingStore = acc.find(store => store.name === row.name);
-
-                if (existingStore) {
-                    // Push the opening hours to the existing store object
-                    existingStore.opening_hours.push({
-                        day: row.day,
-                        hours: row.hours
-                    });
-                } else {
-                    // Push organized data into the accumulator
-                    acc.push({
-                        id: row.id,
-                        nipc: row.nipc,
-                        name: row.name,
-                        email: row.email,
-                        phone_number: row.phone_number,
-                        address: row.address,
-                        city: row.city,
-                        country: row.country,
-                        opening_hours: [{
-                            day: row.day,
-                            hours: row.hours
-                        }]
-                    });
-                }
-
-                return acc;
-            }, []);
-
-            res.json(result);
-        }
-    });
-});
-
-// Get details about a store
-router.get('/ttuser/store/:id', verifyRequestOrigin, (req, res) => {
-    const { id } = req.params;
-
-    // Check all possibilities (id, nipc, email, phone_number)
-    let query = `
-        SELECT e.*, c.*, eh.*
-        FROM entities e 
-        INNER JOIN clients c ON c.id = e.id 
-        LEFT JOIN entityHours eh ON eh.entity = e.id 
-        WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
-        AND e.entity_type = "store"
+    let sql = `
+        SELECT * FROM entities e
+        INNER JOIN clients c ON c.id = e.id
+        LEFT JOIN entityHours eh ON eh.entity = e.id
+        WHERE e.entity_type = "store"
     `;
 
-    db.query(query, [id, id, id, id], (err, rows) => {
+    const conditions = [];
+    const values = [];
+
+    if (id) {
+        conditions.push('e.id = ?');
+        values.push(id);
+    }
+
+    if (nipc) {
+        conditions.push('e.nipc = ?');
+        values.push(nipc);
+    }
+
+    if (email) {
+        conditions.push('c.email = ?');
+        values.push(email);
+    }
+
+    if (phone_number) {
+        conditions.push('c.phone_number = ?');
+        values.push(phone_number);
+    }
+
+    if (conditions.length > 0) {
+        sql += ' AND ' + conditions.join(' AND ');
+    }
+
+    const handleResult = (err, rows) => {
         if (err) {
-            // Fallback to replica DB
-            dbR.query(query, [id, id, id, id], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                if (rows.length === 0) {
-                    return res.status(204).send();
-                }
-                // Process the rows
-                const result = rows.reduce((acc, row) => {
-                    const existingStore = acc.find(store => store.name === row.name);
+            return res.status(500).json({ error: err.message });
+        }
 
-                    if (existingStore) {
-                        // Push the opening hours to the existing store object
-                        existingStore.opening_hours.push({
-                            day: row.day,
-                            hours: row.hours
-                        });
-                    } else {
-                        // Push organized data into the accumulator
-                        acc.push({
-                            id: row.id,
-                            nipc: row.nipc,
-                            name: row.name,
-                            email: row.email,
-                            phone_number: row.phone_number,
-                            address: row.address,
-                            city: row.city,
-                            country: row.country,
-                            opening_hours: [{
-                                day: row.day,
-                                hours: row.hours
-                            }]
-                        });
-                    }
+        if (!rows || rows.length === 0) {
+            return res.status(204).send(); // No Content
+        }
 
-                    return acc;
-                }, []);
+        const result = rows.reduce((acc, row) => {
+            const existingStore = acc.find(store => store.name === row.name);
 
-                res.json(result[0]);
-            });
-        } else if (rows.length === 0) {
-            return res.status(204).send();
-        } else {
-            // Process the rows
-            const result = rows.reduce((acc, row) => {
-                const existingStore = acc.find(store => store.name === row.name);
-
-                if (existingStore) {
-                    // Push the opening hours to the existing store object
+            if (existingStore) {
+                if (row.day && row.hours) {
                     existingStore.opening_hours.push({
                         day: row.day,
                         hours: row.hours
                     });
-                } else {
-                    // Push organized data into the accumulator
-                    acc.push({
-                        id: row.id,
-                        nipc: row.nipc,
-                        name: row.name,
-                        email: row.email,
-                        phone_number: row.phone_number,
-                        address: row.address,
-                        city: row.city,
-                        country: row.country,
-                        opening_hours: [{
-                            day: row.day,
-                            hours: row.hours
-                        }]
-                    });
                 }
+            } else {
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    city: row.city,
+                    country: row.country,
+                    opening_hours: row.day && row.hours ? [{
+                        day: row.day,
+                        hours: row.hours
+                    }] : []
+                });
+            }
 
-                return acc;
-            }, []);
+            return acc;
+        }, []);
 
-            res.json(result[0]);
+        res.json(result.length === 1 ? result[0] : result);
+    };
+
+    // Query
+    db.query(sql, values, (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(sql, values, handleResult);
+        } else {
+            handleResult(null, rows);
         }
     });
 });
@@ -1614,184 +1500,95 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
 
 // Get all charities
 router.get('/ttuser/charity', verifyRequestOrigin, (req, res) => {
-    db.query(`SELECT * FROM entities e 
-        INNER JOIN clients c ON c.id = e.id AND e.entity_type = "charity"
-        LEFT JOIN entityHours eh ON eh.entity = e.id `, [], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query(`SELECT * FROM entities e 
-                INNER JOIN clients c ON c.id = e.id AND e.entity_type = "charity"
-                LEFT JOIN entityHours eh ON eh.entity = e.id `, [], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                // Process the rows
-                const result = rows.reduce((acc, row) => {
-                    const existingCharity = acc.find(charity => charity.name === row.name);
+    const { id, nipc, email, phone_number } = req.query;
 
-                    if (existingCharity) {
-                        // Push the opening hours to the existing charity object
-                        existingCharity.opening_hours.push({
-                            day: row.day,
-                            hours: row.hours
-                        });
-                    } else {
-                        // Push organized data into the accumulator
-                        acc.push({
-                            id: row.id,
-                            nipc: row.nipc,
-                            name: row.name,
-                            email: row.email,
-                            phone_number: row.phone_number,
-                            address: row.address,
-                            city: row.city,
-                            country: row.country,
-                            opening_hours: [{
-                                day: row.day,
-                                hours: row.hours
-                            }]
-                        });
-                    }
-
-                    return acc;
-                }, []);
-
-                res.json(result);
-            });
-        } else {
-            // Process the rows
-            const result = rows.reduce((acc, row) => {
-                const existingCharity = acc.find(charity => charity.name === row.name);
-
-                if (existingCharity) {
-                    // Push the opening hours to the existing charity object
-                    existingCharity.opening_hours.push({
-                        day: row.day,
-                        hours: row.hours
-                    });
-                } else {
-                    // Push organized data into the accumulator
-                    acc.push({
-                        id: row.id,
-                        nipc: row.nipc,
-                        name: row.name,
-                        email: row.email,
-                        phone_number: row.phone_number,
-                        address: row.address,
-                        city: row.city,
-                        country: row.country,
-                        opening_hours: [{
-                            day: row.day,
-                            hours: row.hours
-                        }]
-                    });
-                }
-
-                return acc;
-            }, []);
-
-            res.json(result);
-        }
-    });
-});
-
-// Get details about a charity
-router.get('/ttuser/charity/:id', verifyRequestOrigin, (req, res) => {
-    const { id } = req.params;
-
-    // Check all possibilities (id, nipc, email, phone_number)
-    let query = `
-        SELECT e.*, c.*, eh.*
-        FROM entities e 
-        INNER JOIN clients c ON c.id = e.id 
-        LEFT JOIN entityHours eh ON eh.entity = e.id 
-        WHERE (e.id = ? OR e.nipc = ? OR c.email = ? OR c.phone_number = ?)
-        AND e.entity_type = "charity"
+    let sql = `
+        SELECT * FROM entities e 
+        INNER JOIN clients c ON c.id = e.id
+        LEFT JOIN entityHours eh ON eh.entity = e.id
+        WHERE e.entity_type = "charity"
     `;
 
-    db.query(query, [id, id, id, id], (err, rows) => {
+    const conditions = [];
+    const values = [];
+
+    if (id) {
+        conditions.push('e.id = ?');
+        values.push(id);
+    }
+
+    if (nipc) {
+        conditions.push('e.nipc = ?');
+        values.push(nipc);
+    }
+
+    if (email) {
+        conditions.push('c.email = ?');
+        values.push(email);
+    }
+
+    if (phone_number) {
+        conditions.push('c.phone_number = ?');
+        values.push(phone_number);
+    }
+
+    if (conditions.length > 0) {
+        sql += ' AND ' + conditions.join(' AND ');
+    }
+
+    const handleResult = (err, rows) => {
         if (err) {
-            // Fallback to replica DB
-            dbR.query(query, [id, id, id, id], (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                if (rows.length === 0) {
-                    return res.status(204).send();
-                }
-                // Process the rows
-                const result = rows.reduce((acc, row) => {
-                    // Check if the charity already exists in the accumulator
-                    const existingCharity = acc.find(charity => charity.name === row.name);
+            return res.status(500).json({ error: err.message });
+        }
 
-                    if (existingCharity) {
-                        // Push the opening hours to the existing charity object
-                        existingCharity.opening_hours.push({
-                            day: row.day,
-                            hours: row.hours
-                        });
-                    } else {
-                        // Push organized data into the accumulator
-                        acc.push({
-                            id: row.id,
-                            nipc: row.nipc,
-                            name: row.name,
-                            email: row.email,
-                            phone_number: row.phone_number,
-                            address: row.address,
-                            city: row.city,
-                            country: row.country,
-                            opening_hours: [{
-                                day: row.day,
-                                hours: row.hours
-                            }]
-                        });
-                    }
+        if (!rows || rows.length === 0) {
+            return res.status(204).send(); // No Content
+        }
 
-                    return acc;
-                }, []);
+        const result = rows.reduce((acc, row) => {
+            const existingCharity = acc.find(charity => charity.name === row.name);
 
-                res.json(result[0]);
-            });
-        } else if (rows.length === 0) {
-            return res.status(204).send();
-        } else {
-            // Process the rows
-            const result = rows.reduce((acc, row) => {
-                // Check if the charity already exists in the accumulator
-                const existingCharity = acc.find(charity => charity.name === row.name);
-
-                if (existingCharity) {
-                    // Push the opening hours to the existing charity object
+            if (existingCharity) {
+                if (row.day && row.hours) {
                     existingCharity.opening_hours.push({
                         day: row.day,
                         hours: row.hours
                     });
-                } else {
-                    // Push organized data into the accumulator
-                    acc.push({
-                        id: row.id,
-                        nipc: row.nipc,
-                        name: row.name,
-                        email: row.email,
-                        phone_number: row.phone_number,
-                        address: row.address,
-                        city: row.city,
-                        country: row.country,
-                        opening_hours: [{
-                            day: row.day,
-                            hours: row.hours
-                        }]
-                    });
                 }
+            } else {
+                acc.push({
+                    id: row.id,
+                    nipc: row.nipc,
+                    name: row.name,
+                    email: row.email,
+                    phone_number: row.phone_number,
+                    address: row.address,
+                    city: row.city,
+                    country: row.country,
+                    opening_hours: row.day && row.hours ? [{
+                        day: row.day,
+                        hours: row.hours
+                    }] : []
+                });
+            }
 
-                return acc;
-            }, []);
+            return acc;
+        }, []);
 
-            res.json(result[0]);
+        res.json(result.length === 1 ? result[0] : result);
+    };
+
+    // Query
+    db.query(sql, values, (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(sql, values, handleResult);
+        } else {
+            handleResult(null, rows);
         }
     });
 });
+
 
 // Add new charity
 router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {

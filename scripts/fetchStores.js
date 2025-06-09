@@ -183,7 +183,7 @@ if (document.body.id == "storesListPage") {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('is');
 
-            const response = await fetch(`/ttuser/store/${id}`);
+            const response = await fetch(`/ttuser/store?id=${id}`);
             const store = await response.json();
 
             // Set title of the current page

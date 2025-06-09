@@ -12,7 +12,7 @@ window.addEventListener('userAuthenticated', async (event) => {
     let storeName = '';
     if (loggedInUser.user_type === 'employee' && loggedInUser.store) {
         try {
-            const res = await fetch(`/ttuser/store/${loggedInUser.store}`);
+            const res = await fetch(`/ttuser/store?nipc=${loggedInUser.store}`);
             const result = await res.json();
             storeName = result.name;
         } catch (err) {
@@ -21,11 +21,51 @@ window.addEventListener('userAuthenticated', async (event) => {
         }
     }
 
+    /**
+     * Converts a 2-letter country code into a flag emoji.
+     * The flag emoji is created using the regional indicator symbols corresponding to the country code.
+     *
+     * @param {string} countryCode - A 2-letter ISO country code.
+     * @returns {string} - The flag emoji for the given country code.
+     */
+    function getFlagEmoji(countryCode) {
+        return countryCode
+            .toUpperCase()
+            .split('')
+            .map(char => String.fromCodePoint(0x1F1E6 - 65 + char.charCodeAt(0)))
+            .join('');
+    }
+
+
     if (document.body.id == "adminProfilePage" && loggedInUser.user_type === 'store') {
         const headerBrand = document.querySelector('#header-brand');
         if (headerBrand && headerBrand.previousElementSibling?.tagName === 'A') {
             headerBrand.previousElementSibling.remove();
         }
+    }
+
+    const getCountryDisplay = async (loggedInUserCountry) => {
+        let countryDisplay = document.querySelector(`span[data-field="country"]`);
+        let countryNameToCode = {};
+        await fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
+            .then(response => response.json())
+            .then(data => {
+                const countries = data
+                    .map(country => {
+                        const name = country.name.common;
+                        const code = country.cca2;
+                        countryNameToCode[name] = code;
+                        return { name, code };
+                    })
+                    .sort((a, b) => a.name.localeCompare(b.name));
+            });
+
+
+        const userCountry = loggedInUserCountry;
+        const countryCode = countryNameToCode[userCountry];
+        const flag = getFlagEmoji(countryCode);
+        countryDisplay.innerText = userCountry ? `${flag} ${userCountry}` : 'Not given';
+
     }
 
     // Build profile
@@ -109,7 +149,7 @@ window.addEventListener('userAuthenticated', async (event) => {
 
                 <p class="d-flex justify-content-center align-items-center gap-2">
                     <span class="field-label">Country:</span>
-                    <span class="field-value" data-field="country">${loggedInUser.country || 'Not given'}</span>
+                    <span class="field-value" data-field="country">Not given</span>
                     <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
                             title="Edit country" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
                         <i class="fa fa-pen fs-6"></i>
@@ -245,6 +285,8 @@ window.addEventListener('userAuthenticated', async (event) => {
             // Remove dob field
             const dobElement = document.querySelector('[data-field="dob"]')?.closest('p');
             if (dobElement) dobElement.remove();
+
+            getCountryDisplay(loggedInUser.country);
         }
 
     }
@@ -351,6 +393,43 @@ window.addEventListener('userAuthenticated', async (event) => {
                     if (optionText === currentValue) option.selected = true;
                     input.appendChild(option);
                 });
+            } else if (field == 'country') {
+                input = document.createElement('select');
+                input.className = 'form-select form-select-sm d-inline-block me-2';
+                input.style.width = 'auto';
+                input.style.maxWidth = '200px';
+
+                // Add a placeholder option
+                input.innerHTML = '<option value="" disabled selected>Select a country</option>';
+
+                // Fetch countries and populate
+                fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
+                    .then(response => response.json())
+                    .then(data => {
+                        const countries = data
+                            .map(country => ({
+                                name: country.name.common,
+                                code: country.cca2
+                            }))
+                            .sort((a, b) => a.name.localeCompare(b.name));
+
+                        countries.forEach(({ name, code }) => {
+                            const option = document.createElement('option');
+                            option.value = name;
+                            option.textContent = `${getFlagEmoji(code)} ${name}`;
+                            if (currentValue.split(" ").slice(1).join(" ") === name) {
+                                option.selected = true;
+                            }
+                            input.appendChild(option);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Failed to load countries:', err);
+                        const errorOption = document.createElement('option');
+                        errorOption.value = '';
+                        errorOption.textContent = 'Unable to load countries';
+                        input.appendChild(errorOption);
+                    });
             } else {
                 input = document.createElement('input');
 
@@ -530,8 +609,7 @@ window.addEventListener('userAuthenticated', async (event) => {
             }
 
             button.onclick = () => {
-                fetch(`/ttuser/client/${encodeURIComponent(input.value || " ")}${(field === "nif" || field === "nic") ? `?user_type=${encodeURIComponent(loggedInUser.user_type)}` : ""
-                    }`)
+                fetch(`/ttuser?${field}=${input.value || " "}`)
                     .then(res => {
                         if (res.status === 204) return {};
                         return res.json();
@@ -569,7 +647,7 @@ window.addEventListener('userAuthenticated', async (event) => {
 
                         if (field === "nipc") {
                             // Check store
-                            let response = await fetch(`/ttuser/store/${encodeURIComponent(input.value || " ")}`);
+                            let response = await fetch(`/ttuser/store?${field}=${encodeURIComponent(input.value || " ")}`);
                             if (!response.ok) throw new Error('Network response not ok');
                             else if (response.status !== 204) {
                                 let data = await response.json();
@@ -584,7 +662,7 @@ window.addEventListener('userAuthenticated', async (event) => {
                             }
 
                             // Check charity
-                            response = await fetch(`/ttuser/charity/${encodeURIComponent(input.value || " ")}`);
+                            response = await fetch(`/ttuser/charity?${field}=${encodeURIComponent(input.value || " ")}`);
                             if (!response.ok) throw new Error('Network response not ok');
                             else if (response.status !== 204) {
                                 let data = await response.json();
@@ -746,6 +824,9 @@ window.addEventListener('userAuthenticated', async (event) => {
                                             `Your ${(field === "nipc") ? field.toUpperCase() :
                                                 field.replace("_", " ")} was successfully edited.`,
                                             "success");
+
+                                        getCountryDisplay(loggedInUser.country);
+
                                     }).catch(err => {
                                         showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
                                             : field.replace("_", " ")}.`, "danger");
@@ -787,6 +868,9 @@ window.addEventListener('userAuthenticated', async (event) => {
                                             `Your ${(field === "nipc") ? field.toUpperCase() :
                                                 field.replace("_", " ")} was successfully edited.`,
                                             "success");
+
+                                        getCountryDisplay(loggedInUser.country);
+
                                     }).catch(err => {
                                         showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
                                             : field.replace("_", " ")}.`, "danger");
@@ -814,7 +898,7 @@ window.addEventListener('userAuthenticated', async (event) => {
                                     if (field === 'name') {
                                         const label = p.querySelector('label');
                                         if (label) label.remove();
-                                        if (document.body.id = "adminProfilePage") {
+                                        if (document.body.id == "adminProfilePage") {
                                             document.querySelector('#username p').innerText = newValue;
                                         } else {
                                             document.querySelector('#username p').innerText = newValue.split(" ")[0];

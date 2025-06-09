@@ -272,10 +272,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (userType === 'employee') {
       // Check store existence before deleting fields
-      const storeRes = await fetch(`/ttuser/store/${data.store}`);
+      const storeRes = await fetch(`/ttuser/store?nipc=${data.store}`);
       if (storeRes.status === 204) {
         showMessage("Registration error", `The store with the NIPC "${data.store}" is not registered in the system.`, "danger");
-        form.reset();
+        document.getElementById('store').value = "";
+        document.getElementById('store').focus();
         return;
       }
       clientData.gender = data.employee_gender;
@@ -289,12 +290,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
       clientData.entity_type = document.getElementById('userType').selectedOptions[0].dataset.entityType;
-      const resCharities = await fetch(`/ttuser/charity/${clientData.nipc}`);
+      const resCharities = await fetch(`/ttuser/charity?nipc=${clientData.nipc}`);
       if (resCharities.status !== 204) {  // if not 204, entity exists
         showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
         return; // abort
       }
-      const resStores = await fetch(`/ttuser/store/${clientData.nipc}`);
+      const resStores = await fetch(`/ttuser/store?nipc=${clientData.nipc}`);
       if (resStores.status !== 204) {  // if not 204, entity exists
         showMessage("Registration error", `An account with the given NIPC "${clientData.nipc}" has already been registered.`, "danger");
         return; // abort

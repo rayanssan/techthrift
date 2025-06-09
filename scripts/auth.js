@@ -53,7 +53,7 @@ async function getUserProfile(token) {
       loggedInUser = await response.json();
     }
 
-    const clientRes = await fetch(`/ttuser/client/${encodeURIComponent(loggedInUser.email)}`);
+    const clientRes = await fetch(`/ttuser?email=${encodeURIComponent(loggedInUser.email)}`);
 
     // Check if the user already exists
     if (clientRes.status === 204) {
@@ -68,21 +68,21 @@ async function getUserProfile(token) {
     let employeeData, storeData, charityData;
 
     try {
-      const employeeRes = await fetch(`/ttuser/employee/${encodeURIComponent(loggedInUser.email)}`);
+      const employeeRes = await fetch(`/ttuser/employee?email=${encodeURIComponent(loggedInUser.email)}`);
       if (employeeRes.ok) {
         employeeData = await employeeRes.json();
       }
     } catch (err) { }
 
     try {
-      const storeRes = await fetch(`/ttuser/store/${encodeURIComponent(loggedInUser.email)}`);
+      const storeRes = await fetch(`/ttuser/store?email=${encodeURIComponent(loggedInUser.email)}`);
       if (storeRes.ok) {
         storeData = await storeRes.json();
       }
     } catch (err) { }
 
     try {
-      const charityRes = await fetch(`/ttuser/charity/${encodeURIComponent(loggedInUser.email)}`);
+      const charityRes = await fetch(`/ttuser/charity?email=${encodeURIComponent(loggedInUser.email)}`);
       if (charityRes.ok) {
         charityData = await charityRes.json();
       }
