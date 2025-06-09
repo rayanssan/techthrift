@@ -43,7 +43,7 @@
                     </a>
                     <div class="d-flex flex-wrap justify-content-center 
                     align-items-center gap-1 ms-auto">
-                        <a href="/authentication" id="username" class="border 
+                        <a href="/authentication" onclick="logout()" id="username" class="border 
                         rounded py-1 px-3 nav-link d-flex 
                             align-items-center btn btn-light">
                             <i class="fas fa-user-alt m-1 me-md-2"></i>
@@ -80,7 +80,8 @@
                         seeking impactful collaboration, TechThrift offers a platform that aligns profit with purpose.
                     </p>
                     <button type="button" class="btn btn-light shadow-0 text-primary pt-2 border border-white">
-                        <a href="/authentication" class="pt-1 text-decoration-none">Sign In or Register as a Partner</a>
+                        <a href="/authentication" onclick="logout()" 
+                        class="pt-1 text-decoration-none">Sign In or Register as a Partner</a>
                     </button>
                 </div>
                 <img id="main-banner-brand" alt="TechThrift's logo" src="../media/images/logo_white.png">

@@ -220,8 +220,8 @@ CREATE TABLE IF NOT EXISTS soldProducts (
     sale_id INT NOT NULL,
 
     PRIMARY KEY(product_id, sale_id),
-    FOREIGN KEY (sale_id) REFERENCES sales(transaction_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES saleProducts(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (sale_id) REFERENCES sales(transaction_id),
+    FOREIGN KEY (product_id) REFERENCES saleProducts(id),
 );
 
 CREATE TABLE IF NOT EXISTS repairs (

@@ -54,7 +54,8 @@ body.loaded::before {
     font-weight: bold;
 }
 
-span, p {
+span,
+p {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -464,12 +465,24 @@ button[data-bs-target="#filtersCollapse"] {
             background-color: black;
         }
 
-        select {
+        select:not(select:disabled) {
             color: white;
             border-color: rgb(22, 26, 30);
         }
 
-        select:hover {
+        select:disabled {
+            background-color: black;
+            color: rgb(122, 126, 130);
+            border-color: rgb(22, 26, 30);
+        }
+
+        input:disabled {
+            background-color: white;
+            color: rgb(122, 126, 130);
+            border-color: rgb(222, 226, 230);
+        }
+
+        select:hover:not(select:disabled:hover) {
             background-color: rgb(37, 37, 37);
         }
 
@@ -481,7 +494,9 @@ button[data-bs-target="#filtersCollapse"] {
         #cart-section .card,
         #paypal,
         #productCarousel *,
-        #store-map, #username img, input[type="file"] {
+        #store-map,
+        #username img,
+        input[type="file"] {
             filter: invert(1) hue-rotate(180deg);
         }
 
@@ -526,12 +541,24 @@ body.dark-mode {
         background-color: black;
     }
 
-    select {
+    select:not(select:disabled) {
         color: white;
         border-color: rgb(22, 26, 30);
     }
 
-    select:hover {
+    select:disabled {
+        background-color: black;
+        color: rgb(122, 126, 130);
+        border-color: rgb(22, 26, 30);
+    }
+
+    input:disabled {
+        background-color: white;
+        color: rgb(122, 126, 130);
+        border-color: rgb(222, 226, 230);
+    }
+
+    select:hover:not(select:disabled:hover) {
         background-color: rgb(37, 37, 37);
     }
 
@@ -543,7 +570,9 @@ body.dark-mode {
     #cart-section .card,
     #paypal,
     #productCarousel *,
-    #store-map, #username img, input[type="file"] {
+    #store-map,
+    #username img,
+    input[type="file"] {
         filter: invert(1) hue-rotate(180deg);
     }
 

@@ -29,7 +29,7 @@ INSERT INTO clients (id, name, email, phone_number) VALUES
 
 INSERT INTO clients (id, name, email, phone_number, gender, dob, nif, nic) VALUES
 (26, 'John Doe', 'johndoe@example.com', '123456789', 'Male', 
-'1990-01-01', 123456789, 123456789),
+'1990-01-01', null, null),
 (27, 'Emily Davis', 'emilyd@example.com', '444555666', 'Female',
 '1992-07-07', 220349535, 220349535),
 (28, 'Robert Brown', 'robertb@example.com', '777888999', 'Male',

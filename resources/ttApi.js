@@ -925,9 +925,10 @@ router.get('/ttuser', verifyRequestOrigin, (req, res) => {
 // Get details about a client
 router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
     const { id } = req.params;
+    const { user_type } = req.query;
 
     // Check all possibilities (id, nif, nic, email, phone_number)
-    const query = `
+    let query = `
     SELECT 
       c.*,
       CASE 
@@ -939,14 +940,22 @@ router.get('/ttuser/client/:id', verifyRequestOrigin, (req, res) => {
     FROM clients c
     LEFT JOIN entities e ON e.id = c.id
     LEFT JOIN employees em ON em.id = c.id
-    WHERE (c.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?)
-    LIMIT 1`;
+    WHERE (c.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?)`;
+
+    const values = [id, id, id, id, id];
+
+    // Add filtering by user_type if specified
+    if (user_type) {
+        query += `
+        HAVING user_type = ?`;
+        values.push(user_type);
+    }
 
     // Use the `id` parameter for all possible search options
-    db.query(query, [id, id, id, id, id], (err, rows) => {
+    db.query(query, values, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [id, id, id, id, id], (err, rows) => {
+            dbR.query(query, values, (err, rows) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
@@ -1124,19 +1133,19 @@ router.get('/ttuser/employee', verifyRequestOrigin, (req, res) => {
 router.get('/ttuser/employee/:id', verifyRequestOrigin, (req, res) => {
     const { id } = req.params;
 
-    // Check all possibilities (id, nif, nic, email, phone_number)
+    // Check all possibilities (id, email, phone_number)
     let query = `
         SELECT * 
         FROM employees e
         INNER JOIN clients c ON c.id = e.id
-        WHERE e.id = ? OR c.nif = ? OR c.nic = ? OR c.email = ? OR c.phone_number = ?
+        WHERE e.id = ? OR c.email = ? OR c.phone_number = ?
     `;
 
     // Use the `id` parameter for all possible search options
-    db.query(query, [id, id, id, id, id], (err, rows) => {
+    db.query(query, [id, id, id], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [id, id, id, id, id], (err, rows) => {
+            dbR.query(query, [id, id, id], (err, rows) => {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
@@ -1195,35 +1204,80 @@ router.post('/ttuser/add/employee', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit employee
-router.put('/ttuser/edit/employee', verifyRequestOrigin, (req, res) => {
-    const updatedEmployee = req.body;
+router.put('/ttuser/edit/employee', verifyRequestOrigin, async (req, res) => {
+    try {
+        const updated = req.body;
 
-    // Extract keys and values from the updatedEmployee object, filtering out undefined values
-    const columns = Object.keys(updatedEmployee).filter(key =>
-        updatedEmployee[key] !== undefined && key !== 'id');
-    const values = columns.map(col => updatedEmployee[col]);
+        // Must provide at least one identifier to find the employee
+        const identifiers = ['id', 'email', 'phone_number'];
+        const providedIdentifiers = identifiers.filter(id => updated[id] !== undefined);
 
-    // Add the id at the end of the values array for the WHERE clause
-    values.push(updatedEmployee.id);
-
-    const query = `UPDATE clients c
-    JOIN employees e ON c.id = e.id
-    SET ${columns.map(col => `${col} = ?`).join(', ')} 
-    WHERE e.id = ? OR e.internal_number = ?`;
-
-    db.execute(query, values, function (err) {
-        if (err) {
-            console.error('DB operation failed:', err.message);
+        if (providedIdentifiers.length === 0) {
+            return res.status(400).json({ error: 'Must provide at least one identifier: id, phone_number or email' });
         }
 
-        // Update replica
-        dbR.execute(query, values, function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
+        // Fields that belong to clients and employees tables
+        const clientCols = ['name', 'email', 'phone_number', 'nif', 'nic', 'gender', 'dob'];
+        const employeeCols = ['store', 'internal_number'];
+
+        // Prepare SET clauses and values
+        const setClauses = [];
+        const values = [];
+
+        const identifierSet = new Set(identifiers);
+        for (const key in updated) {
+            if (identifierSet.has(key)) continue;
+            if (clientCols.includes(key)) {
+                setClauses.push(`c.${key} = ?`);
+                values.push(updated[key] === undefined ? null : updated[key]);
+            } else if (employeeCols.includes(key)) {
+                setClauses.push(`e.${key} = ?`);
+                values.push(updated[key] === undefined ? null : updated[key]);
             }
-            res.send('Employee successfully updated');
+        }
+
+        if (setClauses.length === 0) {
+            return res.status(400).json({ error: 'No updatable fields provided' });
+        }
+
+        // Prepare WHERE clauses for identifiers
+        // For email, prefix with 'c', for others with 'e'
+        const whereClauses = [];
+        for (const id of providedIdentifiers) {
+            const prefix = id === 'email' ? 'c' : 'e';
+            whereClauses.push(`${prefix}.${id} = ?`);
+            values.push(updated[id]);
+        }
+
+        const query = `
+        UPDATE clients c
+        JOIN employees e ON c.id = e.id
+        SET ${setClauses.join(', ')}
+        WHERE ${whereClauses.join(' OR ')}
+        `;
+
+        // Execute on primary DB
+        await new Promise((resolve, reject) => {
+            db.execute(query, values, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
         });
-    });
+
+        // Execute on replica DB
+        await new Promise((resolve, reject) => {
+            dbR.execute(query, values, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        res.json({ message: 'Employee successfully updated' });
+
+    } catch (error) {
+        console.error('DB operation failed:', error.message);
+        res.status(500).json({ error: 'Failed to update employee' });
+    }
 });
 
 // Get all stores
@@ -1484,34 +1538,78 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit store
-router.put('/ttuser/edit/store', verifyRequestOrigin, (req, res) => {
-    const updatedStore = req.body;
+router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
+    try {
+        const updated = req.body;
 
-    // Extract keys and values from the updatedStore object, filtering out undefined values
-    const columns = Object.keys(updatedStore).filter(key => updatedStore[key]
-        !== undefined && key !== 'id');
-    const values = columns.map(col => updatedStore[col]);
+        // Must provide at least one identifier to find the store
+        const identifiers = ['id', 'nipc', 'email', 'phone_number'];
+        const providedIdentifiers = identifiers.filter(id => updated[id] !== undefined);
 
-    // Add the id at the end of the values array for the WHERE clause
-    values.push(updatedStore.id);
-
-    const query = `UPDATE clients c JOIN entities e ON c.id = e.id
-        SET ${columns.map(col => `${col} = ?`).join(', ')
-        } WHERE e.id = ? AND e.entity_type = "store"`;
-
-    db.execute(query, values, function (err) {
-        if (err) {
-            console.error('DB operation failed:', err.message);
+        if (providedIdentifiers.length === 0) {
+            return res.status(400).json({ error: 'Must provide at least one identifier: id, nipc, phone_number, or email' });
         }
-        // Update replica
-        dbR.execute(query, values, function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
 
-            res.send('Store successfully updated');
+        // Fields that belong to clients and entities tables
+        const clientCols = ['name', 'email', 'phone_number', 'nif', 'nic', 'gender', 'dob'];
+        const storeCols = ['nipc', 'address', 'city', 'country', 'opening_hours'];
+
+        // Prepare SET clauses and values
+        const setClauses = [];
+        const values = [];
+
+        for (const key in updated) {
+            if (clientCols.includes(key)) {
+                setClauses.push(`c.${key} = ?`);
+                values.push(updated[key] === undefined ? null : updated[key]);
+            } else if (storeCols.includes(key)) {
+                setClauses.push(`e.${key} = ?`);
+                values.push(updated[key] === undefined ? null : updated[key]);
+            }
+        }
+
+        if (setClauses.length === 0) {
+            return res.status(400).json({ error: 'No updatable fields provided' });
+        }
+
+        // Prepare WHERE clauses for identifiers
+        // For email, prefix with 'c', for others with 'e'
+        const whereClauses = [];
+        for (const id of providedIdentifiers) {
+            const prefix = id === 'email' ? 'c' : 'e';
+            whereClauses.push(`${prefix}.${id} = ?`);
+            values.push(updated[id]);
+        }
+
+        const query = `
+        UPDATE clients c
+        JOIN entities e ON c.id = e.id
+        SET ${setClauses.join(', ')}
+        WHERE ${whereClauses.join(' OR ')}
+        `;
+
+        // Execute on primary DB
+        await new Promise((resolve, reject) => {
+            db.execute(query, values, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
         });
-    });
+
+        // Execute on replica DB
+        await new Promise((resolve, reject) => {
+            dbR.execute(query, values, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        res.json({ message: 'Store successfully updated' });
+
+    } catch (error) {
+        console.error('DB operation failed:', error.message);
+        res.status(500).json({ error: 'Failed to update store' });
+    }
 });
 
 // Get all charities
@@ -1738,34 +1836,78 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
 });
 
 // Edit charity
-router.put('/ttuser/edit/charity', verifyRequestOrigin, (req, res) => {
-    const updatedCharity = req.body;
+router.put('/ttuser/edit/charity', verifyRequestOrigin, async (req, res) => {
+    try {
+        const updated = req.body;
 
-    // Extract keys and values from the updatedCharity object, filtering out undefined values
-    const columns = Object.keys(updatedCharity).filter(key =>
-        updatedCharity[key] !== undefined && key !== 'id');
-    const values = columns.map(col => updatedCharity[col]);
+        // Must provide at least one identifier to find the charity
+        const identifiers = ['id', 'nipc', 'email', 'phone_number'];
+        const providedIdentifiers = identifiers.filter(id => updated[id] !== undefined);
 
-    // Add the id at the end of the values array for the WHERE clause
-    values.push(updatedCharity.id);
-
-    const query = `UPDATE clients c JOIN entities e ON c.id = e.id
-        SET ${columns.map(col => `${col} = ?`).join(', ')
-        } WHERE e.id = ? AND e.entity_type = "charity"`;
-
-    db.execute(query, values, function (err) {
-        if (err) {
-            console.error('DB operation failed:', err.message);
+        if (providedIdentifiers.length === 0) {
+            return res.status(400).json({ error: 'Must provide at least one identifier: id, nipc, phone_number, or email' });
         }
 
-        // Update replica
-        dbR.execute(query, values, function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
+        // Fields that belong to clients and entities tables
+        const clientCols = ['name', 'email', 'phone_number', 'nif', 'nic', 'gender', 'dob'];
+        const storeCols = ['nipc', 'address', 'city', 'country'];
+
+        // Prepare SET clauses and values
+        const setClauses = [];
+        const values = [];
+
+        for (const key in updated) {
+            if (clientCols.includes(key)) {
+                setClauses.push(`c.${key} = ?`);
+                values.push(updated[key] === undefined ? null : updated[key]);
+            } else if (storeCols.includes(key)) {
+                setClauses.push(`e.${key} = ?`);
+                values.push(updated[key] === undefined ? null : updated[key]);
             }
-            res.send('Charity successfully updated');
+        }
+
+        if (setClauses.length === 0) {
+            return res.status(400).json({ error: 'No updatable fields provided' });
+        }
+
+        // Prepare WHERE clauses for identifiers
+        // For email, prefix with 'c', for others with 'e'
+        const whereClauses = [];
+        for (const id of providedIdentifiers) {
+            const prefix = id === 'email' ? 'c' : 'e';
+            whereClauses.push(`${prefix}.${id} = ?`);
+            values.push(updated[id]);
+        }
+
+        const query = `
+        UPDATE clients c
+        JOIN entities e ON c.id = e.id
+        SET ${setClauses.join(', ')}
+        WHERE ${whereClauses.join(' OR ')}
+        `;
+
+        // Execute on primary DB
+        await new Promise((resolve, reject) => {
+            db.execute(query, values, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
         });
-    });
+
+        // Execute on replica DB
+        await new Promise((resolve, reject) => {
+            dbR.execute(query, values, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        res.json({ message: 'Charity successfully updated' });
+
+    } catch (error) {
+        console.error('DB operation failed:', error.message);
+        res.status(500).json({ error: 'Failed to update charity' });
+    }
 });
 
 // Add new charity project

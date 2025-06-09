@@ -91,18 +91,30 @@
             <div class="d-flex justify-content-between align-items-center mb-4" id="top-buttons">
                 <h2>Product List</h2>
                 <div>
-                    <button id="set-for-sale-btn" class="btn btn-light" disabled>Set For Sale</button>
+                    <button id="set-for-sale-btn" class="btn btn-warning" disabled>
+                        <i class="fas fa-tag me-1"></i> Set For Online Sale
+                    </button>
 
-                    <button class="btn btn-light" id="register-sale">Add Selected</button>
+                    <button class="btn btn-warning" id="register-sale">
+                        <i class="fas fa-cash-register me-1"></i> Register Sale
+                    </button>
 
-                    <button class="btn btn-light" id="delete-selected">Delete Selected</button>
-                    <button class="btn btn-success" onclick="showAddProductForm()">Add Product</button>
+                    <button class="btn btn-danger" id="delete-selected" disabled>
+                        <i class="fas fa-trash-alt me-1"></i> Delete Selected
+                    </button>
+
+                    <button class="btn btn-success" onclick="showAddProductForm()">
+                        <i class="fas fa-plus me-1"></i> Add Product
+                    </button>
                 </div>
             </div>
 
             <div class="row mb-4 justify-content-between" id="filters-row">
-                <div class="col-md-4 mb-2">
-                    <input type="text" id="search-bar" class="form-control" placeholder="Search products...">
+                <div class="col-md-4 mb-0">
+                    <div class="input-group">
+                        <input type="text" id="search-bar" class="form-control" placeholder="Search products...">
+                        <button class="btn btn-primary" type="button" id="search-btn">Search</button>
+                    </div>
                 </div>
                 <div class="col-md-7 d-flex justify-content-end align-items-center gap-3">
                     <select id="condition-filter" class="form-select w-auto">
@@ -113,7 +125,7 @@
                         <option value="true">Available</option>
                         <option value="false">Unavailable</option>
                     </select>
-                    <button class="btn btn-light" id="filter-btn">Filter</button>
+                    <button class="btn btn-primary" id="filter-btn">Apply Filters</button>
                 </div>
             </div>
 
@@ -140,8 +152,6 @@
                     <ul class="pagination justify-content-center" id="pagination-controls"></ul>
                 </nav>
             </div>
-
-
 
             <!-- Modal to display selected products -->
             <div id="sale-modal" class="modal fade" tabindex="-1" aria-hidden="true">
@@ -203,7 +213,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Add New Product</h2>
                     <div>
-                        <button class="btn btn-light me-2" onclick="hideAddProductForm()">Cancel</button>
+                        <button class="btn btn-primary me-2" onclick="hideAddProductForm()">Cancel</button>
                         <button type="submit" class="btn btn-success" form="productForm">Submit Product</button>
                     </div>
                 </div>
@@ -364,14 +374,75 @@
 
         const setSaleForm = document.getElementById('set-sale-form');
         const setForSaleBtn = document.getElementById('set-for-sale-btn');
+        const deleteProductBtn = document.getElementById('delete-selected');
+        const registerSaleBtn = document.getElementById('register-sale');
         const productList1 = document.getElementById('product-list');
         let selectedProductId = null;
+
+        const disableEnableButtons = () => {
+            const selectedCheckboxes = document.querySelectorAll('#product-table input[type="checkbox"]:checked');
+
+            // Number of selected products
+            const selectedCount = selectedCheckboxes.length;
+
+            // Disable delete button if none selected
+            deleteProductBtn.disabled = selectedCount < 1;
+
+            // If exactly one product selected, check if sold
+            if (selectedCount === 1) {
+                const row = selectedCheckboxes[0].closest('tr');
+                // The last <td> contains the status, get its innerText trimmed
+                const status = row.querySelector('td:last-child')?.innerText.trim();
+
+                // Disable "Set For Sale" if status is Sold, else enable
+                setForSaleBtn.disabled = (status === 'Sold');
+                // Disable "Delete Selected" if status is Sold, else enable
+                deleteProductBtn.disabled = (status === 'Sold');
+                // Disable "Sell Selected" if status is Sold, else enable
+                registerSaleBtn.disabled = (status === 'Sold');
+                for (const node of registerSaleBtn.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
+                        node.textContent = " Sell Selected";
+                        break;
+                    }
+                }
+            } else if (selectedCount > 1) {
+                // Disable Set For Sale button if not exactly one selected
+                setForSaleBtn.disabled = true;
+                // Check if any selected product is sold
+                const selectedCheckboxes = document.querySelectorAll('#product-table input[type="checkbox"]:checked');
+                const anySold = Array.from(selectedCheckboxes).some(cb => {
+                    const row = cb.closest('tr');
+                    const status = row.querySelector('td:last-child')?.innerText.trim();
+                    return status === 'Sold';
+                });
+                // Disable "Delete Selected" if any selected product is sold or no selection
+                deleteProductBtn.disabled = (selectedCheckboxes.length === 0 || anySold);
+                registerSaleBtn.disabled = (selectedCheckboxes.length === 0 || anySold);
+                for (const node of registerSaleBtn.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
+                        node.textContent = " Sell Selected";
+                        break;
+                    }
+                }
+            } else {
+                setForSaleBtn.disabled = true;
+                deleteProductBtn.disabled = true;
+                registerSaleBtn.disabled = false;
+                for (const node of registerSaleBtn.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
+                        node.textContent = " Register Sale";
+                        break;
+                    }
+                }
+            }
+
+        }
 
         productList1.addEventListener('change', () => {
             const selected = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
 
-            // Disable button unless exactly 1 checkbox is selected
-            setForSaleBtn.disabled = selected.length !== 1;
+            disableEnableButtons();
 
             if (selected.length === 1) {
                 const checkbox = selected[0];
@@ -895,20 +966,18 @@
 
         let selectedProductIds = [];
 
-        function renderProductRow(product) {
+        function renderProductRow(product, sales) {
             const price = priceMap[product.id];
             const productRow = document.createElement('tr');
             productRow.classList.add('cursor-pointer');
             productRow.dataset.productId = product.id;
 
-            // Row click: ignore checkbox clicks
             productRow.addEventListener('click', (event) => {
                 if (event.target.type !== 'checkbox') {
                     viewProductDetails(product.id);
                 }
             });
 
-            // Checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.classList.add('product-checkbox');
@@ -921,6 +990,15 @@
                 }
             });
 
+            function isProductSold(productId) {
+                return sales.some(sale =>
+                    sale.sale_status !== "Cancelled" &&
+                    sale.sold_products.some(p => p.id === productId)
+                );
+            }
+
+            const sold = isProductSold(product.id);
+
             productRow.innerHTML = `
                 <td><input type="checkbox" class="product-checkbox"></td>
                 <td>${product.id}</td>
@@ -929,7 +1007,7 @@
                 <td>${product.category || 'N/A'}</td>
                 <td>${product.product_condition || 'N/A'}</td>
                 <td>${product.availability ? 'Available' : 'Unavailable'}</td>
-                <td>${price ? 'Up for Sale' : 'Not for Sale'}</td>
+                <td>${sold ? 'Sold' : (price ? 'Up for Sale' : 'Not for Sale')}</td>
             `;
 
             return productRow;
@@ -939,7 +1017,12 @@
 
         async function fetchAdminProducts(filters = {}) {
             try {
-                const params = new URLSearchParams(filters);
+                let params = new URLSearchParams(filters);
+                const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                params = new URLSearchParams({
+                    store_nipc: loggedInUser.store,
+                    ...Object.fromEntries(params.entries())
+                });
                 const response = await fetch(`/tt/product?${params.toString()}`);
                 const products = await response.json();
 
@@ -948,7 +1031,12 @@
                 priceMap = {};
                 priceData.forEach(item => priceMap[item.id] = item.price);
 
-                setupPagination(products, 'product-list', 'pagination-controls', renderProductRow);
+                const salesResponse = await fetch('/tttransaction/sales');
+                const salesData = await salesResponse.json();
+
+                const renderWithSales = (product) => renderProductRow(product, salesData);
+
+                setupPagination(products, 'product-list', 'pagination-controls', renderWithSales);
 
                 animateListItems('#product-list');
             } catch (error) {
@@ -973,7 +1061,7 @@
             [...form.elements].forEach(el => el.disabled = false);
 
             // Reset buttons
-            const cancelBtn = document.querySelector('#add-product-form .btn-light');
+            const cancelBtn = document.querySelector('#add-product-form .btn-primary');
             const submitBtn = document.querySelector('#add-product-form .btn-success');
 
             cancelBtn.textContent = 'Cancel';
@@ -1064,7 +1152,7 @@
                 [...form.elements].forEach(el => el.disabled = true);
 
                 // === Adjust buttons ===
-                const cancelBtn = document.querySelector('#add-product-form .btn-light');
+                const cancelBtn = document.querySelector('#add-product-form .btn-primary');
                 const submitBtn = document.querySelector('#add-product-form .btn-success');
                 cancelBtn.textContent = 'Back';
                 submitBtn.classList.add('d-none');
@@ -1147,11 +1235,15 @@
                     if (selectedImages.length > 1) {
                         carousel.innerHTML += `
                     <button class="carousel-control-prev" type="button" data-bs-target="#product-carousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                        <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"
+                        style="background-size: 25px;
+                        padding: 20px;"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
                     <button class="carousel-control-next" type="button" data-bs-target="#product-carousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                        <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"
+                        style="background-size: 25px;
+                        padding: 20px;"></span>
                         <span class="visually-hidden">Next</span>
                     </button>
                 `;
@@ -1210,16 +1302,18 @@
             fetchConditions();
             fetchAdminProducts(filters);
 
-            document.getElementById('filter-btn').addEventListener('click', () => {
-                const filters = {
-                    name: document.getElementById('search-bar').value.trim(),
-                    condition: document.getElementById('condition-filter').value,
-                    availability: document.getElementById('availability-filter').value
-                };
-                fetchAdminProducts(filters);
+            [document.getElementById('filter-btn'), document.getElementById('search-btn')].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        const filters = {
+                            name: document.getElementById('search-bar').value.trim(),
+                            condition: document.getElementById('condition-filter').value,
+                            availability: document.getElementById('availability-filter').value
+                        };
+                        fetchAdminProducts(filters);
+                    });
+                }
             });
-
-
 
             function updatePreview(files) {
                 previewContainer.innerHTML = '';

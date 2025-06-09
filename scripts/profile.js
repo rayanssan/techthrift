@@ -1,6 +1,6 @@
 "use strict";
 
-window.addEventListener('userAuthenticated', (event) => {
+window.addEventListener('userAuthenticated', async (event) => {
     const loggedInUser = event.detail;
     if (!loggedInUser || loggedInUser.id == null) {
         location.href = "/authentication";
@@ -8,6 +8,25 @@ window.addEventListener('userAuthenticated', (event) => {
     const profileInfo = document.getElementById('profile-info');
     document.getElementById('username').classList.add("text-white");
     document.getElementById('username').style.backgroundColor = "navy";
+
+    let storeName = '';
+    if (loggedInUser.user_type === 'employee' && loggedInUser.store) {
+        try {
+            const res = await fetch(`/ttuser/store/${loggedInUser.store}`);
+            const result = await res.json();
+            storeName = result.name;
+        } catch (err) {
+            console.error('Failed to fetch store name:', err);
+            storeName = "Store"
+        }
+    }
+
+    if (document.body.id == "adminProfilePage" && loggedInUser.user_type === 'store') {
+        const headerBrand = document.querySelector('#header-brand');
+        if (headerBrand && headerBrand.previousElementSibling?.tagName === 'A') {
+            headerBrand.previousElementSibling.remove();
+        }
+    }
 
     // Build profile
     profileInfo.innerHTML = `
@@ -44,6 +63,60 @@ window.addEventListener('userAuthenticated', (event) => {
                 class="btn btn-link p-0">Resend Verification Email</button>
             </div>`
         }
+
+            ${loggedInUser.user_type === "employee" ? `
+            <p class="d-flex justify-content-center align-items-center gap-2">
+                <span class="field-label">Store:</span>
+                <span class="field-value">${`${storeName} <small class="text-muted text-">- <i>NIPC: ${loggedInUser.store}</i></small>` || 'Not assigned'}</span>
+            </p>
+            <p class="d-flex justify-content-center align-items-center gap-2">
+                <span class="field-label">Internal Number:</span>
+                <span class="field-value" data-field="internal_number">${loggedInUser.internal_number || 'Not given'}</span>
+                <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
+                        title="Edit Internal Number" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
+                    <i class="fa fa-pen fs-6"></i>
+                </button>
+            </p>
+            ` : ''}
+
+            ${loggedInUser.user_type === "store" || loggedInUser.user_type === "charity" ? `
+                <p class="d-flex justify-content-center align-items-center gap-2">
+                    <span class="field-label">NIPC:</span>
+                    <span class="field-value" data-field="nipc">${loggedInUser.nipc || 'Not given'}</span>
+                    <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
+                            title="Edit NIPC" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
+                        <i class="fa fa-pen fs-6"></i>
+                    </button>
+                </p>
+
+                <p class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                    <span class="field-label">Address:</span>
+                    <span class="field-value" data-field="address">${loggedInUser.address || 'Not given'}</span>
+                    <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
+                            title="Edit address" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
+                        <i class="fa fa-pen fs-6"></i>
+                    </button>
+                </p>
+
+                <p class="d-flex justify-content-center align-items-center gap-2">
+                    <span class="field-label">City:</span>
+                    <span class="field-value" data-field="city">${loggedInUser.city || 'Not given'}</span>
+                    <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
+                            title="Edit city" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
+                        <i class="fa fa-pen fs-6"></i>
+                    </button>
+                </p>
+
+                <p class="d-flex justify-content-center align-items-center gap-2">
+                    <span class="field-label">Country:</span>
+                    <span class="field-value" data-field="country">${loggedInUser.country || 'Not given'}</span>
+                    <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
+                            title="Edit country" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
+                        <i class="fa fa-pen fs-6"></i>
+                    </button>
+                </p>
+            ` : ''}
+
             <p class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-label">Phone:</span>
                 <span class="field-value" data-field="phone_number">${loggedInUser.phone_number || 'Not given'}</span>
@@ -52,6 +125,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
+
             <p class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-label">NIF:</span>
                 <span class="field-value" data-field="nif">${loggedInUser.nif || 'Not given'}</span>
@@ -60,6 +134,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
+
             <p class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-label">NIC:</span>
                 <span class="field-value" data-field="nic">${loggedInUser.nic || 'Not given'}</span>
@@ -68,6 +143,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
+
             <p class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-label">Gender:</span>
                 <span class="field-value" data-field="gender">${loggedInUser.gender || 'Not given'}</span>
@@ -76,6 +152,7 @@ window.addEventListener('userAuthenticated', (event) => {
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
+
             <p class="d-flex justify-content-center align-items-center gap-2">
                 <span class="field-label">Date of Birth:</span>
                 <span class="field-value" data-field="dob">${loggedInUser.dob ? new Date(loggedInUser.dob).toLocaleDateString() : 'Not given'}</span>
@@ -84,6 +161,37 @@ window.addEventListener('userAuthenticated', (event) => {
                     <i class="fa fa-pen fs-6"></i>
                 </button>
             </p>
+
+            ${loggedInUser.user_type === "store" && Array.isArray(loggedInUser.opening_hours) ? (() => {
+            const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+            const sortedHours = [...loggedInUser.opening_hours].sort((a, b) => {
+                const aIndex = dayOrder.indexOf(a.day);
+                const bIndex = dayOrder.indexOf(b.day);
+
+                // If not found in dayOrder, treat as "holiday"/custom date and push to bottom
+                if (aIndex === -1 && bIndex === -1) return 0;
+                if (aIndex === -1) return 1;
+                if (bIndex === -1) return -1;
+
+                return aIndex - bIndex;
+            });
+
+            return `
+                <div class="d-flex flex-column align-items-center gap-2">
+                    <span class="field-label">Opening Hours: </span>
+                    <span class="field-value" data-field="opening_hours">
+                        ${sortedHours.map(oh => `${oh.day}: ${oh.hours}`).join('<br>')}
+                    </span>
+                    <div id="edit-opening-buttons-wrapper">
+                        <button type="button" class="btn btn-outline-secondary rounded-circle p-1" 
+                        title="Edit opening hours" style="width: 35px; height: 35px; min-width: 35px; cursor: pointer;">
+                            <i class="fa fa-pen fs-6"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+        })() : ''}
         </div>
 
         <hr>
@@ -104,6 +212,42 @@ window.addEventListener('userAuthenticated', (event) => {
         </button>
     </div>
     `;
+
+    if (document.body.id === "adminProfilePage") {
+        const allHeadings = profileInfo.querySelectorAll('h3');
+
+        allHeadings.forEach(h3 => {
+            const text = h3.textContent.trim();
+
+            if (text === "My Orders" || text === "My Repair Orders") {
+                const nextDiv = h3.nextElementSibling;
+                const hr = nextDiv?.nextElementSibling;
+
+                h3.remove();
+                if (nextDiv && nextDiv.classList.contains('list-group')) nextDiv.remove();
+                if (hr && hr.tagName === "HR") hr.remove();
+            }
+        });
+
+        ['nif', 'nic'].forEach(field => {
+            const span = document.querySelector(`.field-value[data-field="${field}"]`);
+            if (span) {
+                const p = span.closest('p');
+                if (p) p.remove();
+            }
+        });
+
+        if (loggedInUser.user_type === "store" || loggedInUser.user_type === "charity") {
+            // Remove gender field
+            const genderElement = document.querySelector('[data-field="gender"]')?.closest('p');
+            if (genderElement) genderElement.remove();
+
+            // Remove dob field
+            const dobElement = document.querySelector('[data-field="dob"]')?.closest('p');
+            if (dobElement) dobElement.remove();
+        }
+
+    }
 
     /**
      * Sends a request to the server to resend the Auth0 verification email
@@ -140,11 +284,47 @@ window.addEventListener('userAuthenticated', (event) => {
         }
     }
 
+    let customHourIndex = 1;
+    /**
+     * Dynamically adds a new row of custom store hours to the form.
+     *
+     * The inputs use `customHourIndex` to uniquely name each group.
+     * The new row is appended to the `#custom-hours-container` element.
+     *
+     * @function addCustomHour
+     * @returns {void}
+     */
+    function addCustomHour() {
+        const container = document.getElementById('custom-hours-container');
+
+        const newRow = document.createElement('div');
+        newRow.className = 'row mb-2 align-items-center custom-hour-entry';
+        newRow.innerHTML = `
+            <div class="col d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-danger 
+            rounded-circle d-flex align-items-center justify-content-center" 
+            style="width: 28px; height: 28px;" 
+            onclick="this.closest('.custom-hour-entry').remove()">
+                <i class="fas fa-times"></i>
+            </button>
+            <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Custom Day" class="form-control" required>
+            </div>
+            <div class="col">
+            <input type="time" name="custom_hours[${customHourIndex}][open]" class="form-control" required>
+            </div>
+            <div class="col">
+            <input type="time" name="custom_hours[${customHourIndex}][close]" class="form-control" required>
+            </div>
+        `;
+        container.appendChild(newRow);
+        customHourIndex++;
+    }
+
     profileInfo.querySelector("#resendVerificationBtn")?.addEventListener("click", resendVerificationEmail);
 
     profileInfo.querySelectorAll('button.btn-outline-secondary').forEach(button => {
         button.addEventListener('click', function onEditClick() {
-            const p = button.closest('p') || button.closest('h2');
+            const p = button.closest('p') || button.closest('h2') || button.closest('div').parentElement;
             const valueSpan = p.querySelector('.field-value');
             if (!valueSpan) return;
 
@@ -209,13 +389,97 @@ window.addEventListener('userAuthenticated', (event) => {
                     input.pattern = '\\S.*';
                     input.title = 'Name cannot be empty';
                     input.value = currentValue;
+                } else if (field === "opening_hours") {
+
+                    // Create a container div to hold the store hours inputs
+                    input = document.createElement('div');
+                    input.className = 'store-hours-edit-container border p-3 w-50 rounded bg-light';
+
+                    const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+                    const openingHoursArray = Array.isArray(currentValue) ? currentValue : [];
+
+                    dayOrder.forEach(day => {
+                        // Find entry for this day
+                        const entry = openingHoursArray.find(e => e.day === day) || {};
+                        const [open = '', close = ''] = (entry.hours || '').split('-');
+
+                        const row = document.createElement('div');
+                        row.className = 'row mb-2 align-items-center';
+
+                        // Day label
+                        const dayCol = document.createElement('div');
+                        dayCol.className = 'col';
+                        dayCol.textContent = day;
+
+                        // Open time input
+                        const openCol = document.createElement('div');
+                        openCol.className = 'col';
+                        const openInput = document.createElement('input');
+                        openInput.type = 'time';
+                        openInput.name = `hours[${day}][open]`;
+                        openInput.className = 'form-control';
+                        openInput.required = true;
+                        openInput.value = open;
+                        openCol.appendChild(openInput);
+
+                        // Close time input
+                        const closeCol = document.createElement('div');
+                        closeCol.className = 'col';
+                        const closeInput = document.createElement('input');
+                        closeInput.type = 'time';
+                        closeInput.name = `hours[${day}][close]`;
+                        closeInput.className = 'form-control';
+                        closeInput.required = true;
+                        closeInput.value = close;
+                        closeCol.appendChild(closeInput);
+
+                        row.appendChild(dayCol);
+                        row.appendChild(openCol);
+                        row.appendChild(closeCol);
+
+                        input.appendChild(row);
+                    });
+
+                    // Add horizontal rule
+                    const hr = document.createElement('hr');
+                    input.appendChild(hr);
+
+                    // Label for Holiday Hours
+                    const holidayLabel = document.createElement('label');
+                    holidayLabel.className = 'form-label';
+                    holidayLabel.textContent = 'Holiday Hours';
+                    input.appendChild(holidayLabel);
+
+                    // Container for custom holiday hours
+                    const customHoursContainer = document.createElement('div');
+                    customHoursContainer.id = 'custom-hours-container';
+                    input.appendChild(customHoursContainer);
+
+                    // Add Holiday Hours button
+                    const addHolidayBtn = document.createElement('button');
+                    addHolidayBtn.type = 'button';
+                    addHolidayBtn.className = 'w-100 my-2 btn btn-sm btn-outline-primary';
+                    addHolidayBtn.textContent = '+ Add Holiday Hours';
+                    addHolidayBtn.onclick = () => {
+                        if (typeof addCustomHour === 'function') {
+                            addCustomHour();
+                        } else {
+                            console.warn('addCustomHour function is not defined');
+                        }
+                    };
+                    input.appendChild(addHolidayBtn);
                 } else {
                     input.type = 'text';
                     input.maxLength = 255;
                     input.value = currentValue;
                 }
 
-                input.className = 'form-control form-control-sm d-inline-block me-2';
+                if (field === 'address') {
+                    input.style.minWidth = "40vw";
+                }
+
+                input.className += 'form-control form-control-sm d-inline-block me-2';
 
                 // Special handling for name input size and label
                 if (field === 'name') {
@@ -240,7 +504,11 @@ window.addEventListener('userAuthenticated', (event) => {
                 p.insertBefore(label, p.firstChild);
             }
 
-            p.insertBefore(input, p.querySelector('button'));
+            if (field == "opening_hours") {
+                p.insertBefore(input, p.querySelector('button').parentElement);
+            } else {
+                p.insertBefore(input, p.querySelector('button'));
+            }
 
             button.innerHTML = '<i class="fa fa-check fs-6"></i>';
             button.title = 'Save ' + field.replace(/_/g, ' ');
@@ -251,18 +519,24 @@ window.addEventListener('userAuthenticated', (event) => {
             cancelBtn.title = 'Cancel edit';
             cancelBtn.style.width = '35px';
             cancelBtn.style.height = '35px';
+            cancelBtn.style.minWidth = '35px';
             cancelBtn.style.cursor = 'pointer';
             cancelBtn.innerHTML = '<i class="fa fa-times fs-6"></i>';
 
-            p.appendChild(cancelBtn);
+            if (field == "opening_hours") {
+                p.querySelector('#edit-opening-buttons-wrapper').appendChild(cancelBtn)
+            } else {
+                p.appendChild(cancelBtn);
+            }
 
             button.onclick = () => {
-                fetch(`/ttuser/client/${encodeURIComponent(input.value ? input.value : " ")}`)
+                fetch(`/ttuser/client/${encodeURIComponent(input.value || " ")}${(field === "nif" || field === "nic") ? `?user_type=${encodeURIComponent(loggedInUser.user_type)}` : ""
+                    }`)
                     .then(res => {
                         if (res.status === 204) return {};
                         return res.json();
                     })
-                    .then(userResult => {
+                    .then(async userResult => {
                         if (!input.reportValidity()) {
                             // Invalid input: don't proceed
                             return;
@@ -293,7 +567,38 @@ window.addEventListener('userAuthenticated', (event) => {
                             return;
                         }
 
-                        if (field === 'email' || field === 'nif' || field === 'nic' || field === 'phone_number') {
+                        if (field === "nipc") {
+                            // Check store
+                            let response = await fetch(`/ttuser/store/${encodeURIComponent(input.value || " ")}`);
+                            if (!response.ok) throw new Error('Network response not ok');
+                            else if (response.status !== 204) {
+                                let data = await response.json();
+                                if (data && data[field] === input.value) {
+                                    showMessage("Editing error",
+                                        `Another account already exists with the given ${field.toUpperCase()}.`, "danger");
+
+                                    newSpan.textContent = currentValue;
+                                    input.focus();
+                                    return false;
+                                }
+                            }
+
+                            // Check charity
+                            response = await fetch(`/ttuser/charity/${encodeURIComponent(input.value || " ")}`);
+                            if (!response.ok) throw new Error('Network response not ok');
+                            else if (response.status !== 204) {
+                                let data = await response.json();
+                                if (data && data[field] === input.value) {
+                                    showMessage("Editing error",
+                                        `Another account already exists with the given ${field.toUpperCase()}.`, "danger");
+
+                                    newSpan.textContent = currentValue;
+                                    input.focus();
+                                    return false;
+                                }
+                            }
+
+                        } else if (field === 'email' || field === 'nif' || field === 'nic' || field === 'phone_number') {
                             if (userResult[field] === input.value) {
                                 showMessage("Editing error",
                                     `Another account already exists with the given ${(field === "nic" || field === "nif") ? field.toUpperCase() : field.replace("_", " ")}.`, "danger");
@@ -304,6 +609,7 @@ window.addEventListener('userAuthenticated', (event) => {
                                 return;
                             }
                         }
+
                         let newValue = input.value.trim();
                         if (!newValue) newValue = 'Not given';
 
@@ -354,54 +660,194 @@ window.addEventListener('userAuthenticated', (event) => {
                         }
 
                         // Send update request to backend
-                        fetch('/ttuser/edit/client', {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(updatedClient)
-                        })
-                            .then(res => {
-                                if (!res.ok) throw new Error('Failed to update client');
-                                return res.text();
+
+                        if (field == "internal_number" ||
+                            field == "nipc" ||
+                            field == "address" ||
+                            field == "city" ||
+                            field == "country" ||
+                            field == "opening_hours") {
+                            // Send update request for employees, stores, and charities
+                            if (loggedInUser.user_type == "employee") {
+                                fetch('/ttuser/edit/employee', {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(updatedClient)
+                                })
+                                    .then(res => {
+                                        if (!res.ok) throw new Error('Failed to update employee');
+                                        return res.text();
+                                    })
+                                    .then(() => {
+                                        // Update UI on success
+                                        const newSpan = document.createElement('span');
+                                        newSpan.className = 'field-value';
+                                        newSpan.dataset.field = field;
+                                        newSpan.textContent = newValue;
+
+                                        button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                                        button.title = 'Edit ' + field.replace(/_/g, ' ');
+                                        cancelBtn.remove();
+
+                                        button.onclick = null;
+                                        button.addEventListener('click', onEditClick);
+                                        currentValue = newValue;
+                                        // Update localStorage
+                                        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+                                        if (newValue.toLowerCase() == "not given") {
+                                            newValue = null;
+                                        }
+                                        loggedInUser[field] = newValue;
+                                        localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+
+                                        showMessage("Editing successful",
+                                            `Your ${(field === "nipc") ? field.toUpperCase() :
+                                                field.replace("_", " ")} was successfully edited.`,
+                                            "success");
+                                    }).catch(err => {
+                                        showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
+                                            : field.replace("_", " ")}.`, "danger");
+                                        newSpan.textContent = currentValue;
+                                        input.focus();
+                                    });
+                            } else if (loggedInUser.user_type == "store") {
+                                fetch('/ttuser/edit/store', {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(updatedClient)
+                                })
+                                    .then(res => {
+                                        if (!res.ok) throw new Error('Failed to update store');
+                                        return res.text();
+                                    })
+                                    .then(() => {
+                                        // Update UI on success
+                                        const newSpan = document.createElement('span');
+                                        newSpan.className = 'field-value';
+                                        newSpan.dataset.field = field;
+                                        newSpan.textContent = newValue;
+
+                                        button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                                        button.title = 'Edit ' + field.replace(/_/g, ' ');
+                                        cancelBtn.remove();
+
+                                        button.onclick = null;
+                                        button.addEventListener('click', onEditClick);
+                                        currentValue = newValue;
+                                        // Update localStorage
+                                        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+                                        if (newValue.toLowerCase() == "not given") {
+                                            newValue = null;
+                                        }
+                                        loggedInUser[field] = newValue;
+                                        localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+
+                                        showMessage("Editing successful",
+                                            `Your ${(field === "nipc") ? field.toUpperCase() :
+                                                field.replace("_", " ")} was successfully edited.`,
+                                            "success");
+                                    }).catch(err => {
+                                        showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
+                                            : field.replace("_", " ")}.`, "danger");
+                                        newSpan.textContent = currentValue;
+                                        input.focus();
+                                    });
+                            } else if (loggedInUser.user_type == "charity") {
+                                fetch('/ttuser/edit/charity', {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(updatedClient)
+                                }).then(res => {
+                                    if (!res.ok) throw new Error('Failed to update charity');
+                                    return res.text();
+                                })
+                                    .then(() => {
+                                        // Update UI on success
+                                        const newSpan = document.createElement('span');
+                                        newSpan.className = 'field-value';
+                                        newSpan.dataset.field = field;
+                                        newSpan.textContent = newValue;
+
+                                        button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                                        button.title = 'Edit ' + field.replace(/_/g, ' ');
+                                        cancelBtn.remove();
+
+                                        button.onclick = null;
+                                        button.addEventListener('click', onEditClick);
+                                        currentValue = newValue;
+                                        // Update localStorage
+                                        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+                                        if (newValue.toLowerCase() == "not given") {
+                                            newValue = null;
+                                        }
+                                        loggedInUser[field] = newValue;
+                                        localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+
+                                        showMessage("Editing successful",
+                                            `Your ${(field === "nipc") ? field.toUpperCase() :
+                                                field.replace("_", " ")} was successfully edited.`,
+                                            "success");
+                                    }).catch(err => {
+                                        showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
+                                            : field.replace("_", " ")}.`, "danger");
+                                        newSpan.textContent = currentValue;
+                                        input.focus();
+                                    });
+                            }
+                        } else {
+                            fetch('/ttuser/edit/client', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(updatedClient)
                             })
-                            .then(() => {
-                                // Update UI on success
-                                const newSpan = document.createElement('span');
-                                newSpan.className = 'field-value';
-                                newSpan.dataset.field = field;
-                                newSpan.textContent = newValue;
+                                .then(res => {
+                                    if (!res.ok) throw new Error('Failed to update client');
+                                    return res.text();
+                                })
+                                .then(() => {
+                                    // Update UI on success
+                                    const newSpan = document.createElement('span');
+                                    newSpan.className = 'field-value';
+                                    newSpan.dataset.field = field;
+                                    newSpan.textContent = newValue;
 
-                                if (field === 'name') {
-                                    const label = p.querySelector('label');
-                                    if (label) label.remove();
-                                    document.querySelector('#username p').innerText = newValue.split(" ")[0];
-                                }
+                                    if (field === 'name') {
+                                        const label = p.querySelector('label');
+                                        if (label) label.remove();
+                                        if (document.body.id = "adminProfilePage") {
+                                            document.querySelector('#username p').innerText = newValue;
+                                        } else {
+                                            document.querySelector('#username p').innerText = newValue.split(" ")[0];
+                                        }
+                                    }
 
-                                button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
-                                button.title = 'Edit ' + field.replace(/_/g, ' ');
-                                cancelBtn.remove();
+                                    button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                                    button.title = 'Edit ' + field.replace(/_/g, ' ');
+                                    cancelBtn.remove();
 
-                                button.onclick = null;
-                                button.addEventListener('click', onEditClick);
-                                currentValue = newValue;
-                                // Update localStorage
-                                const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
-                                if (newValue.toLowerCase() == "not given") {
-                                    newValue = null;
-                                }
-                                loggedInUser[field] = newValue;
-                                localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+                                    button.onclick = null;
+                                    button.addEventListener('click', onEditClick);
+                                    currentValue = newValue;
+                                    // Update localStorage
+                                    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+                                    if (newValue.toLowerCase() == "not given") {
+                                        newValue = null;
+                                    }
+                                    loggedInUser[field] = newValue;
+                                    localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
-                                showMessage("Editing successful",
-                                    `Your ${(field === "nic" || field === "nif") ? field.toUpperCase() :
-                                        field === "dob" ? "date of birth" : field.replace("_", " ")} was successfully edited.`,
-                                    "success");;
-                            })
-                            .catch(err => {
-                                showMessage("Editing error", `An unknown error happened while editing your ${(field === "nic" || field === "nif") ? field.toUpperCase() :
-                                    field === "dob" ? "date of birth" : field.replace("_", " ")}.`, "danger");
-                                newSpan.textContent = currentValue;
-                                input.focus();
-                            });
+                                    showMessage("Editing successful",
+                                        `Your ${(field === "nic" || field === "nif") ? field.toUpperCase() :
+                                            field === "dob" ? "date of birth" : field.replace("_", " ")} was successfully edited.`,
+                                        "success");
+                                })
+                                .catch(err => {
+                                    showMessage("Editing error", `An unknown error happened while editing your ${(field === "nic" || field === "nif") ? field.toUpperCase() :
+                                        field === "dob" ? "date of birth" : field.replace("_", " ")}.`, "danger");
+                                    newSpan.textContent = currentValue;
+                                    input.focus();
+                                });
+                        }
                     })
                     .catch(err => {
                         return;
@@ -426,37 +872,38 @@ window.addEventListener('userAuthenticated', (event) => {
         });
     });
 
-    // Fetch and render orders
-    fetch(`/tttransaction/sales/${encodeURIComponent(loggedInUser.email)}`)
-        .then(res => res.json())
-        .then(orders => {
-            const ordersList = document.getElementById('orders-list');
+    if (document.body.id != "adminProfilePage") {
+        // Fetch and render orders
+        fetch(`/tttransaction/sales/${encodeURIComponent(loggedInUser.email)}`)
+            .then(res => res.json())
+            .then(orders => {
+                const ordersList = document.getElementById('orders-list');
 
-            if (!orders.length) {
-                ordersList.innerHTML = '<p class="text-center text-muted">You have no orders yet.</p>';
-                return;
-            }
-
-            const grouped = {};
-
-            for (const o of orders) {
-                if (!grouped[o.order_number]) {
-                    grouped[o.order_number] = { ...o, products: [] };
+                if (!orders.length) {
+                    ordersList.innerHTML = '<p class="text-center text-muted">You have no orders yet.</p>';
+                    return;
                 }
-                grouped[o.order_number].products.push(o.product_name);
-            }
 
-            Object.values(grouped).forEach(order => {
-                const orderItem = document.createElement('div');
-                orderItem.className = 'list-group-item p-3';
+                const grouped = {};
 
-                const orderDate = new Date(order.date_inserted).toLocaleString();
-                const orderDateObj = new Date(order.date_inserted)
-                const daysSinceOrder = (Date.now() - orderDateObj.getTime()) / (1000 * 60 * 60 * 24);
-                const shipping = `${order.shipping_address || 'N/A'}, 
+                for (const o of orders) {
+                    if (!grouped[o.order_number]) {
+                        grouped[o.order_number] = { ...o, products: [] };
+                    }
+                    grouped[o.order_number].products.push(o.product_name);
+                }
+
+                Object.values(grouped).forEach(order => {
+                    const orderItem = document.createElement('div');
+                    orderItem.className = 'list-group-item p-3';
+
+                    const orderDate = new Date(order.date_inserted).toLocaleString();
+                    const orderDateObj = new Date(order.date_inserted)
+                    const daysSinceOrder = (Date.now() - orderDateObj.getTime()) / (1000 * 60 * 60 * 24);
+                    const shipping = `${order.shipping_address || 'N/A'}, 
             ${order.shipping_postal_code || ''} ${order.shipping_city || ''} ${order.shipping_country || ''}`.trim();
 
-                orderItem.innerHTML = `
+                    orderItem.innerHTML = `
                 <div class="d-flex w-100 justify-content-between">
                     <h6 class="mb-1"><i class="fa fa-receipt me-1"></i> Order code: <code>${order.order_number}</code></h6>
                     <small>${orderDate}</small>
@@ -486,79 +933,79 @@ window.addEventListener('userAuthenticated', (event) => {
                 <details class="border rounded mt-3 py-2 px-3">
                     <summary class="btn-link text-decoration-none">See more options</summary>
                     ${order.sale_status.toLowerCase() === 'to be shipped' ?
-                            `<button class="btn btn-danger mt-2 mb-1">Cancel Order</button>` :
-                            (order.sale_status.toLowerCase() === 'shipped'
-                                || order.sale_status.toLowerCase() === 'delivered' ?
-                                `<button class="btn btn-danger mt-2 mb-1">Return Item</button>` : ``)}
+                                `<button class="btn btn-danger mt-2 mb-1">Cancel Order</button>` :
+                                (order.sale_status.toLowerCase() === 'shipped'
+                                    || order.sale_status.toLowerCase() === 'delivered' ?
+                                    `<button class="btn btn-danger mt-2 mb-1">Return Item</button>` : ``)}
                 </details>` : ''}
                 `;
-                ordersList.prepend(orderItem);
-                orderItem.querySelector('.btn-danger')?.addEventListener("click", async (e) => {
-                    const btn = e.currentTarget;
-                    const isCancel = btn.textContent.includes("Cancel");
-                    const title = isCancel ? "Cancel Order" : "Return Item";
-                    const confirmText = isCancel ? "Yes, Cancel" : "Yes, Return";
+                    ordersList.prepend(orderItem);
+                    orderItem.querySelector('.btn-danger')?.addEventListener("click", async (e) => {
+                        const btn = e.currentTarget;
+                        const isCancel = btn.textContent.includes("Cancel");
+                        const title = isCancel ? "Cancel Order" : "Return Item";
+                        const confirmText = isCancel ? "Yes, Cancel" : "Yes, Return";
 
-                    const action = isCancel
-                        ? `Your order has not been shipped yet, so it will be cancelled immediately and we will process your refund.`
-                        : `Your order has already been ${order.sale_status.toLowerCase()}.<br><br>Please contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a> with your order number and the reason why you would like to return this order.`;
+                        const action = isCancel
+                            ? `Your order has not been shipped yet, so it will be cancelled immediately and we will process your refund.`
+                            : `Your order has already been ${order.sale_status.toLowerCase()}.<br><br>Please contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a> with your order number and the reason why you would like to return this order.`;
 
-                    if (isCancel) {
-                        const confirmed = await showDialog(
-                            title,
-                            `${action}<br><br>Are you sure you want to ${isCancel ? "cancel this order" : "proceed"}?`,
-                            confirmText,
-                            "No"
-                        );
+                        if (isCancel) {
+                            const confirmed = await showDialog(
+                                title,
+                                `${action}<br><br>Are you sure you want to ${isCancel ? "cancel this order" : "proceed"}?`,
+                                confirmText,
+                                "No"
+                            );
 
-                        if (!confirmed) return;
+                            if (!confirmed) return;
 
-                        const response = await fetch(`/tttransaction/sales/updateStatus/${order.id}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ newStatus: 'Cancelled' })
-                        });
+                            const response = await fetch(`/tttransaction/sales/updateStatus/${order.id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ newStatus: 'Cancelled' })
+                            });
 
-                        if (!response.ok) {
-                            showMessage("Order Cancellation Failure", `Your order <code>${order.order_number}</code> could not be cancelled.<br><br>Please contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a>.`, "danger");
+                            if (!response.ok) {
+                                showMessage("Order Cancellation Failure", `Your order <code>${order.order_number}</code> could not be cancelled.<br><br>Please contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a>.`, "danger");
+                            } else {
+                                await showMessage("Order Cancelled",
+                                    `Your order <code>${order.order_number}</code> has been cancelled and a refund will be processed.<br><br>Contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a> if you have any questions or issues.`,
+                                    "dark").then(() =>
+                                        location.reload()
+                                    );
+                            }
                         } else {
-                            await showMessage("Order Cancelled",
-                                `Your order <code>${order.order_number}</code> has been cancelled and a refund will be processed.<br><br>Contact us at <a href="mailto:support@techthrift.com">support@techthrift.com</a> if you have any questions or issues.`,
-                                "dark").then(() =>
-                                    location.reload()
-                                );
+                            await showMessage("Return Item", action, "dark");
                         }
-                    } else {
-                        await showMessage("Return Item", action, "dark");
-                    }
+                    });
+
                 });
-
+            })
+            .catch(err => {
+                console.error('Failed to load orders:', err);
             });
-        })
-        .catch(err => {
-            console.error('Failed to load orders:', err);
-        });
 
-    // Fetch and render repair orders
-    fetch(`/tttransaction/repairs/${encodeURIComponent(loggedInUser.email)}`)
-        .then(res => res.json())
-        .then(repairOrders => {
-            const repairOrdersList = document.getElementById('repair-orders-list');
+        // Fetch and render repair orders
+        fetch(`/tttransaction/repairs/${encodeURIComponent(loggedInUser.email)}`)
+            .then(res => res.json())
+            .then(repairOrders => {
+                const repairOrdersList = document.getElementById('repair-orders-list');
 
-            if (!repairOrders.length) {
-                repairOrdersList.innerHTML = '<p class="text-center text-muted">You have no repair orders yet.</p>';
-                return;
-            }
+                if (!repairOrders.length) {
+                    repairOrdersList.innerHTML = '<p class="text-center text-muted">You have no repair orders yet.</p>';
+                    return;
+                }
 
-            repairOrders.forEach(repair => {
-                const repairItem = document.createElement('div');
-                repairItem.className = 'list-group-item p-3';
+                repairOrders.forEach(repair => {
+                    const repairItem = document.createElement('div');
+                    repairItem.className = 'list-group-item p-3';
 
-                const repairDate = new Date(repair.date_inserted).toLocaleString();
+                    const repairDate = new Date(repair.date_inserted).toLocaleString();
 
-                repairItem.innerHTML = `
+                    repairItem.innerHTML = `
                 <div class="d-flex w-100 justify-content-between">
                 <h6 class="mb-1"><i class="fa fa-wrench me-1"></i> Repair Order Code: <code>${repair.repair_order_number}</code></h6>
                 <small>${repairDate}</small>
@@ -579,11 +1026,12 @@ window.addEventListener('userAuthenticated', (event) => {
                 </div>
             `;
 
-                repairOrdersList.prepend(repairItem);
+                    repairOrdersList.prepend(repairItem);
+                });
+            })
+            .catch(err => {
+                console.error('Failed to load repair orders:', err);
             });
-        })
-        .catch(err => {
-            console.error('Failed to load repair orders:', err);
-        });
+    }
 
 });

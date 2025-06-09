@@ -117,7 +117,8 @@ body.loaded::before {
   font-weight: bold;
 }
 
-span, p {
+span,
+p {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -508,11 +509,21 @@ button[data-bs-target="#filtersCollapse"] {
     filter: invert(1) hue-rotate(180deg);
     background-color: black;
   }
-  body:not(.light-mode):not(.dark-mode) select {
+  body:not(.light-mode):not(.dark-mode) select:not(select:disabled) {
     color: white;
     border-color: rgb(22, 26, 30);
   }
-  body:not(.light-mode):not(.dark-mode) select:hover {
+  body:not(.light-mode):not(.dark-mode) select:disabled {
+    background-color: black;
+    color: rgb(122, 126, 130);
+    border-color: rgb(22, 26, 30);
+  }
+  body:not(.light-mode):not(.dark-mode) input:disabled {
+    background-color: white;
+    color: rgb(122, 126, 130);
+    border-color: rgb(222, 226, 230);
+  }
+  body:not(.light-mode):not(.dark-mode) select:hover:not(select:disabled:hover) {
     background-color: rgb(37, 37, 37);
   }
   body:not(.light-mode):not(.dark-mode) video,
@@ -523,7 +534,9 @@ button[data-bs-target="#filtersCollapse"] {
   body:not(.light-mode):not(.dark-mode) #cart-section .card,
   body:not(.light-mode):not(.dark-mode) #paypal,
   body:not(.light-mode):not(.dark-mode) #productCarousel *,
-  body:not(.light-mode):not(.dark-mode) #store-map, body:not(.light-mode):not(.dark-mode) #username img, body:not(.light-mode):not(.dark-mode) input[type=file] {
+  body:not(.light-mode):not(.dark-mode) #store-map,
+  body:not(.light-mode):not(.dark-mode) #username img,
+  body:not(.light-mode):not(.dark-mode) input[type=file] {
     filter: invert(1) hue-rotate(180deg);
   }
   body:not(.light-mode):not(.dark-mode) .card img:not(#cart-section .card img, #featuredContainer .card img),
@@ -559,11 +572,21 @@ body.dark-mode select {
   filter: invert(1) hue-rotate(180deg);
   background-color: black;
 }
-body.dark-mode select {
+body.dark-mode select:not(select:disabled) {
   color: white;
   border-color: rgb(22, 26, 30);
 }
-body.dark-mode select:hover {
+body.dark-mode select:disabled {
+  background-color: black;
+  color: rgb(122, 126, 130);
+  border-color: rgb(22, 26, 30);
+}
+body.dark-mode input:disabled {
+  background-color: white;
+  color: rgb(122, 126, 130);
+  border-color: rgb(222, 226, 230);
+}
+body.dark-mode select:hover:not(select:disabled:hover) {
   background-color: rgb(37, 37, 37);
 }
 body.dark-mode video,
@@ -574,7 +597,9 @@ body.dark-mode #payment-section .card,
 body.dark-mode #cart-section .card,
 body.dark-mode #paypal,
 body.dark-mode #productCarousel *,
-body.dark-mode #store-map, body.dark-mode #username img, body.dark-mode input[type=file] {
+body.dark-mode #store-map,
+body.dark-mode #username img,
+body.dark-mode input[type=file] {
   filter: invert(1) hue-rotate(180deg);
 }
 body.dark-mode .card img:not(#cart-section .card img, #featuredContainer .card img),

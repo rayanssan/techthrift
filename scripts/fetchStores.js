@@ -308,7 +308,7 @@ if (document.body.id == "storesListPage") {
             } else {
                 // Display location not found message if geodata is empty
                 document.getElementById('store-map').innerHTML = `
-                    <p class="text-muted text-center" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <p class="text-secondary text-center" style="display: flex; justify-content: center; align-items: center; height: 100%;">
                     Location on the map not available for this store.
                     </p>
                 `;

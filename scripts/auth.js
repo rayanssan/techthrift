@@ -139,6 +139,9 @@ function adjustUI(loggedInUser) {
         Array.from(document.querySelectorAll("footer li a")).
           find(e => e.textContent.trim() === t))));
 
+    if (window.location.pathname.startsWith('/admin')) {
+      location.href = "/partners";
+    }
 
     const event = new CustomEvent('userAuthenticated', { detail: null });
     window.dispatchEvent(event);
@@ -150,7 +153,23 @@ function adjustUI(loggedInUser) {
         Array.from(document.querySelectorAll("footer li a")).
           find(e => e.textContent.trim() === t))));
 
-    if (usernameBtn) {
+    if (loggedInUser.user_type == "store") {
+      if (!window.location.pathname.startsWith('/adminProfile')) {
+        location.href = "/adminProfile";
+      }
+    }
+
+    if (loggedInUser.user_type !== "client") {
+      if (!window.location.pathname.startsWith('/admin')) {
+        location.href = "/adminDashboard";
+      }
+    } else {
+      if (window.location.pathname.startsWith('/admin')) {
+        location.href = "/partners";
+      }
+    }
+
+    if (usernameBtn && document.body.id != "partnersPage") {
 
       usernameBtn.innerHTML = `
       <img alt="User Picture" src=${loggedInUser.picture} alt="User Picture" 
@@ -158,18 +177,6 @@ function adjustUI(loggedInUser) {
       <p class="d-none d-md-block mb-0">${loggedInUser.user_type == "client" ? loggedInUser.nickname.split(" ")[0] : loggedInUser.nickname
         }</p>`;
       usernameBtn.href = "";
-
-      if (loggedInUser.user_type == "store") {
-        if (!window.location.pathname.startsWith('/adminProfile')) {
-          location.href = "/adminProfile";
-        }
-      }
-
-      if (loggedInUser.user_type !== "client") {
-        if (!window.location.pathname.startsWith('/admin')) {
-          location.href = "/adminDashboard";
-        }
-      }
 
       usernameBtn.addEventListener("click", (event) => {
         event.preventDefault();
