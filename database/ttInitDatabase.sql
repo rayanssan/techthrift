@@ -514,6 +514,10 @@ INSERT INTO saleProducts (id, price) VALUES
 (39, 1599.99),
 (40, 349.99);
 
-INSERT INTO repairProducts (id, problems, client_nif) VALUES (2, 'Broken screen', 220349535);
+INSERT INTO repairParts (name, price, store) VALUES
+("iPhone 16 Pro Screen", "300", 112233445),
+("MacBook Pro M1 Screen", "400", 112233445),
+("iMac Replacement Stand", "100", 112233445);
+
 INSERT INTO donationProducts (id, charity_nipc, donor_nif) VALUES (2, 556677889, 220349535);
 INSERT INTO shipping (current_shipping_cost) VALUES (4.99);

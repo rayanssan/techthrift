@@ -101,7 +101,8 @@
             <div id="ordersTableContainer">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Orders</h2>
-                    <button class="btn btn-success" onclick="showOrderForm()"><i class="fas fa-plus me-1"></i>Add Order</button>
+                    <button class="btn btn-success" onclick="showOrderForm()"><i class="fas fa-plus me-1"></i>Add
+                        Order</button>
                 </div>
                 <div class="table-responsive" id="order-table">
                     <div class="rounded-3 border overflow-auto">
@@ -109,8 +110,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Order ID</th>
+                                    <th>Client</th>
                                     <th>Type</th>
-                                    <th>Details</th>
+                                    <th>Items</th>
+                                    <th>Price</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -141,39 +144,66 @@
                     <!-- Repair Form Fields -->
                     <div id="repairFields">
                         <div class="mb-3">
-                            <label for="repair-product-name" class="form-label">Selected Product</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="repair-product-name"
-                                       placeholder="No product selected" readonly>
-                                <input type="hidden" id="repair-product-id" name="repair-product-id" required>
-                                <button type="button" class="btn btn-outline-secondary"
-                                        onclick="openProductForm('repair')">Select Product</button>
+                            <label for="repair-client" class="form-label">Client Email</label>
+                            <input class="form-control" id="repair-client" name="repair-client"
+                                placeholder="Enter Client Email" />
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="non-registered-checkbox" />
+                                <label class="form-check-label" for="non-registered-checkbox">
+                                    Non-registered client
+                                </label>
                             </div>
                         </div>
-                    
+
                         <div class="mb-3">
-                            <label for="repair-description" class="form-label">Issue Description</label>
-                            <textarea class="form-control" id="repair-description" name="repair-description"
-                                      placeholder="Enter Issue Description" required></textarea>
+                            <label for="repair-product-name" class="form-label">Product</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="repair-product-name"
+                                    placeholder="No product selected" readonly>
+                                <input type="hidden" id="repair-product-id" name="repair-product-id" required>
+                                <button type="button" class="btn btn-outline-secondary"
+                                    onclick="openProductForm('repair')">Add Product</button>
+                            </div>
                         </div>
-                    
+
+                        <!-- Select Repair Parts -->
                         <div class="mb-3">
-                            <label for="repair-price" class="form-label">Repair Price</label>
-                            <input type="number" class="form-control" id="repair-price" name="repair-price"
-                                   placeholder="Enter Repair Price" required>
+                            <label class="form-label">Repair Parts</label>
+                            <button type="button" class="btn btn-outline-primary w-100"
+                                onclick="openRepairPartsSelector()">Select Parts</button>
+                            <ul id="selected-repair-parts" class="list-group mt-2"></ul>
+                        </div>
+
+                        <!-- Profit Margin -->
+                        <div class="mb-3">
+                            <label for="profit-percentage" class="form-label">Profit Margin</label>
+                            <select class="form-select" id="profit-percentage">
+                                <option value="0">No Profit</option>
+                                <option value="0.10">10%</option>
+                                <option value="0.20">20%</option>
+                                <option value="0.30">30%</option>
+                                <option value="0.50">50%</option>
+                                <option value="0.70">70%</option>
+                                <option value="1">100%</option>
+                            </select>
+                        </div>
+
+                        <!-- Final Price Display -->
+                        <div class="mb-3">
+                            <label class="form-label">Final Repair Price</label>
+                            <input type="text" class="form-control" id="repair-price">
                         </div>
                     </div>
-                    
-                    <!-- You can include sellFields if needed -->
+
                     <div id="sellFields" style="display: none;">
                         <div class="mb-3">
-                            <label for="sell-product-name" class="form-label">Selected Product</label>
+                            <label for="sell-product-name" class="form-label">Product</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="sell-product-name"
                                     placeholder="No product selected" readonly>
                                 <input type="hidden" id="sell-product-id" required>
                                 <button type="button" class="btn btn-outline-secondary"
-                                    onclick="openProductForm('sell')">Select Product</button>
+                                    onclick="openProductForm('sell')">Add Product</button>
                             </div>
                         </div>
 
@@ -188,8 +218,6 @@
                                 placeholder="Enter Price" required>
                         </div>
                     </div>
-
-
 
                     <button type="submit" class="btn btn-primary w-100" onclick="disableHiddenFields()">Submit
                         Order</button>
@@ -226,14 +254,6 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="product-availability" class="form-label">Availability</label>
-                                <select id="product-availability" name="availability" class="form-select" required>
-                                    <option value="1">Available</option>
-                                    <option value="0">Not Available</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
                                 <label for="product-category" class="form-label">Category</label>
                                 <select id="product-category" name="category" class="form-select" required>
                                     <option>Smartphones</option>
@@ -252,24 +272,25 @@
 
                             <div class="mb-3">
                                 <label for="product-brand" class="form-label">Brand</label>
-                                <select id="product-brand" name="brand" class="form-select" required>
-                                    <option disabled selected>Select a brand</option>
-                                    <option>Apple</option>
-                                    <option>Samsung</option>
-                                    <option>Dell</option>
-                                    <option>HP</option>
-                                    <option>Microsoft</option>
-                                    <option>Xiaomi</option>
-                                    <option>LG</option>
-                                    <option>Sony</option>
-                                    <option>Fitbit</option>
-                                    <option>Nintendo</option>
-                                    <option>Razer</option>
-                                    <option>Bose</option>
-                                    <option>GoPro</option>
-                                    <option>Canon</option>
-                                    <option>Other</option>
-                                </select>
+                                <input list="brands" id="product-brand" name="brand" class="form-control"
+                                    placeholder="Select or type a brand" required />
+                                <datalist id="brands">
+                                    <option value="Apple"></option>
+                                    <option value="Samsung"></option>
+                                    <option value="Dell"></option>
+                                    <option value="HP"></option>
+                                    <option value="Microsoft"></option>
+                                    <option value="Xiaomi"></option>
+                                    <option value="LG"></option>
+                                    <option value="Sony"></option>
+                                    <option value="Fitbit"></option>
+                                    <option value="Nintendo"></option>
+                                    <option value="Razer"></option>
+                                    <option value="Bose"></option>
+                                    <option value="GoPro"></option>
+                                    <option value="Canon"></option>
+                                    <option value="Other"></option>
+                                </datalist>
                             </div>
 
                             <div class="mb-3" id="form-group-model_code">
@@ -356,12 +377,12 @@
         </div>
 
         <!-- Scripts -->
-
+        <script src="../scripts/ui.js"></script>
         <script>
 
             let lastAddedProduct = null;
             document.addEventListener('DOMContentLoaded', function () {
-                fetchRepairOrders();
+                fetchOrders();
             });
 
             function showAddProductForm() {
@@ -543,14 +564,13 @@
                     }
                 });
 
-                if (typeof data.availability === 'string') {
-                    data.availability = data.availability === 'true';
-                }
+                data.availability = '0';
+
                 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
                 if (loggedInUser && loggedInUser.store) {
                     data.store_nipc = loggedInUser.store;
                 } else {
-                    alert('No store information found for the logged-in user.');
+                    showMessage('Error', 'No store information found for the logged-in user.', "danger");
                     return;
                 }
 
@@ -564,7 +584,7 @@
 
                     if (!res.ok) {
                         const err = await res.json();
-                        alert('Failed to add product: ' + err.error);
+                        showMessage('Error', 'Failed to add product: ' + err.error, "danger");
                         return;
                     }
 
@@ -579,7 +599,10 @@
 
                     // Collect image filenames and orders
                     const rows = document.querySelectorAll('#image-input-group > div');
-                    const images = [];
+                    const formData = new FormData();
+
+                    formData.append('product_id', addedProduct.id);
+
                     const orders = [];
 
                     rows.forEach((row, idx) => {
@@ -587,33 +610,27 @@
                         const orderInput = row.querySelector('input[type="number"]');
 
                         if (fileInput.files[0]) {
-                            const fileName = fileInput.files[0].name;
+                            const file = fileInput.files[0];
+                            formData.append('images', file); // append each file
                             const imageOrder = orderInput.value || (idx + 1);
-                            images.push(fileName);
                             orders.push(parseInt(imageOrder));
                         }
                     });
 
-                    // Submit image metadata
-                    if (images.length > 0) {
-                        const imgRes = await fetch('/tt/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                product_id: addedProduct.id,
-                                images,
-                                orders
-                            })
-                        });
+                    formData.append('orders', JSON.stringify(orders)); // send orders array as string
 
-                        if (!imgRes.ok) {
-                            const err = await imgRes.json();
-                            alert('Images upload failed: ' + err.error);
-                            return;
-                        }
+                    const imgRes = await fetch('/tt/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!imgRes.ok) {
+                        const err = await imgRes.json();
+                        showMessage("Error", err.error, "danger");
+                        return;
                     }
 
-                    alert('Product added successfully!');
+                    showMessage('Product added', 'Product added successfully!', "success");
 
                     // Hide add product form and show product table + filters etc
                     document.getElementById('add-product-form').classList.add('d-none');
@@ -626,7 +643,7 @@
 
                 } catch (err) {
                     console.error(err);
-                    alert('Error submitting product.');
+                    showMessage('Error', 'Error submitting product.', "danger");
                 }
             });
 
@@ -708,7 +725,7 @@
             function showOrdersTable() {
                 document.getElementById('ordersTableContainer').style.display = 'block';
                 document.getElementById('orderFormContainer').style.display = 'none';
-                fetchRepairOrders();
+                fetchOrders();
 
             }
 
@@ -732,39 +749,57 @@
                 }
             }
 
-            async function fetchRepairOrders() {
+            async function fetchOrders() {
                 const repairList = document.getElementById('order-list');
                 repairList.innerHTML = '';
 
+                let totalOrdersCount = 0;
+
                 // Fetch Repair Orders
                 try {
-                    const resRepairs = await fetch('/tt/repair');
+                    const resRepairs = await fetch('/tttransaction/repairs');
                     const repairs = await resRepairs.json();
+
+                    async function fetchProductName(productId) {
+                        if (!productId) return 'N/A';
+                        try {
+                            const res = await fetch(`/tt/product/${productId}`);
+                            if (!res.ok) throw new Error('Product fetch failed');
+                            const product = await res.json();
+                            return `${product.name} - <i>${product.description}</i>` || 'Unnamed Product';
+                        } catch (e) {
+                            console.error(`Error fetching product ${productId}:`, e);
+                            return 'Unknown Product';
+                        }
+                    }
 
                     console.log('Fetched repair orders:', repairs);
 
-                    repairs.forEach(repair => {
+                    repairs.forEach(async repair => {
                         const row = document.createElement('tr');
 
-                        const orderIdCell = document.createElement('td');
-                        orderIdCell.textContent = repair.id || 'N/A';
-                        row.appendChild(orderIdCell);
+                        // Use client or non_registered_client
+                        const clientEmail = repair.client || repair.non_registered_client || 'N/A';
 
-                        const typeCell = document.createElement('td');
-                        typeCell.textContent = 'Repair Order';
-                        row.appendChild(typeCell);
+                        // Format transaction_value as float with 2 decimals
+                        const price = repair.transaction_value ? parseFloat(repair.transaction_value).toFixed(2) : '0.00';
 
-                        const detailsCell = document.createElement('td');
-                        detailsCell.textContent = repair.name || 'Unnamed Product';
-                        row.appendChild(detailsCell);
+                        // Repair status with fallback
+                        const statusDisplay = repair.repair_status || 'Unknown';
 
-                        const statusCell = document.createElement('td');
-                        statusCell.textContent = repair.status ? 'Completed' : 'Pending';
-                        row.appendChild(statusCell);
+                        let productName = await fetchProductName(repair.product_id);
+                        row.innerHTML = `
+                        <td>${repair.transaction_id || 'N/A'}</td>
+                        <td>${clientEmail}</td>
+                        <td>Repair Order</td>
+                        <td>${productName}</td>
+                        <td>€${price}</td>
+                        <td>${statusDisplay}</td>
+                        `;
 
                         repairList.appendChild(row);
+                        totalOrdersCount++;
                     });
-
                 } catch (err) {
                     console.error('Error fetching repair orders:', err);
                 }
@@ -779,28 +814,56 @@
                     sales.forEach(sale => {
                         const row = document.createElement('tr');
 
-                        const orderIdCell = document.createElement('td');
-                        orderIdCell.textContent = sale.id || 'N/A';
-                        row.appendChild(orderIdCell);
-
-                        const typeCell = document.createElement('td');
-                        typeCell.textContent = 'Sales Order';
-                        row.appendChild(typeCell);
-
-                        const detailsCell = document.createElement('td');
                         const productNames = sale.sold_products.map(p => p.name).join(', ');
-                        detailsCell.textContent = productNames || 'No products';
-                        row.appendChild(detailsCell);
+                        const totalPrice = sale.transaction_value || '0.00';
 
-                        const statusCell = document.createElement('td');
-                        statusCell.textContent = sale.sale_status || 'N/A';
-                        row.appendChild(statusCell);
+                        row.innerHTML = `
+                        <td>${sale.id || 'N/A'}</td>
+                        <td>${sale.client || 'N/A'}</td>
+                        <td>Sales Order</td>
+                        <td>${productNames || 'No products'}</td>
+                        <td>€${totalPrice}</td>
+                        <td>${sale.sale_status || 'N/A'}</td>
+                    `;
 
                         repairList.appendChild(row);
+                        totalOrdersCount++;
                     });
-
                 } catch (err) {
                     console.error('Error fetching sales orders:', err);
+                }
+
+                // Fetch Purchase Transactions
+                try {
+                    const resPurchases = await fetch('/tttransaction/purchases/');
+                    const purchases = await resPurchases.json();
+
+                    console.log('Fetched purchase transactions:', purchases);
+
+                    purchases.forEach(purchase => {
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `
+                        <td>${purchase.id || 'N/A'}</td>
+                        <td>${purchase.client || 'N/A'}</td>
+                        <td>Purchase</td>
+                        <td>${purchase.item_name || 'Unknown Item'}</td>
+                        <td>€${isNaN(Number(purchase.transaction_value)) ? '0.00' : Number(purchase.transaction_value).toFixed(2)}</td>
+                        <td>Completed</td>
+                    `;
+
+                        repairList.appendChild(row);
+                        totalOrdersCount++;
+                    });
+                } catch (err) {
+                    console.error('Error fetching purchase transactions:', err);
+                }
+
+                // Show message if no orders found
+                if (totalOrdersCount === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="6" class="text-center">No orders found.</td>`;
+                    repairList.appendChild(row);
                 }
             }
 
@@ -822,37 +885,61 @@
 
                 if (isRepair) {
                     const productId = document.getElementById("repair-product-id").value.trim();
-                    const description = document.getElementById("repair-description").value.trim();
-                    const price = document.getElementById("repair-price").value;
+                    const price = parseFloat(document.getElementById("repair-price").value.replace(/[€\s]/g, ''));
+                    const client = document.getElementById("repair-client").value;
+                    const nonRegisteredChecked = document.getElementById("non-registered-checkbox").checked;
 
-                    if (!productId || !description || !price) {
-                        alert("Please fill in all required fields.");
+                    if (!nonRegisteredChecked) {
+                        try {
+                            const res = await fetch(`/ttuser?email=${encodeURIComponent(client)}`);
+                            if (res.status === 204) {
+                                showMessage('Error', "Client is not registered", "danger");
+                                return; // stop submission
+                            }
+                            if (!res.ok) {
+                                showMessage('Error', "Error checking client registration", "danger");
+                                return;
+                            }
+                        } catch (error) {
+                            console.error("Error fetching client:", error);
+                            showMessage('Error', "Error checking client registration", "danger");
+                            return;
+                        }
+                    }
+
+                    if (!productId || !price) {
+                        showMessage('Warning', "Please fill in all required fields.", "warning");
                         return;
                     }
 
                     try {
-                        const response = await fetch('/tt/repair/add', {
+                        const response = await fetch('/tttransaction/repairs/add', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                id: productId,
-                                description: description,
-                                price: parseFloat(price)
+                                transaction_value: price,
+                                product_id: productId,
+                                store: JSON.parse(localStorage.getItem("loggedInUser")).store,
+                                employee: JSON.parse(localStorage.getItem("loggedInUser")).id,
+                                repair_status: 'In repairs',
+                                network: null,
+                                ...(document.getElementById("non-registered-checkbox").checked
+                                    ? { non_registered_client: client }
+                                    : { client: client })
                             }),
                         });
 
                         const result = await response.json();
 
                         if (response.ok) {
-                            alert("Repair order added successfully.");
+                            showMessage('Repair order added', "Repair order added successfully.", "success");
                             showOrdersTable();
-                            fetchRepairOrders();
                         } else {
-                            alert("Error: " + (result.error || response.statusText));
+                            showMessage('Error', (result.error || response.statusText), "danger");
                         }
                     } catch (err) {
                         console.error("Submit failed:", err);
-                        alert("An unexpected error occurred.");
+                        showMessage('Error', "An unexpected error occurred.", "danger");
                     }
 
                 } else if (isSell) {
@@ -861,41 +948,33 @@
                     const price = parseFloat(document.getElementById("purchase-price").value.trim());
 
                     if (!productId || !clientEmail || isNaN(price)) {
-                        alert("Please fill in all required buy-back fields.");
+                        showMessage('Warning', "Please fill in all required fields.", "warning");
                         return;
                     }
 
                     try {
-                        const response = await fetch('/tttransaction/sales/add', {
+                        const response = await fetch('/tttransaction/purchases/add', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                client: clientEmail,
+                                non_registered_client: clientEmail,
                                 transaction_value: price,
-                                is_online: false,
-                                order_number: null,
-                                employee: null,
-                                store: null,
-                                network: null,
-                                shipping_address: null,
-                                shipping_postal_code: null,
-                                shipping_city: null,
-                                shipping_country: null,
-                                products: [productId]
+                                purchasing_store: JSON.parse(localStorage.getItem("loggedInUser")).store,
+                                item_purchased: parseInt(productId)
                             })
                         });
 
                         const result = await response.json();
 
                         if (response.ok) {
-                            alert("Buy-back transaction recorded successfully.");
+                            showMessage('Transaction Recorded', "Product purchase transaction recorded successfully.", "success");
                             showOrdersTable();
                         } else {
-                            alert("Error: " + (result.error || response.statusText));
+                            showMessage('Error', (result.error || response.statusText), "danger");
                         }
                     } catch (err) {
                         console.error("Buy-back submit failed:", err);
-                        alert("An unexpected error occurred.");
+                        showMessage('Error', "An unexpected error occurred.", "danger");
                     }
                 }
 
@@ -911,11 +990,85 @@
 
             // Initial load
             window.onload = function () {
-                fetchRepairOrders();
+                fetchOrders();
             };
+
+            let selectedRepairParts = [];
+
+            function openRepairPartsSelector() {
+                // Example modal selector logic (replace with your real part list)
+                fetch('/tt/repairParts')
+                    .then(res => res.json())
+                    .then(parts => {
+                        const modal = document.createElement('div');
+                        modal.className = 'modal fade';
+                        modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Select Repair Parts</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="repair-parts-selector-form">
+                                ${parts.map(part => `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="${part.id}" data-price="${part.price}" id="part-${part.id}">
+                                        <label class="form-check-label" for="part-${part.id}">${part.name} (€${parseFloat(part.price).toFixed(2)})</label>
+                                    </div>
+                                `).join('')}
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="confirm-parts-btn">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+                        document.body.appendChild(modal);
+
+                        const bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+
+                        modal.querySelector('#confirm-parts-btn').addEventListener('click', () => {
+                            selectedRepairParts = [];
+                            const selected = modal.querySelectorAll('input[type="checkbox"]:checked');
+
+                            const list = document.getElementById('selected-repair-parts');
+                            list.innerHTML = '';
+
+                            selected.forEach(cb => {
+                                const id = cb.value;
+                                const name = cb.nextElementSibling.innerText;
+                                const price = parseFloat(cb.dataset.price);
+                                selectedRepairParts.push({ id, name, price });
+
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                li.textContent = name;
+                                li.innerHTML += `<span class="badge bg-secondary">€${price.toFixed(2)}</span>`;
+                                list.appendChild(li);
+                            });
+
+                            bsModal.hide();
+                            modal.remove();
+                            updateCalculatedPrice();
+                        });
+                    });
+            }
+
+            document.getElementById('profit-percentage').addEventListener('change', updateCalculatedPrice);
+
+            function updateCalculatedPrice() {
+                const baseTotal = selectedRepairParts.reduce((sum, part) => sum + part.price, 0);
+                const profit = parseFloat(document.getElementById('profit-percentage').value || 0);
+                const finalPrice = baseTotal + (baseTotal * profit);
+
+                document.getElementById('repair-price').value = `€${finalPrice.toFixed(2)}`;
+            }
+
         </script>
         <script src="../scripts/auth.js"></script>
-        <script src="../scripts/ui.js"></script>
         <!-- Scripts -->
 </body>
 

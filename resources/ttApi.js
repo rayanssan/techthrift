@@ -384,7 +384,7 @@ router.post('/tt/upload', verifyRequestOrigin, upload.array('images'), (req, res
     }
 
     if (!product_id || !req.files || req.files.length === 0) {
-        return res.status(400).json({ error: 'Missing product_id or images.' });
+        return res.status(400).json({ error: 'Missing images.' });
     }
 
     const insertValues = req.files.map((file, i) => [
@@ -520,161 +520,72 @@ router.put('/tt/sale/remove/:id', verifyRequestOrigin, (req, res) => {
     });
 });
 
-// Get all products up for repair
-router.get('/tt/repair', verifyRequestOrigin,
-    (req, res) => {
-        const { name, category, condition, brand, color,
-            processor, storage, os, year, store } = req.query;
+// Get all repair parts in the system
+router.get('/tt/repairParts', verifyRequestOrigin, (req, res) => {
+    const query = 'SELECT * FROM repairParts';
 
-        let query = `
-        SELECT p.*, rp.*, c.name AS store 
-        FROM repairProducts rp 
-        INNER JOIN products p ON p.id = rp.id
-        INNER JOIN entities e ON p.store_nipc = e.nipc
-        INNER JOIN clients c ON e.id = c.id
-        WHERE 1=1
-    `;
-        const params = [];
-
-        if (name) {
-            query += ' AND p.name LIKE ?';
-            params.push(`%${name}%`);
-        }
-        if (category) {
-            query += ' AND p.category LIKE ?';
-            params.push(`%${category}%`);
-        }
-        if (condition) {
-            query += ' AND p.product_condition = ?';
-            params.push(condition);
-        }
-        if (brand) {
-            query += ' AND p.brand LIKE ?';
-            params.push(`%${brand}%`);
-        }
-        if (color) {
-            query += ' AND p.color LIKE ?';
-            params.push(`%${color}%`);
-        }
-        if (processor) {
-            query += ' AND p.processor LIKE ?';
-            params.push(`%${processor}%`);
-        }
-        if (storage) {
-            query += ' AND p.storage LIKE ?';
-            params.push(`%${storage}%`);
-        }
-        if (os) {
-            query += ' AND p.os LIKE ?';
-            params.push(`%${os}%`);
-        }
-        if (year) {
-            query += ' AND p.year = ?';
-            params.push(year);
-        }
-        if (store) {
-            query += ' AND c.name LIKE ?';
-            params.push(`%${store}%`);
-        }
-
-        // Execute the query
-        db.query(query, params, (err, rows) => {
-            if (err) {
-                // Fallback to replica DB
-                dbR.query(query, params, (err, rows) => {
-                    if (err) {
-                        return res.status(500).json({ error: err.message });
-                    }
-                    res.json(rows);
-                });
-            } else {
-                res.json(rows);
-            }
-        });
-    });
-
-// Get details about a product up for repair
-router.get('/tt/repair/:id', verifyRequestOrigin,
-    (req, res) => {
-        db.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?',
-            [req.params.id], (err, rows) => {
-                if (err) {
-                    // Fallback to replica DB
-                    dbR.query('SELECT * FROM repairProducts rp INNER JOIN products p ON p.id = rp.id WHERE rp.id = ?',
-                        [req.params.id], (err, rows) => {
-                            if (err) {
-                                return res.status(500).json({ error: err.message });
-                            }
-                            if (rows.length === 0) {
-                                return res.status(404).send('Product not found');
-                            } else {
-                                res.json(rows[0]);
-                            }
-                        });
-                } else if (rows.length === 0) {
-                    return res.status(404).send('Product not found');
+    db.query(query, (err, results) => {
+        if (err) {
+            // Fallback to replica
+            dbR.query(query, (errR, resultsR) => {
+                if (errR) {
+                    return res.status(500).json({ error: errR.message });
                 } else {
-                    res.json(rows[0]);
+                    return res.json(resultsR);
                 }
             });
+        } else {
+            return res.json(results);
+        }
     });
+});
 
-// Set product up for repair
-router.post('/tt/repair/add', verifyRequestOrigin, (req, res) => {
-    const newRepairProduct = req.body;
-    // Check if product exists in the products table
-    db.query('SELECT * FROM products WHERE id = ?', [newRepairProduct.id], (err, row) => {
+// Add repair part
+router.post('/tt/repairPart/add', verifyRequestOrigin, (req, res) => {
+    const { name, price, store } = req.body;
+
+    if (!name || price == null || store == null) {
+        return res.status(400).json({ error: 'Name, price, and store are required' });
+    }
+
+    const query = 'INSERT INTO repairParts (name, price, store) VALUES (?, ?, ?)';
+    const values = [name, price, store];
+
+    db.query(query, values, (err, result) => {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-        // Insert the product into the repairProducts table
-        db.execute('INSERT INTO repairProducts (id) VALUES (?)', [newRepairProduct.id], function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
-            // Update replica
-            dbR.query('SELECT * FROM products WHERE id = ?', [newRepairProduct.id], (err, row) => {
-                if (err) {
-                    console.error('DB operation failed:', err.message);
-                }
-                // Insert the product into the repairProducts table
-                dbR.execute('INSERT INTO repairProducts (id) VALUES (?)', [newRepairProduct.id], function (err) {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
 
-                    res.status(201).json({ message: 'Product set for repair', product: row });
-                });
-            });
+        // Update replica
+        dbR.query(query, values, (errR, result) => {
+            if (errR) {
+                console.error('DB operation failed:', errR.message);
+            }
+            return res.status(201).json({ message: 'Repair part added successfully', id: result.insertId });
         });
     });
 });
 
-// Remove product from repairs
-router.put('/tt/repair/remove/:id', verifyRequestOrigin, (req, res) => {
-    // Check if the product exists in the repairProducts table
-    db.query('SELECT * FROM repairProducts WHERE id = ?', [req.params.id], (err, row) => {
+// Delete repair part
+router.put('/tt/repairParts/remove/:id', verifyRequestOrigin, (req, res) => {
+    const { id } = req.params;
+    const query = 'DELETE FROM repairParts WHERE id = ?';
+
+    db.query(query, [id], (err, result) => {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-        // Remove the product from the repairProducts table
-        db.execute('DELETE FROM repairProducts WHERE id = ?', [req.params.id], function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Repair part not found' });
+        }
+
+        // Update replica
+        dbR.query(query, [id], (errR) => {
+            if (errR) {
+                console.error('DB operation failed:', errR.message);
             }
-            // Update replica
-            dbR.query('SELECT * FROM repairProducts WHERE id = ?', [req.params.id], (err, row) => {
-                if (err) {
-                    console.error('DB operation failed:', err.message);
-                }
-                // Remove the product from the repairProducts table
-                dbR.execute('DELETE FROM repairProducts WHERE id = ?', [req.params.id], function (err) {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
-                    res.status(200).json({ message: 'Product removed from repair', productId: req.params.id });
-                });
-            });
+            return res.json({ message: 'Repair part deleted successfully' });
         });
     });
 });
@@ -791,8 +702,8 @@ router.get('/tt/donation/:id', verifyRequestOrigin,
 router.post('/tt/donation/add', verifyRequestOrigin, (req, res) => {
     const { id, donor, charity } = req.body;
 
-    if (!id || !donor || !charity) {
-        return res.status(400).send({ error: 'Missing id, donor or charity' });
+    if (!id || !charity) {
+        return res.status(400).send({ error: 'No product given' });
     }
 
     // Check if product exists
@@ -1589,7 +1500,6 @@ router.get('/ttuser/charity', verifyRequestOrigin, (req, res) => {
     });
 });
 
-
 // Add new charity
 router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
     const newCharity = req.body;
@@ -2163,6 +2073,87 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
     });
 });
 
+// Get purchase transactions
+router.get('/tttransaction/purchases/', verifyRequestOrigin, (req, res) => {
+    const query = `
+        SELECT 
+            t.id,
+            p.purchasing_store,
+            p.non_registered_client AS client,
+            t.transaction_value,
+            t.date_inserted,
+            p.item_purchased,
+            prod.name AS item_name
+        FROM transactions t
+        INNER JOIN purchases p ON p.transaction_id = t.id
+        INNER JOIN products prod ON prod.id = p.item_purchased
+        ORDER BY t.date_inserted DESC
+    `;
+
+    db.query(query, (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, (errR, rowsR) => {
+                if (errR) {
+                    return res.status(500).send({ error: err.message });
+                }
+                return res.json(rowsR);
+            });
+        } else {
+            return res.json(rows);
+        }
+    });
+});
+
+// Add purchase transaction
+router.post('/tttransaction/purchases/add', verifyRequestOrigin, (req, res) => {
+    const { purchasing_store, transaction_value, non_registered_client, item_purchased } = req.body;
+
+    // Validate input
+    if (!transaction_value || transaction_value <= 0 || !non_registered_client || !purchasing_store || !item_purchased) {
+        return res.status(400).json({ error: 'All required fields (store, value, client, item) must be provided.' });
+    }
+
+    const insertTransactionQuery = `
+        INSERT INTO transactions (transaction_value)
+        VALUES (?)
+    `;
+    const transactionValues = [transaction_value];
+
+    db.query(insertTransactionQuery, transactionValues, (err, result) => {
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
+
+        const transactionId = result.insertId;
+
+        const insertPurchaseQuery = `
+            INSERT INTO purchases (transaction_id, non_registered_client, purchasing_store, item_purchased)
+            VALUES (?, ?, ?, ?)
+        `;
+        const purchaseValues = [transactionId, non_registered_client, purchasing_store, item_purchased];
+
+        db.query(insertPurchaseQuery, purchaseValues, (err2) => {
+            if (err2) {
+                console.error('DB operation failed:', err.message);
+            }
+
+            // Update Replica
+            dbR.query(insertTransactionQuery, transactionValues, (errR1, resultR) => {
+                if (errR1) console.error('DB operation failed:', err.message);
+                else {
+                    const transactionIdR = resultR.insertId;
+                    dbR.query(insertPurchaseQuery, [transactionIdR, non_registered_client, purchasing_store, item_purchased], (errR2) => {
+                        if (errR2) console.error('DB operation failed:', err.message);
+                    });
+                }
+            });
+
+            return res.status(201).json({ message: 'Purchase transaction added successfully', id: transactionId });
+        });
+    });
+});
+
 // Add sale transaction
 router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
     let { client, transaction_value, is_online, order_number,
@@ -2382,6 +2373,84 @@ router.get('/tttransaction/repairs', verifyRequestOrigin, (req, res) => {
     });
 });
 
+// Add repair transactions
+router.post('/tttransaction/repairs/add', verifyRequestOrigin, (req, res) => {
+    const {
+        client,
+        non_registered_client,
+        transaction_value,
+        product_id,
+        store,
+        employee,
+        repair_status = 'In repairs',
+        network
+    } = req.body;
+
+    // Require at least one client type
+    if ((!client && !non_registered_client) ||
+        !transaction_value || transaction_value <= 0 ||
+        !product_id || !store || !employee) {
+        return res.status(400).json({ error: 'Required fields missing or invalid.' });
+    }
+
+    // Insert into transactions
+    const insertTransactionQuery = `
+    INSERT INTO transactions (client, transaction_value)
+    VALUES (?, ?)
+`;
+    const transactionValues = [client || null, transaction_value];
+
+    db.query(insertTransactionQuery, transactionValues, (err, result) => {
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
+
+        const transactionId = result.insertId;
+
+        const insertRepairQuery = `
+            INSERT INTO repairs (
+                transaction_id, product_id, store, employee,
+                ${non_registered_client ? 'non_registered_client,' : ''}
+                repair_status, network
+            ) VALUES (
+                ?, ?, ?, ?,
+                ${non_registered_client ? '?,' : ''}
+                ?, ?
+            )
+        `;
+
+        const repairValues = non_registered_client
+            ? [transactionId, product_id, store, employee, non_registered_client, repair_status, network]
+            : [transactionId, product_id, store, employee, repair_status, network];
+
+        db.query(insertRepairQuery, repairValues, (err2) => {
+            if (err2) {
+                console.error('DB operation failed:', err2.message);
+            }
+
+            // Now update replica DB
+            dbR.query(insertTransactionQuery, transactionValues, (errR, resultR) => {
+                if (errR) {
+                    console.error('DB operation failed:', errR.message);
+                } else {
+                    const replicaTransactionId = resultR.insertId;
+
+                    dbR.query(insertRepairQuery, repairValues.map(v => v === transactionId ? replicaTransactionId : v), (errR2) => {
+                        if (errR2) {
+                            console.error('DB operation failed:', errR2.message);
+                        }
+                    });
+                }
+
+                return res.status(201).json({
+                    message: 'Repair transaction added successfully',
+                    id: transactionId
+                });
+            });
+        });
+    });
+});
+
 // Get repair transactions from a client
 router.get('/tttransaction/repairs/:email', verifyRequestOrigin, (req, res) => {
     const query = `SELECT * FROM transactions t 
@@ -2391,25 +2460,6 @@ router.get('/tttransaction/repairs/:email', verifyRequestOrigin, (req, res) => {
         if (err) {
             // Fallback to replica DB
             dbR.query(query, [req.params.email], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                res.json(rows);
-            });
-        } else {
-            res.json(rows);
-        }
-    });
-});
-
-// Get donation transactions
-router.get('/tttransaction/donations', verifyRequestOrigin, (req, res) => {
-    const query = `SELECT * FROM transactions t 
-    INNER JOIN donations ON d.transaction_id = t.id`
-    db.query(query, [], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query(query, [], (err, rows) => {
                 if (err) {
                     return res.status(500).send({ error: err.message });
                 }

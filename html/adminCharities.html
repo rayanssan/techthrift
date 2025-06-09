@@ -216,7 +216,7 @@
           toggleProjectForm(); // Hide the form
           await loadCharityProjects(); // Reload the project table
         } catch (err) {
-          alert('Failed to create project: ' + err.message);
+          showMessage("Error", "Failed to create project " + err.message, "danger");
         }
       });
 
@@ -228,7 +228,7 @@
       function deleteSelectedProjects() {
         const selectedIds = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => cb.value);
         if (selectedIds.length === 0) {
-          alert("No projects selected.");
+          showMessage("Warning", "No projects selected.", "warning");
           return;
         }
 
@@ -323,7 +323,7 @@
           <td>${p.name}</td>
           <td>${p.brand}</td>
           <td>${p.product_condition}</td>
-          <td>${p.year}</td>
+          <td>${p.year || "N/A"}</td>
           <td>${p.charity}</td>
           <td>${p.store}</td>
         `;

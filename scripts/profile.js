@@ -1088,7 +1088,11 @@ window.addEventListener('userAuthenticated', async (event) => {
                     return;
                 }
 
-                repairOrders.forEach(repair => {
+                repairOrders.forEach(async repair => {
+
+                    const res = await fetch(`/tt/product/${repair.product_id}`);
+                    if (!res.ok) throw new Error('Product fetch failed');
+                    const product = await res.json();
                     const repairItem = document.createElement('div');
                     repairItem.className = 'list-group-item p-3';
 
@@ -1096,23 +1100,12 @@ window.addEventListener('userAuthenticated', async (event) => {
 
                     repairItem.innerHTML = `
                 <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1"><i class="fa fa-wrench me-1"></i> Repair Order Code: <code>${repair.repair_order_number}</code></h6>
+                <h6 class="mb-1"><i class="fa fa-wrench me-1"></i> Repair Order Code: <code>${repair.transaction_id}</code></h6>
                 <small>${repairDate}</small>
                 </div>
-                <h4 class="mb-1 mt-1">Status: <strong>${repair.status || 'Unknown'}</strong></h4>
-                <h6 class="mb-1">Device: ${repair.device_name || 'N/A'}</h6>
-                <h6 class="mb-1">Description: ${repair.description || 'No description provided.'}</h6>
-                <br>
-                <div class="d-flex flex-wrap gap-3">
-                ${repair.repair_items?.map(item => `
-                    <div class="card" style="max-width: 210px;">
-                    <div class="card-body p-2">
-                        <p class="card-text small mb-0">${item.name}</p>
-                        <p class="card-text text-muted small mb-0">${item.status || ''}</p>
-                    </div>
-                    </div>
-                `).join('') || ''}
-                </div>
+                <h4 class="mb-1 mt-1">Status: <strong>${repair.repair_status || 'Unknown'}</strong></h4>
+                <h6 class="mb-1">Device: ${product.name || 'N/A'}</h6>
+                <h6 class="mb-1">Description: ${product.description || 'No description provided.'}</h6>
             `;
 
                     repairOrdersList.prepend(repairItem);

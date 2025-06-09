@@ -206,9 +206,6 @@
                 </div>
             </div>
 
-
-
-
             <div id="add-product-form" class="d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Add New Product</h2>
@@ -361,6 +358,38 @@
 
             </div>
 
+            <!-- Repair parts table -->
+            <div class="mb-4" id="repairPartsTableContainer">
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Repair Parts</h2>
+                    <div>
+                        <button id="delete-selected-btn" class="btn btn-danger" disabled>
+                            <i class="fas fa-trash-alt me-1"></i> Delete Selected</button>
+                        <button id="add-repair-form-btn" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i> Add Repair Part</button>
+                    </div>
+                </div>
+                <div class="table-responsive" id="repair-parts-table">
+                    <div class="rounded-3 border overflow-auto">
+                        <table class="table table-borderless table-striped table-hover rounded-3">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><input type="checkbox" id="select-all-repair-parts"></th>
+                                    <th>Part ID</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="repair-parts-list" class="animate-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <nav id="repair-parts-pagination" class="mt-3">
+                    <ul class="pagination justify-content-center"></ul>
+                </nav>
+            </div>
+
         </div>
 
     </div>
@@ -395,7 +424,15 @@
                 const status = row.querySelector('td:last-child')?.innerText.trim();
 
                 // Disable "Set For Sale" if status is Sold, else enable
-                setForSaleBtn.disabled = (status === 'Sold');
+                setForSaleBtn.disabled = (status === 'Sold' || status === "Up for Sale");
+                if (setForSaleBtn.disabled) {
+                    for (const node of setForSaleBtn.childNodes) {
+                        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
+                            node.textContent = " Already Up for Sale";
+                            break;
+                        }
+                    }
+                }
                 // Disable "Delete Selected" if status is Sold, else enable
                 deleteProductBtn.disabled = (status === 'Sold');
                 // Disable "Sell Selected" if status is Sold, else enable
@@ -425,6 +462,12 @@
                         break;
                     }
                 }
+                for (const node of setForSaleBtn.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
+                        node.textContent = " Set for Sale";
+                        break;
+                    }
+                }
             } else {
                 setForSaleBtn.disabled = true;
                 deleteProductBtn.disabled = true;
@@ -432,6 +475,12 @@
                 for (const node of registerSaleBtn.childNodes) {
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
                         node.textContent = " Register Sale";
+                        break;
+                    }
+                }
+                for (const node of setForSaleBtn.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
+                        node.textContent = " Set for Sale";
                         break;
                     }
                 }
@@ -506,7 +555,7 @@
 
                 if (!res.ok) throw new Error((await res.json()).error || 'Unknown error');
 
-                alert('Product set for sale!');
+                showMessage('Product Set for Sale', 'Product set for sale successfully!', "success");
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('set-sale-modal')).hide();
 
                 // * Send Notifications to Interested Clients *
@@ -581,7 +630,7 @@
 
                 fetchAdminProducts(filters);
             } catch (err) {
-                alert('Error: ' + err.message);
+                showMessage('Error', 'Error: ' + err.message, "danger");
             }
         });
 
@@ -724,7 +773,7 @@
                     const product = await res.json();
 
                     if (!product.availability) {
-                        alert(`Product ${product.id} is not available for sale.`);
+                        await showMessage('Error', `Product ${product.id} is not available for sale.`, "danger");
                         continue;
                     }
 
@@ -734,7 +783,7 @@
                     appendProductToList(product);
                 } catch (err) {
                     console.error(err);
-                    alert(err.message || 'Failed to fetch product.');
+                    showMessage('Error', (err.message || 'Failed to fetch product.'), "danger");
                 }
             }
 
@@ -805,11 +854,11 @@
 
                     const product = await res.json();
                     if (productList.some(p => p.id === product.id)) {
-                        alert("Product already added.");
+                        showMessage('Warning', "Product already added.", "warning");
                         return;
                     }
                     if (!product.availability) {
-                        alert("This product is not available for sale.");
+                        showMessage('Error', "This product is not available for sale.", "danger");
                         return;
                     }
 
@@ -820,7 +869,7 @@
 
                     input.value = '';
                 } catch (err) {
-                    alert(err.message || 'Failed to fetch product');
+                    showMessage('Error', (err.message || 'Failed to fetch product'), "danger");
                 }
             });
         }
@@ -1047,7 +1096,207 @@
         // Call on page load
         fetchAdminProducts(filters);
 
+        let repairParts = [];
+        let repairPartsCurrentPage = 1;
+        const repairPartsPerPage = 20;
 
+        async function populateRepairPartsTable() {
+            try {
+                const response = await fetch('/tt/repairParts');
+                if (!response.ok) throw new Error('Failed to fetch repair parts');
+
+                repairParts = await response.json();
+                repairPartsCurrentPage = 1; // Reset to first page
+                renderRepairPartsPage(repairPartsCurrentPage);
+                renderPaginationControls();
+            } catch (err) {
+                console.error('Error loading repair parts:', err);
+                const tbody = document.getElementById('repair-parts-list');
+                tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Error loading repair parts</td></tr>`;
+            }
+        }
+
+        function renderRepairPartsPage(page) {
+            const tbody = document.getElementById('repair-parts-list');
+            tbody.innerHTML = '';
+
+            const start = (page - 1) * repairPartsPerPage;
+            const end = start + repairPartsPerPage;
+            const pageItems = repairParts.slice(start, end);
+
+            if (pageItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No repair parts found.</td></tr>`;
+                return;
+            }
+
+            pageItems.forEach(part => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td><input type="checkbox" class="repair-part-checkbox" data-id="${part.id}"></td>
+            <td>${part.id}</td>
+            <td>${part.name}</td>
+            <td>€${parseFloat(part.price).toFixed(2)}</td>
+        `;
+                tbody.appendChild(row);
+            });
+
+            updateDeleteButtonState();
+        }
+
+        function renderPaginationControls() {
+            const totalPages = Math.ceil(repairParts.length / repairPartsPerPage);
+            const pagination = document.querySelector('#repair-parts-pagination ul');
+            pagination.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === repairPartsCurrentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    repairPartsCurrentPage = i;
+                    renderRepairPartsPage(repairPartsCurrentPage);
+                    renderPaginationControls();
+                });
+                pagination.appendChild(li);
+            }
+        }
+
+
+        function updateDeleteButtonState() {
+            const checkboxes = document.querySelectorAll('.repair-part-checkbox');
+            const deleteBtn = document.getElementById('delete-selected-btn');
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+                    deleteBtn.disabled = !anyChecked;
+                });
+            });
+
+            const selectAll = document.getElementById('select-all-repair-parts');
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    deleteBtn.disabled = !this.checked;
+                });
+            }
+        }
+
+        populateRepairPartsTable();
+
+        document.getElementById('delete-selected-btn').addEventListener('click', async () => {
+            const selectedCheckboxes = document.querySelectorAll('.repair-part-checkbox:checked');
+            if (selectedCheckboxes.length === 0) return;
+
+            if (!confirm('Are you sure you want to delete the selected repair parts?')) return;
+
+            const idsToDelete = Array.from(selectedCheckboxes).map(cb => cb.dataset.id);
+
+            try {
+                for (const id of idsToDelete) {
+                    const response = await fetch(`/tt/repairParts/remove/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.warn(`Failed to delete part with ID ${id}`);
+                    }
+                }
+
+                // Refresh table after deletion
+                await populateRepairPartsTable();
+            } catch (error) {
+                console.error('Error deleting parts:', error);
+                showMessage('Error', 'An error occurred while deleting repair parts.', "danger");
+            }
+        });
+
+
+        function toggleRepairPartsForm() {
+            const existingModal = document.getElementById('repairPartsModal');
+            if (existingModal) existingModal.remove();
+
+            const modalHTML = `
+        <div class="modal fade" id="repairPartsModal" tabindex="-1" aria-labelledby="repairPartsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="repairPartsModalLabel">Add Repair Part</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="repairPartsForm">
+                            <div class="mb-3">
+                                <label for="partName" class="form-label">Part Name</label>
+                                <input type="text" class="form-control" id="partName" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="partPrice" class="form-label">Price (€)</label>
+                                <input type="number" step="0.01" class="form-control" id="partPrice" name="price" required>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Add Part</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            document.getElementById('repairPartsForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const name = document.getElementById('partName').value.trim();
+                const price = parseFloat(document.getElementById('partPrice').value);
+                const store = JSON.parse(localStorage.getItem('loggedInUser')).store;
+
+                try {
+                    const response = await fetch('/tt/repairPart/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, price, store })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        showMessage('Error', `Error: ${error.error}`, "danger");
+                        return;
+                    }
+
+                    // Close modal after success
+                    const modalEl = document.getElementById('repairPartsModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modalInstance.hide();
+
+                    modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove());
+
+                    // Reset form
+                    this.reset();
+
+                    // Refresh repair parts table
+                    populateRepairPartsTable();
+
+                } catch (err) {
+                    console.error('Error adding repair part:', err);
+                    showMessage('Error', 'Failed to add repair part. Please try again.', "danger");
+                }
+            });
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('repairPartsModal'));
+            modal.show();
+        }
+
+        document.getElementById("add-repair-form-btn").addEventListener("click", () => {
+            toggleRepairPartsForm();
+        });
 
         function showAddProductForm() {
             document.getElementById('product-table').classList.add('d-none');
@@ -1116,11 +1365,12 @@
             try {
                 const res = await fetch(`/tt/product/${id}`);
                 if (!res.ok) {
-                    return alert('Failed to fetch product details.');
+                    showMessage('Error', 'Failed to fetch product details.', "danger");
+                    return;
                 }
 
                 const product = await res.json();
-                console.log('Fetched product data:', product); // 👈 Add this line for debugging
+                console.log('Fetched product data:', product);
 
                 showAddProductForm(); // Reuse the product form layout
 
@@ -1292,7 +1542,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('Error fetching product details.');
+                showMessage('Error', 'Error fetching product details.', "danger");
             }
         }
 
@@ -1365,7 +1615,7 @@
                 if (loggedInUser && loggedInUser.store) {
                     data.store_nipc = loggedInUser.store;
                 } else {
-                    alert('No store information found for the logged-in user.');
+                    showMessage('Error', 'No store information found for the logged-in user.', "danger");
                     return;
                 }
                 try {
@@ -1378,7 +1628,7 @@
 
                     if (!res.ok) {
                         const err = await res.json();
-                        alert('Failed to add product: ' + err.error);
+                        showMessage('Error', 'Failed to add product: ' + err.error, "danger");
                         return;
                     }
 
@@ -1413,11 +1663,11 @@
 
                     if (!imgRes.ok) {
                         const err = await imgRes.json();
-                        alert('Images upload failed: ' + err.error);
+                        showMessage('Error', 'Error: ' + err.error, "danger");
                         return;
                     }
 
-                    alert('Product added successfully!');
+                    showMessage('Product added', "Product added successfully!", "success");
                     document.getElementById('add-product-form').classList.add('d-none');
                     document.getElementById('product-table').classList.remove('d-none');
                     document.getElementById('filters-row').classList.remove('d-none');
@@ -1428,7 +1678,7 @@
 
                 } catch (err) {
                     console.error(err);
-                    alert('Error submitting product.');
+                    showMessage('Error', 'Error submitting product.', "danger");
                 }
             });
 
@@ -1437,7 +1687,7 @@
 
 
                 if (selectedProducts.length === 0) {
-                    alert('No products selected.');
+                    showMessage('Warning', 'No products selected.', "warning");
                     return;
                 }
 
@@ -1468,7 +1718,7 @@
                     }
                 }
 
-                alert('Selected products deleted.');
+                showMessage('Success', 'Selected products deleted.', "success");
 
                 if (typeof fetchAdminProducts === 'function') {
                     console.log('Refreshing product list...');
