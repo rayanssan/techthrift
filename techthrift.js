@@ -355,8 +355,8 @@ app.get('/report', (req, res) => {
     });
 
     
-    db.query('SELECT st.id, st.name, COUNT(s.transaction_id) AS total_sales FROM clients st ' +
-        'LEFT JOIN sales s ON s.store = st.nipc GROUP BY st.nipc, st.name ORDER BY st.name;', [], (err, rows) => {
+    db.query('SELECT st.id, st.name, COUNT(s.transaction_id) AS total_sales FROM clients st JOIN entities e ON st.id = e.id ' +
+        'LEFT JOIN sales s ON s.store = e.nipc GROUP BY st.id, st.name ORDER BY st.name;', [], (err, rows) => {
 
         drawSectionHeader('Sales by Store');
 
@@ -368,8 +368,8 @@ app.get('/report', (req, res) => {
     });
 
 
-    db.query('SELECT s.id, s.name, COUNT(r.transaction_id) AS total_repairs FROM clients s ' +
-        'LEFT JOIN repairs r ON r.store = s.nipc GROUP BY s.nipc, s.name ORDER BY s.name;', [], async (err, rows) => {
+    db.query('SELECT s.id, s.name, COUNT(r.transaction_id) AS total_repairs FROM clients s JOIN entities e ON s.id = e.id ' +
+        'LEFT JOIN repairs r ON r.store = e.nipc GROUP BY s.id, s.name ORDER BY s.name;', [], async (err, rows) => {
 
          drawSectionHeader('Repairs by Store');
 
