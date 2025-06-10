@@ -4,10 +4,12 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
+import { db, dbR } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
 import https from 'https';
 import fs from 'fs';
 import pkg from 'pdfkit';
+import 'pdfkit-table';
 const PDFDocument = pkg;
 const app = express();
 const PORT = 3000;
@@ -271,19 +273,112 @@ app.get('/report', (req, res) => {
       .fillColor('#000080')
       .font('Helvetica-Bold')
       .fontSize(30)
-      .text('TechThirft', { align: 'center' });
+      .text('TechThrift', { align: 'center' }
+
+    );
 
     doc
       .moveDown(0.5)
       .fillColor('black')
       .font('Helvetica')
       .fontSize(20)
-      .text('Usage Reports', { align: 'center' });
+      .text('Usage Reports', { align: 'center' }
 
-    doc
-      .moveDown(1)
-      .fontSize(14)
-      .text('There are no reports at the moment.', { align: 'center' });
+    );
 
-    doc.end();
+
+    const drawSectionHeader = (title) => {
+        doc
+        .fontSize(18)
+        .fillColor('#000080')
+        .text(title)
+        .moveDown(0.5);
+    };
+
+    // Helper to display key metrics
+    const drawMetric = (label, value) => {
+        doc
+        .fontSize(14)
+        .fillColor('black')
+        .text(`${label}: `, { continued: true })
+        .fillColor('#333')
+        .text(`${value}`, { continued: false })
+        .moveDown(0.5);
+    };
+
+    
+
+    db.query('SELECT COUNT(*) AS unsoldItems FROM products p WHERE p.availability = TRUE', [], (err, rows) => {
+      
+        drawSectionHeader('Inventory Summary');
+        drawMetric('Unsold Items', rows[0].unsoldItems);
+    });
+    
+
+
+    db.query('SELECT COUNT(*) AS charityCount FROM charityProjects c WHERE c.endDate IS NOT NULL', [], (err, rows) => {
+      
+        drawSectionHeader('Charity Projects');
+        drawMetric('Number of Charity Projects', rows[0].charityCount);
+
+        
+    });
+   
+   
+
+    db.query('SELECT COUNT(*) AS interestCount FROM interests i', [], (err, rows) => {
+        
+        drawSectionHeader('User Interests');
+        drawMetric('Total number of Interests', rows[0].interestCount);
+
+    });
+
+
+    db.query('SELECT COUNT(*) AS wishlistCount FROM wishlist w', [], (err, rows) => {
+      
+        drawMetric('Total Wishlisted items', rows[0].wishlistCount);
+    });
+
+
+    db.query('SELECT COUNT(*) AS clientCount FROM clients c WHERE c.dob IS NOT NULL ' +
+        'AND c.id NOT IN (SELECT e.id FROM employees e)', [], (err, rows) => {
+      
+        drawSectionHeader('People Summary');
+        drawMetric('Number of registered Clients', rows[0].clientCount);
+
+    });
+    
+    db.query('SELECT COUNT(*) AS employeeCount FROM employees e', [], (err, rows) => {
+      
+        drawMetric('Number of Employees', rows[0].employeeCount);
+
+    });
+
+    
+    db.query('SELECT st.id, st.name, COUNT(s.transaction_id) AS total_sales FROM clients st ' +
+        'LEFT JOIN sales s ON s.store = st.nipc GROUP BY st.nipc, st.name ORDER BY st.name;', [], (err, rows) => {
+
+        drawSectionHeader('Sales by Store');
+
+        rows.forEach(row => {
+            drawMetric(row.name, `${row.total_sales} sales`);
+        });
+
+        
+    });
+
+
+    db.query('SELECT s.id, s.name, COUNT(r.transaction_id) AS total_repairs FROM clients s ' +
+        'LEFT JOIN repairs r ON r.store = s.nipc GROUP BY s.nipc, s.name ORDER BY s.name;', [], async (err, rows) => {
+
+         drawSectionHeader('Repairs by Store');
+
+        rows.forEach(row => {
+            drawMetric(row.name, `${row.total_repairs} repairs`);
+        });
+
+        // Finalize the PDF and end the stream
+        doc.end();
+  
+    });
 });
