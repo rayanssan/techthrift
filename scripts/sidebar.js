@@ -4,15 +4,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const navLinks = document.querySelectorAll(".sidebar .nav-link");
 
     // Get current page path without parameters (e.g., "/adminUsers")
-    const currentPath = window.location.pathname.split('/').pop();
-
-    // Restore active link from local storage
-    const savedActive = localStorage.getItem("activeNavLink");
+    const currentPath = window.location.pathname.replace("/", "");
 
     navLinks.forEach(link => {
-        const linkPath = link.getAttribute("href").split('/').pop();
-
-        if (linkPath === currentPath || linkPath === savedActive) {
+        const linkPath = link.getAttribute("href").replace("/", "");
+        if (linkPath === currentPath) {
             link.classList.add("active");
         } else {
             link.classList.remove("active");
@@ -24,9 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Add active class to clicked link
             this.classList.add("active");
-
-            // Save the active link
-            localStorage.setItem("activeNavLink", this.getAttribute("href").split('/').pop());
         });
     });
 });

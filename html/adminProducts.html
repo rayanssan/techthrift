@@ -36,8 +36,7 @@
             <div class="row align-items-center gap-3">
                 <!-- Left elements -->
                 <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
-                    <a id="header-brand" onclick="localStorage.setItem('activeNavLink', 'adminDashboard')"
-                        href="/adminDashboard" class="ms-1">
+                    <a id="header-brand" href="/adminDashboard" class="ms-1">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
                     </a>
                 </div>
@@ -436,7 +435,7 @@
                 // Disable "Delete Selected" if status is Sold, else enable
                 deleteProductBtn.disabled = (status === 'Sold');
                 // Disable "Sell Selected" if status is Sold, else enable
-                registerSaleBtn.disabled = (status === 'Sold');
+                registerSaleBtn.disabled = (status === 'Sold' || status === 'Not for Sale');
                 for (const node of registerSaleBtn.childNodes) {
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
                         node.textContent = " Sell Selected";
@@ -453,9 +452,14 @@
                     const status = row.querySelector('td:last-child')?.innerText.trim();
                     return status === 'Sold';
                 });
+                const anyNotUpForSale = Array.from(selectedCheckboxes).some(cb => {
+                    const row = cb.closest('tr');
+                    const status = row.querySelector('td:last-child')?.innerText.trim();
+                    return status === 'Not for Sale';
+                });
                 // Disable "Delete Selected" if any selected product is sold or no selection
                 deleteProductBtn.disabled = (selectedCheckboxes.length === 0 || anySold);
-                registerSaleBtn.disabled = (selectedCheckboxes.length === 0 || anySold);
+                registerSaleBtn.disabled = (selectedCheckboxes.length === 0 || anySold || anyNotUpForSale);
                 for (const node of registerSaleBtn.childNodes) {
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
                         node.textContent = " Sell Selected";
@@ -488,22 +492,21 @@
 
         }
 
-        productList1.addEventListener('change', () => {
-            const selected = Array.from(document.querySelectorAll('#product-list input[type="checkbox"]:checked'));
+        document.addEventListener('click', event => {
+            if (event.target.matches('#product-table input[type="checkbox"]')) {
+                const selected = Array.from(
+                    document.querySelectorAll('#product-table input[type="checkbox"]:checked')
+                );
 
-            disableEnableButtons();
+                disableEnableButtons();
 
-            if (selected.length === 1) {
-                const checkbox = selected[0];
-                // Get the closest row <tr> element for the checkbox
-                const row = checkbox.closest('tr');
-                if (row) {
-                    selectedProductId = row.getAttribute('data-product-id');
+                if (selected.length === 1) {
+                    const selectedCheckbox = selected[0];
+                    const row = selectedCheckbox.closest('tr');
+                    selectedProductId = row ? row.getAttribute('data-product-id') : null;
                 } else {
                     selectedProductId = null;
                 }
-            } else {
-                selectedProductId = null;
             }
         });
 
