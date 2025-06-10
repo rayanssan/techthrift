@@ -10,7 +10,7 @@
     }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     #search-form {
         display: none !important;
     }
@@ -18,7 +18,9 @@
     #search-form-mobile {
         display: flex !important;
     }
+}
 
+@media (max-width: 991px) {
     #username {
         p {
             display: none !important;
@@ -31,6 +33,7 @@
 }
 
 @media (max-width: 768px) {
+
     .main-banner {
         #main-banner-brand {
             display: none;

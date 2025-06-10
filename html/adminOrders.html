@@ -48,19 +48,27 @@
             <div class="row align-items-center gap-3">
                 <!-- Left elements -->
                 <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
-                    <a id="header-brand" onclick="localStorage.setItem('activeNavLink', 'adminDashboard')" href="/adminDashboard" class="ms-1">
+                    <a id="header-brand" onclick="localStorage.setItem('activeNavLink', 'adminDashboard')"
+                        href="/adminDashboard" class="ms-1">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
                     </a>
                 </div>
                 <!-- Left elements -->
             </div>
-            <a href="/authentication" id="username" class="border 
+            <div class="d-flex flex-wrap justify-content-center 
+                    align-items-center gap-1 ms-auto">
+                <a href="/authentication" id="username" class="border 
                 rounded py-1 px-3 nav-link d-flex h-auto
                 align-self-center
                 align-items-center btn btn-light">
-                <i class="fas fa-user-alt m-1 me-md-2"></i>
-                <p class="d-none d-md-block mb-0">···</p>
-            </a>
+                    <i class="fas fa-user-alt m-1 me-md-2"></i>
+                    <p class="d-none d-md-block mb-0">···</p>
+                </a>
+                <button id="toggle-mode"
+                    class="btn border rounded py-1 px-3 nav-link d-flex align-items-center btn btn-light">
+                    &nbsp;<i id="mode-icon" class="fas fa-moon"></i>&nbsp;
+                </button>
+            </div>
         </div>
     </header>
     <!-- Header -->
@@ -347,8 +355,8 @@
         </div>
 
         <!-- Scripts -->
-         
-        <script >
+
+        <script>
 
             let lastAddedProduct = null;
             document.addEventListener('DOMContentLoaded', function () {
@@ -683,7 +691,7 @@
                     });
                 }
             }
-            
+
 
             // Handle showing the Add Order form
             function showOrderForm() {
@@ -721,42 +729,42 @@
             }
 
             // Fetch and display repair orders in the table
-async function fetchRepairOrders() {
-    try {
-        const res = await fetch('/tt/repair');
-        const repairs = await res.json();
+            async function fetchRepairOrders() {
+                try {
+                    const res = await fetch('/tt/repair');
+                    const repairs = await res.json();
 
-        // Debug: log the full JSON response
-        console.log('Fetched repair orders:', repairs);
+                    // Debug: log the full JSON response
+                    console.log('Fetched repair orders:', repairs);
 
-        const repairList = document.getElementById('order-list');
-        repairList.innerHTML = '';
+                    const repairList = document.getElementById('order-list');
+                    repairList.innerHTML = '';
 
-        repairs.forEach(repair => {
-            const row = document.createElement('tr');
+                    repairs.forEach(repair => {
+                        const row = document.createElement('tr');
 
-            const orderIdCell = document.createElement('td');
-            orderIdCell.textContent = repair.id || 'N/A';
-            row.appendChild(orderIdCell);
+                        const orderIdCell = document.createElement('td');
+                        orderIdCell.textContent = repair.id || 'N/A';
+                        row.appendChild(orderIdCell);
 
-            const typeCell = document.createElement('td');
-            typeCell.textContent = 'Repair Order';
-            row.appendChild(typeCell);
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = 'Repair Order';
+                        row.appendChild(typeCell);
 
-            const detailsCell = document.createElement('td');
-            detailsCell.textContent = repair.name || 'Unnamed Product';
-            row.appendChild(detailsCell);
+                        const detailsCell = document.createElement('td');
+                        detailsCell.textContent = repair.name || 'Unnamed Product';
+                        row.appendChild(detailsCell);
 
-            const statusCell = document.createElement('td');
-            statusCell.textContent = repair.status ? 'Completed' : 'Pending';
-            row.appendChild(statusCell);
+                        const statusCell = document.createElement('td');
+                        statusCell.textContent = repair.status ? 'Completed' : 'Pending';
+                        row.appendChild(statusCell);
 
-            repairList.appendChild(row);
-        });
-    } catch (err) {
-        console.error('Error fetching repair orders:', err);
-    }
-}
+                        repairList.appendChild(row);
+                    });
+                } catch (err) {
+                    console.error('Error fetching repair orders:', err);
+                }
+            }
 
 
             // Handle form submission for repair orders
@@ -823,6 +831,7 @@ async function fetchRepairOrders() {
             };
         </script>
         <script src="../scripts/auth.js"></script>
+        <script src="../scripts/ui.js"></script>
         <!-- Scripts -->
 </body>
 
