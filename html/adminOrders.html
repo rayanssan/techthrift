@@ -20,6 +20,10 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/stylesheet.css">
     <link rel="stylesheet" href="../styles/adminstyles.css">
+    <!-- PayPal API -->
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=ARv_kY1bLs-hZ3qob8Ot8VCfdhnhu9obt9lnfDWHrfpFYfU6BMM1zVRyGrJQJwH0kTTqXebnGnMhsa8d&currency=EUR&locale=en_PT&components=buttons,applepay"></script>
+    <!-- PayPal API -->
     <style>
         .nav-tabs .nav-link {
             border: none;
@@ -48,7 +52,7 @@
             <div class="row align-items-center gap-3">
                 <!-- Left elements -->
                 <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
-                    <a id="header-brand"
+                    <a id="header-brand" onclick="localStorage.setItem('activeNavLink', 'adminDashboard')"
                         href="/adminDashboard" class="ms-1">
                         <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
                     </a>
@@ -75,11 +79,11 @@
 
     <div class="d-flex">
         <div class="sidebar p-3 bg-light vh-100" style="width: 250px;">
-            <h4 class="text-center">Control Panel</h4>
+            <h4 class="text-center">Admin Panel</h4>
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="adminDashboard"><i
-                            class="fas fa-tachometer-alt me-2"></i>Start</a>
+                            class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
@@ -101,8 +105,7 @@
             <div id="ordersTableContainer">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Orders</h2>
-                    <button class="btn btn-success" onclick="showOrderForm()"><i class="fas fa-plus me-1"></i>Add
-                        Order</button>
+                    <button class="btn btn-success" onclick="showOrderForm()">Add Order</button>
                 </div>
                 <div class="table-responsive" id="order-table">
                     <div class="rounded-3 border overflow-auto">
@@ -110,10 +113,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Order ID</th>
-                                    <th>Client</th>
                                     <th>Type</th>
-                                    <th>Items</th>
-                                    <th>Price</th>
+                                    <th>Details</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -128,7 +129,7 @@
             <div id="orderFormContainer" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Add Order</h2>
-                    <button class="btn btn-primary me-2" onclick="showOrdersTable()">Cancel</button>
+                    <button class="btn btn-light me-2" onclick="showOrdersTable()">Cancel</button>
                 </div>
                 <ul class="nav nav-tabs" id="orderTypeTabs">
                     <li class="nav-item">
@@ -144,66 +145,40 @@
                     <!-- Repair Form Fields -->
                     <div id="repairFields">
                         <div class="mb-3">
-                            <label for="repair-client" class="form-label">Client Email</label>
-                            <input class="form-control" id="repair-client" name="repair-client"
-                                placeholder="Enter Client Email" />
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" id="non-registered-checkbox" />
-                                <label class="form-check-label" for="non-registered-checkbox">
-                                    Non-registered client
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="repair-product-name" class="form-label">Product</label>
+                            <label for="repair-product-name" class="form-label">Selected Product</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="repair-product-name"
-                                    placeholder="No product selected" readonly>
+                                       placeholder="No product selected" readonly>
                                 <input type="hidden" id="repair-product-id" name="repair-product-id" required>
                                 <button type="button" class="btn btn-outline-secondary"
-                                    onclick="openProductForm('repair')">Add Product</button>
+                                        onclick="openProductForm('repair')">Select Product</button>
                             </div>
                         </div>
-
-                        <!-- Select Repair Parts -->
+                    
                         <div class="mb-3">
-                            <label class="form-label">Repair Parts</label>
-                            <button type="button" class="btn btn-outline-primary w-100"
-                                onclick="openRepairPartsSelector()">Select Parts</button>
-                            <ul id="selected-repair-parts" class="list-group mt-2"></ul>
+                            <label for="repair-description" class="form-label">Issue Description</label>
+                            <textarea class="form-control" id="repair-description" name="repair-description"
+                                      placeholder="Enter Issue Description" required></textarea>
                         </div>
-
-                        <!-- Profit Margin -->
+                    
                         <div class="mb-3">
-                            <label for="profit-percentage" class="form-label">Profit Margin</label>
-                            <select class="form-select" id="profit-percentage">
-                                <option value="0">No Profit</option>
-                                <option value="0.10">10%</option>
-                                <option value="0.20">20%</option>
-                                <option value="0.30">30%</option>
-                                <option value="0.50">50%</option>
-                                <option value="0.70">70%</option>
-                                <option value="1">100%</option>
-                            </select>
+                            <label for="repair-price" class="form-label">Repair Price</label>
+                            <input type="number" class="form-control" id="repair-price" name="repair-price"
+                                   placeholder="Enter Repair Price" required>
                         </div>
-
-                        <!-- Final Price Display -->
-                        <div class="mb-3">
-                            <label class="form-label">Final Repair Price</label>
-                            <input type="text" class="form-control" id="repair-price">
-                        </div>
+                        
                     </div>
-
+                    
+                    <!-- You can include sellFields if needed -->
                     <div id="sellFields" style="display: none;">
                         <div class="mb-3">
-                            <label for="sell-product-name" class="form-label">Product</label>
+                            <label for="sell-product-name" class="form-label">Selected Product</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="sell-product-name"
                                     placeholder="No product selected" readonly>
                                 <input type="hidden" id="sell-product-id" required>
                                 <button type="button" class="btn btn-outline-secondary"
-                                    onclick="openProductForm('sell')">Add Product</button>
+                                    onclick="openProductForm('sell')">Select Product</button>
                             </div>
                         </div>
 
@@ -219,9 +194,33 @@
                         </div>
                     </div>
 
+
+
                     <button type="submit" class="btn btn-primary w-100" onclick="disableHiddenFields()">Submit
                         Order</button>
+
+                    <div id="paymentInterface" class="my-4"></div>
+
                 </form>
+            </div>
+
+            <!-- Modal to display repair payment -->
+            <div id="sale-modal" class="modal fade" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Register Repair</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div><strong>Total:</strong> <span id="sale-total-price">€0.00</span></div>
+                            <div id="paypal" class="d-block my-4"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <!-- Reset button dynamically added via JS -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
@@ -254,6 +253,14 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="product-availability" class="form-label">Availability</label>
+                                <select id="product-availability" name="availability" class="form-select" required>
+                                    <option value="1">Available</option>
+                                    <option value="0">Not Available</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="product-category" class="form-label">Category</label>
                                 <select id="product-category" name="category" class="form-select" required>
                                     <option>Smartphones</option>
@@ -272,25 +279,24 @@
 
                             <div class="mb-3">
                                 <label for="product-brand" class="form-label">Brand</label>
-                                <input list="brands" id="product-brand" name="brand" class="form-control"
-                                    placeholder="Select or type a brand" required />
-                                <datalist id="brands">
-                                    <option value="Apple"></option>
-                                    <option value="Samsung"></option>
-                                    <option value="Dell"></option>
-                                    <option value="HP"></option>
-                                    <option value="Microsoft"></option>
-                                    <option value="Xiaomi"></option>
-                                    <option value="LG"></option>
-                                    <option value="Sony"></option>
-                                    <option value="Fitbit"></option>
-                                    <option value="Nintendo"></option>
-                                    <option value="Razer"></option>
-                                    <option value="Bose"></option>
-                                    <option value="GoPro"></option>
-                                    <option value="Canon"></option>
-                                    <option value="Other"></option>
-                                </datalist>
+                                <select id="product-brand" name="brand" class="form-select" required>
+                                    <option disabled selected>Select a brand</option>
+                                    <option>Apple</option>
+                                    <option>Samsung</option>
+                                    <option>Dell</option>
+                                    <option>HP</option>
+                                    <option>Microsoft</option>
+                                    <option>Xiaomi</option>
+                                    <option>LG</option>
+                                    <option>Sony</option>
+                                    <option>Fitbit</option>
+                                    <option>Nintendo</option>
+                                    <option>Razer</option>
+                                    <option>Bose</option>
+                                    <option>GoPro</option>
+                                    <option>Canon</option>
+                                    <option>Other</option>
+                                </select>
                             </div>
 
                             <div class="mb-3" id="form-group-model_code">
@@ -377,12 +383,12 @@
         </div>
 
         <!-- Scripts -->
-        <script src="../scripts/ui.js"></script>
+
         <script>
 
             let lastAddedProduct = null;
             document.addEventListener('DOMContentLoaded', function () {
-                fetchOrders();
+                fetchRepairOrders();
             });
 
             function showAddProductForm() {
@@ -564,13 +570,14 @@
                     }
                 });
 
-                data.availability = '0';
-
+                if (typeof data.availability === 'string') {
+                    data.availability = data.availability === 'true';
+                }
                 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
                 if (loggedInUser && loggedInUser.store) {
                     data.store_nipc = loggedInUser.store;
                 } else {
-                    showMessage('Error', 'No store information found for the logged-in user.', "danger");
+                    alert('No store information found for the logged-in user.');
                     return;
                 }
 
@@ -584,7 +591,7 @@
 
                     if (!res.ok) {
                         const err = await res.json();
-                        showMessage('Error', 'Failed to add product: ' + err.error, "danger");
+                        alert('Failed to add product: ' + err.error);
                         return;
                     }
 
@@ -599,10 +606,7 @@
 
                     // Collect image filenames and orders
                     const rows = document.querySelectorAll('#image-input-group > div');
-                    const formData = new FormData();
-
-                    formData.append('product_id', addedProduct.id);
-
+                    const images = [];
                     const orders = [];
 
                     rows.forEach((row, idx) => {
@@ -610,27 +614,33 @@
                         const orderInput = row.querySelector('input[type="number"]');
 
                         if (fileInput.files[0]) {
-                            const file = fileInput.files[0];
-                            formData.append('images', file); // append each file
+                            const fileName = fileInput.files[0].name;
                             const imageOrder = orderInput.value || (idx + 1);
+                            images.push(fileName);
                             orders.push(parseInt(imageOrder));
                         }
                     });
 
-                    formData.append('orders', JSON.stringify(orders)); // send orders array as string
+                    // Submit image metadata
+                    if (images.length > 0) {
+                        const imgRes = await fetch('/tt/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                product_id: addedProduct.id,
+                                images,
+                                orders
+                            })
+                        });
 
-                    const imgRes = await fetch('/tt/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!imgRes.ok) {
-                        const err = await imgRes.json();
-                        showMessage("Error", err.error, "danger");
-                        return;
+                        if (!imgRes.ok) {
+                            const err = await imgRes.json();
+                            alert('Images upload failed: ' + err.error);
+                            return;
+                        }
                     }
 
-                    showMessage('Product added', 'Product added successfully!', "success");
+                    alert('Product added successfully!');
 
                     // Hide add product form and show product table + filters etc
                     document.getElementById('add-product-form').classList.add('d-none');
@@ -643,7 +653,7 @@
 
                 } catch (err) {
                     console.error(err);
-                    showMessage('Error', 'Error submitting product.', "danger");
+                    alert('Error submitting product.');
                 }
             });
 
@@ -696,8 +706,12 @@
                 showAddProductForm();
             }
 
+            // Modify your existing `hideAddProductForm` to optionally return to the order form:
             function hideAddProductForm() {
                 document.getElementById('add-product-form').classList.add('d-none');
+                document.getElementById('product-table').classList.remove('d-none');
+                document.getElementById('filters-row').classList.remove('d-none');
+                document.getElementById('top-buttons').classList.remove('d-none');
 
                 // Re-show the order form if it was launched from there
                 if (currentOrderType === 'repair' || currentOrderType === 'sell') {
@@ -711,6 +725,7 @@
                         input.disabled = true;
                     });
                 }
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('sale-modal')).show();
             }
 
 
@@ -725,7 +740,7 @@
             function showOrdersTable() {
                 document.getElementById('ordersTableContainer').style.display = 'block';
                 document.getElementById('orderFormContainer').style.display = 'none';
-                fetchOrders();
+                fetchRepairOrders();
 
             }
 
@@ -749,57 +764,39 @@
                 }
             }
 
-            async function fetchOrders() {
+            async function fetchRepairOrders() {
                 const repairList = document.getElementById('order-list');
                 repairList.innerHTML = '';
 
-                let totalOrdersCount = 0;
-
                 // Fetch Repair Orders
                 try {
-                    const resRepairs = await fetch('/tttransaction/repairs');
+                    const resRepairs = await fetch('/tttransactions/repair');
                     const repairs = await resRepairs.json();
-
-                    async function fetchProductName(productId) {
-                        if (!productId) return 'N/A';
-                        try {
-                            const res = await fetch(`/tt/product/${productId}`);
-                            if (!res.ok) throw new Error('Product fetch failed');
-                            const product = await res.json();
-                            return `${product.name} - <i>${product.description}</i>` || 'Unnamed Product';
-                        } catch (e) {
-                            console.error(`Error fetching product ${productId}:`, e);
-                            return 'Unknown Product';
-                        }
-                    }
 
                     console.log('Fetched repair orders:', repairs);
 
-                    repairs.forEach(async repair => {
+                    repairs.forEach(repair => {
                         const row = document.createElement('tr');
 
-                        // Use client or non_registered_client
-                        const clientEmail = repair.client || repair.non_registered_client || 'N/A';
+                        const orderIdCell = document.createElement('td');
+                        orderIdCell.textContent = repair.id || 'N/A';
+                        row.appendChild(orderIdCell);
 
-                        // Format transaction_value as float with 2 decimals
-                        const price = repair.transaction_value ? parseFloat(repair.transaction_value).toFixed(2) : '0.00';
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = 'Repair Order';
+                        row.appendChild(typeCell);
 
-                        // Repair status with fallback
-                        const statusDisplay = repair.repair_status || 'Unknown';
+                        const detailsCell = document.createElement('td');
+                        detailsCell.textContent = repair.name || 'Unnamed Product';
+                        row.appendChild(detailsCell);
 
-                        let productName = await fetchProductName(repair.product_id);
-                        row.innerHTML = `
-                        <td>${repair.transaction_id || 'N/A'}</td>
-                        <td>${clientEmail}</td>
-                        <td>Repair Order</td>
-                        <td>${productName}</td>
-                        <td>€${price}</td>
-                        <td>${statusDisplay}</td>
-                        `;
+                        const statusCell = document.createElement('td');
+                        statusCell.textContent = repair.status ? 'Completed' : 'Pending';
+                        row.appendChild(statusCell);
 
                         repairList.appendChild(row);
-                        totalOrdersCount++;
                     });
+
                 } catch (err) {
                     console.error('Error fetching repair orders:', err);
                 }
@@ -814,56 +811,28 @@
                     sales.forEach(sale => {
                         const row = document.createElement('tr');
 
-                        const productNames = sale.sold_products.map(p => p.name).join(', ');
-                        const totalPrice = sale.transaction_value || '0.00';
+                        const orderIdCell = document.createElement('td');
+                        orderIdCell.textContent = sale.id || 'N/A';
+                        row.appendChild(orderIdCell);
 
-                        row.innerHTML = `
-                        <td>${sale.id || 'N/A'}</td>
-                        <td>${sale.client || 'N/A'}</td>
-                        <td>Sales Order</td>
-                        <td>${productNames || 'No products'}</td>
-                        <td>€${totalPrice}</td>
-                        <td>${sale.sale_status || 'N/A'}</td>
-                    `;
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = 'Sales Order';
+                        row.appendChild(typeCell);
+
+                        const detailsCell = document.createElement('td');
+                        const productNames = sale.sold_products.map(p => p.name).join(', ');
+                        detailsCell.textContent = productNames || 'No products';
+                        row.appendChild(detailsCell);
+
+                        const statusCell = document.createElement('td');
+                        statusCell.textContent = sale.sale_status || 'N/A';
+                        row.appendChild(statusCell);
 
                         repairList.appendChild(row);
-                        totalOrdersCount++;
                     });
+
                 } catch (err) {
                     console.error('Error fetching sales orders:', err);
-                }
-
-                // Fetch Purchase Transactions
-                try {
-                    const resPurchases = await fetch('/tttransaction/purchases/');
-                    const purchases = await resPurchases.json();
-
-                    console.log('Fetched purchase transactions:', purchases);
-
-                    purchases.forEach(purchase => {
-                        const row = document.createElement('tr');
-
-                        row.innerHTML = `
-                        <td>${purchase.id || 'N/A'}</td>
-                        <td>${purchase.client || 'N/A'}</td>
-                        <td>Purchase</td>
-                        <td>${purchase.item_name || 'Unknown Item'}</td>
-                        <td>€${isNaN(Number(purchase.transaction_value)) ? '0.00' : Number(purchase.transaction_value).toFixed(2)}</td>
-                        <td>Completed</td>
-                    `;
-
-                        repairList.appendChild(row);
-                        totalOrdersCount++;
-                    });
-                } catch (err) {
-                    console.error('Error fetching purchase transactions:', err);
-                }
-
-                // Show message if no orders found
-                if (totalOrdersCount === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="6" class="text-center">No orders found.</td>`;
-                    repairList.appendChild(row);
                 }
             }
 
@@ -884,62 +853,48 @@
                 });
 
                 if (isRepair) {
+                    const description = document.getElementById("repair-description").value.trim();
+                    const client = "janesmith@example.com";
+                    const non_registered_client = "maria";
+                    const price = document.getElementById("repair-price").value;
                     const productId = document.getElementById("repair-product-id").value.trim();
-                    const price = parseFloat(document.getElementById("repair-price").value.replace(/[€\s]/g, ''));
-                    const client = document.getElementById("repair-client").value;
-                    const nonRegisteredChecked = document.getElementById("non-registered-checkbox").checked;
+                    const userJSON = localStorage.getItem('loggedInUser');
+                    const user = JSON.parse(userJSON);
+                    const store = user.store;
+                    const employee = user.id;
+                    const network = "visa";
 
-                    if (!nonRegisteredChecked) {
-                        try {
-                            const res = await fetch(`/ttuser?email=${encodeURIComponent(client)}`);
-                            if (res.status === 204) {
-                                showMessage('Error', "Client is not registered", "danger");
-                                return; // stop submission
-                            }
-                            if (!res.ok) {
-                                showMessage('Error', "Error checking client registration", "danger");
-                                return;
-                            }
-                        } catch (error) {
-                            console.error("Error fetching client:", error);
-                            showMessage('Error', "Error checking client registration", "danger");
-                            return;
-                        }
-                    }
-
-                    if (!productId || !price) {
-                        showMessage('Warning', "Please fill in all required fields.", "warning");
+                    if (!productId || !description || !price) {
+                        alert("Please fill in all required fields.");
                         return;
                     }
 
                     try {
-                        const response = await fetch('/tttransaction/repairs/add', {
+
+
+                        renderPayPal(client, non_registered_client, price, productId, store, employee, network);
+                        /*const response = await fetch('/tt/repair/add', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                transaction_value: price,
-                                product_id: productId,
-                                store: JSON.parse(localStorage.getItem("loggedInUser")).store,
-                                employee: JSON.parse(localStorage.getItem("loggedInUser")).id,
-                                repair_status: 'In repairs',
-                                network: null,
-                                ...(document.getElementById("non-registered-checkbox").checked
-                                    ? { non_registered_client: client }
-                                    : { client: client })
+                                id: productId,
+                                description: description,
+                                price: parseFloat(price)
                             }),
                         });
 
                         const result = await response.json();
 
                         if (response.ok) {
-                            showMessage('Repair order added', "Repair order added successfully.", "success");
+                            alert("Repair order added successfully.");
                             showOrdersTable();
+                            fetchRepairOrders();
                         } else {
-                            showMessage('Error', (result.error || response.statusText), "danger");
-                        }
+                            alert("Error: " + (result.error || response.statusText));
+                        }*/
                     } catch (err) {
                         console.error("Submit failed:", err);
-                        showMessage('Error', "An unexpected error occurred.", "danger");
+                        alert("An unexpected error occurred.");
                     }
 
                 } else if (isSell) {
@@ -948,33 +903,41 @@
                     const price = parseFloat(document.getElementById("purchase-price").value.trim());
 
                     if (!productId || !clientEmail || isNaN(price)) {
-                        showMessage('Warning', "Please fill in all required fields.", "warning");
+                        alert("Please fill in all required buy-back fields.");
                         return;
                     }
 
                     try {
-                        const response = await fetch('/tttransaction/purchases/add', {
+                        const response = await fetch('/tttransaction/sales/add', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                non_registered_client: clientEmail,
+                                client: clientEmail,
                                 transaction_value: price,
-                                purchasing_store: JSON.parse(localStorage.getItem("loggedInUser")).store,
-                                item_purchased: parseInt(productId)
+                                is_online: false,
+                                order_number: null,
+                                employee: null,
+                                store: null,
+                                network: null,
+                                shipping_address: null,
+                                shipping_postal_code: null,
+                                shipping_city: null,
+                                shipping_country: null,
+                                products: [productId]
                             })
                         });
 
                         const result = await response.json();
 
                         if (response.ok) {
-                            showMessage('Transaction Recorded', "Product purchase transaction recorded successfully.", "success");
+                            alert("Buy-back transaction recorded successfully.");
                             showOrdersTable();
                         } else {
-                            showMessage('Error', (result.error || response.statusText), "danger");
+                            alert("Error: " + (result.error || response.statusText));
                         }
                     } catch (err) {
                         console.error("Buy-back submit failed:", err);
-                        showMessage('Error', "An unexpected error occurred.", "danger");
+                        alert("An unexpected error occurred.");
                     }
                 }
 
@@ -990,85 +953,103 @@
 
             // Initial load
             window.onload = function () {
-                fetchOrders();
+                fetchRepairOrders();
             };
 
-            let selectedRepairParts = [];
 
-            function openRepairPartsSelector() {
-                // Example modal selector logic (replace with your real part list)
-                fetch('/tt/repairParts')
-                    .then(res => res.json())
-                    .then(parts => {
-                        const modal = document.createElement('div');
-                        modal.className = 'modal fade';
-                        modal.innerHTML = `
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Select Repair Parts</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="repair-parts-selector-form">
-                                ${parts.map(part => `
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="${part.id}" data-price="${part.price}" id="part-${part.id}">
-                                        <label class="form-check-label" for="part-${part.id}">${part.name} (€${parseFloat(part.price).toFixed(2)})</label>
-                                    </div>
-                                `).join('')}
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="confirm-parts-btn">Confirm</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-                        document.body.appendChild(modal);
+            // PayPal Render Logic
+            function renderPayPal(client, non_registered_client, transaction_value, product_id, store, employee, network) {
 
-                        const bsModal = new bootstrap.Modal(modal);
-                        bsModal.show();
+                const totalPrice = 33;
 
-                        modal.querySelector('#confirm-parts-btn').addEventListener('click', () => {
-                            selectedRepairParts = [];
-                            const selected = modal.querySelectorAll('input[type="checkbox"]:checked');
+                const paypalContainer = document.getElementById("paypal");
+                paypalContainer.innerHTML = "";
 
-                            const list = document.getElementById('selected-repair-parts');
-                            list.innerHTML = '';
+                paypal.Buttons({
+                    style: {
+                        layout: 'vertical',
+                        borderRadius: 10,
+                        label: 'paypal'
+                    },
+                    createOrder: (data, actions) => actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: String(totalPrice.toFixed(2))
+                            }
+                        }]
+                    }),
+                    onError: (err) => {
+                        showMessage("Payment Declined", "Your payment was declined or cancelled.", "danger");
+                    },
+                    onApprove: async (data, actions) => {
+                        
 
-                            selected.forEach(cb => {
-                                const id = cb.value;
-                                const name = cb.nextElementSibling.innerText;
-                                const price = parseFloat(cb.dataset.price);
-                                selectedRepairParts.push({ id, name, price });
-
-                                const li = document.createElement('li');
-                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                                li.textContent = name;
-                                li.innerHTML += `<span class="badge bg-secondary">€${price.toFixed(2)}</span>`;
-                                list.appendChild(li);
+                        try {
+                            
+                            const newRepair = await fetch('http://localhost:3000/tttransaction/repairs/add', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    client: client,
+                                    non_registered_client: non_registered_client,
+                                    transaction_value: transaction_value,
+                                    product_id: product_id,
+                                    store: store,
+                                    employee: employee,
+                                    network: network 
+                                })
                             });
 
-                            bsModal.hide();
-                            modal.remove();
-                            updateCalculatedPrice();
-                        });
-                    });
+                            const result = await newRepair.json();
+
+                            if (newRepair.ok) {
+                                alert("Repair order added successfully.");
+                                showOrdersTable();
+                                fetchRepairOrders();
+                            } else {
+                                alert("Error: " + (result.error || response.statusText));
+                            }
+
+                            paypalContainer.classList.add("d-none");
+
+                            document.getElementById("paymentInterface").innerHTML = `
+                        <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">
+                            <div class="text-success mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 1 0-1.16-.96L7.477 8.417 5.383 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647z"/>
+                                </svg>
+                            </div>
+                            <h2 class="text-center mb-3">Your repair is on its way!</h2>
+                            <p class="text-muted mb-4">Repair Code: <code> 1234 </code></p>
+                            <p class="text-center mb-4">Thank you for your purchase!</p>
+                            <a href="/" class="btn btn-success btn-lg">Thrift More</a>
+                        </div>`;
+                        } catch (err) {
+                            console.error(err);
+                            showMessage("Purchase Unsuccessful", err.message || "An error occurred.", "danger");
+                        }
+                    }
+                }).render('#paypal');
             }
 
-            document.getElementById('profit-percentage').addEventListener('change', updateCalculatedPrice);
 
-            function updateCalculatedPrice() {
-                const baseTotal = selectedRepairParts.reduce((sum, part) => sum + part.price, 0);
-                const profit = parseFloat(document.getElementById('profit-percentage').value || 0);
-                const finalPrice = baseTotal + (baseTotal * profit);
+            renderPayPal();
+        
+        function animateListItems(containerSelector) {
+            const container = document.querySelector(containerSelector);
+            if (!container) return;
 
-                document.getElementById('repair-price').value = `€${finalPrice.toFixed(2)}`;
-            }
+            const items = container.children;
+
+            Array.from(items).forEach((item, index) => {
+                item.classList.add('animate-item');
+                item.style.animationDelay = `${index * 70}ms`;
+            });
+        }
 
         </script>
         <script src="../scripts/auth.js"></script>
+        <script src="../scripts/ui.js"></script>
         <!-- Scripts -->
 </body>
 
