@@ -234,6 +234,7 @@ CREATE TABLE IF NOT EXISTS repairs (
     employee INT NOT NULL,
     non_registered_client VARCHAR(255),
     repair_status ENUM('In repairs', 'Repaired; Awaiting Collection', 'Repaired; Collected') NOT NULL DEFAULT 'In repairs',
+    order_number VARCHAR(255),
     network VARCHAR(255),
 
     FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -282,4 +283,9 @@ CREATE TABLE IF NOT EXISTS shipping (
     current_shipping_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00
 
     CONSTRAINT ck_shipping_cost check (current_shipping_cost >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS tokens (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    token VARCHAR(255) NOT NULL
 );

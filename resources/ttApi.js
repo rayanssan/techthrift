@@ -10,6 +10,8 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { exposeApi } from '../techthrift.js';
+import pkg from 'pdfkit';
+const PDFDocument = pkg;
 
 /**
  * Middleware to verify the origin or referer of incoming requests.
@@ -2448,6 +2450,7 @@ router.post('/tttransaction/repairs/add', verifyRequestOrigin, (req, res) => {
         store,
         employee,
         repair_status = 'In repairs',
+        order_number,
         network
     } = req.body;
 
@@ -2535,6 +2538,130 @@ router.get('/tttransaction/repairs/:email', verifyRequestOrigin, (req, res) => {
         }
     });
 });
+
+// Reports
+router.get('/report', verifyRequestOrigin, (req, res) => {
+    const doc = new PDFDocument();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="report.pdf"');
+
+    doc.pipe(res);
+
+    doc
+        .fillColor('#000080')
+        .font('Helvetica-Bold')
+        .fontSize(30)
+        .text('TechThrift', { align: 'center' }
+
+        );
+
+    doc
+        .moveDown(0.5)
+        .fillColor('black')
+        .font('Helvetica')
+        .fontSize(20)
+        .text('Usage Reports', { align: 'center' }
+
+        );
+
+
+    const drawSectionHeader = (title) => {
+        doc
+            .fontSize(18)
+            .fillColor('#000080')
+            .text(title)
+            .moveDown(0.5);
+    };
+
+    // Helper to display key metrics
+    const drawMetric = (label, value) => {
+        doc
+            .fontSize(14)
+            .fillColor('black')
+            .text(`${label}: `, { continued: true })
+            .fillColor('#333')
+            .text(`${value}`, { continued: false })
+            .moveDown(0.5);
+    };
+
+
+
+    db.query('SELECT COUNT(*) AS unsoldItems FROM products p WHERE p.availability = TRUE', [], (err, rows) => {
+
+        drawSectionHeader('Inventory Summary');
+        drawMetric('Unsold Items', rows[0].unsoldItems);
+    });
+
+
+
+    db.query('SELECT COUNT(*) AS charityCount FROM charityProjects c WHERE c.endDate IS NOT NULL', [], (err, rows) => {
+
+        drawSectionHeader('Charity Projects');
+        drawMetric('Number of Charity Projects', rows[0].charityCount);
+
+
+    });
+
+
+
+    db.query('SELECT COUNT(*) AS interestCount FROM interests i', [], (err, rows) => {
+
+        drawSectionHeader('User Interests');
+        drawMetric('Total number of Interests', rows[0].interestCount);
+
+    });
+
+
+    db.query('SELECT COUNT(*) AS wishlistCount FROM wishlist w', [], (err, rows) => {
+
+        drawMetric('Total Wishlisted items', rows[0].wishlistCount);
+    });
+
+
+    db.query('SELECT COUNT(*) AS clientCount FROM clients c WHERE c.dob IS NOT NULL ' +
+        'AND c.id NOT IN (SELECT e.id FROM employees e)', [], (err, rows) => {
+
+            drawSectionHeader('People Summary');
+            drawMetric('Number of registered Clients', rows[0].clientCount);
+
+        });
+
+    db.query('SELECT COUNT(*) AS employeeCount FROM employees e', [], (err, rows) => {
+
+        drawMetric('Number of Employees', rows[0].employeeCount);
+
+    });
+
+
+    db.query('SELECT st.id, st.name, COUNT(s.transaction_id) AS total_sales FROM clients st JOIN entities e ON st.id = e.id ' +
+        'LEFT JOIN sales s ON s.store = e.nipc GROUP BY st.id, st.name ORDER BY st.name;', [], (err, rows) => {
+
+            drawSectionHeader('Sales by Store');
+
+            rows.forEach(row => {
+                drawMetric(row.name, `${row.total_sales} sales`);
+            });
+
+
+        });
+
+
+    db.query('SELECT s.id, s.name, COUNT(r.transaction_id) AS total_repairs FROM clients s JOIN entities e ON s.id = e.id ' +
+        'LEFT JOIN repairs r ON r.store = e.nipc GROUP BY s.id, s.name ORDER BY s.name;', [], async (err, rows) => {
+
+            drawSectionHeader('Repairs by Store');
+
+            rows.forEach(row => {
+                drawMetric(row.name, `${row.total_repairs} repairs`);
+            });
+
+            // Finalize the PDF and end the stream
+            doc.end();
+
+        });
+});
+
 
 // Get shipping costs
 router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {

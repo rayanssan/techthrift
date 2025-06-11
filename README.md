@@ -6,3 +6,5 @@
 - João Martins: 60290
 - Pedro Monteiro: 60275
 - Rayan S. Santana: 60282
+
+Token para visualizar relatório de utilização: `report_password`

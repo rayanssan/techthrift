@@ -4,18 +4,17 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
-import { db, dbR } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
+import { db, dbR } from './resources/dbConnection.js';
 import https from 'https';
 import fs from 'fs';
-import pkg from 'pdfkit';
-import 'pdfkit-table';
-const PDFDocument = pkg;
+import crypto from 'crypto';
 const app = express();
 const PORT = 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 export const exposeApi = process.argv.includes('-exposeApi');
 
 const serverPem = fs.readFileSync(path.join(__dirname, 'haproxy.pem'), 'utf8');
@@ -238,7 +237,7 @@ app.get('/adminOrders', (req, res) => {
 
 // Authentication
 app.get('/authentication', (req, res) => {
-    const auth0Domain = "dev-1qdq127lj6aekksz.us.auth0.com"; 
+    const auth0Domain = "dev-1qdq127lj6aekksz.us.auth0.com";
     const clientID = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
     const protocol = req.protocol;
     const host = req.get('host');
@@ -261,124 +260,125 @@ app.get('/registration', (req, res) => {
 });
 
 // Reports
-app.get('/report', (req, res) => {
-    const doc = new PDFDocument();
+app.get('/reports', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Enter Password</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link rel="stylesheet" href="../styles/stylesheet.css">
+    </head>
+    <body>
+    <header class="p-3 border-bottom bg-white">
+        <div class="d-flex justify-content-between container">
+            <div class="row align-items-center gap-3">
+                <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
+                    <a onclick="location.replace(document.referrer)" class="btn pt-1 btn-link text-decoration-none p-0">
+                        <i class="fa fa-angle-left fs-3"></i>
+                    </a>
+                    <a id="header-brand" href="/homepage" class="ms-1 pe-3 me-3"
+                        style="border-right: 1px solid lightgray;">
+                        <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
+                    </a>
+                    <h4 class="mb-1 ps-1">Usage Reports</h4>
+                </div>
+            </div>
+        </div>
+    </header>
+      <div class="container mt-5" style="max-width: 400px;">
+        <h3 class="mb-4">Enter Token</h3>
+        <form method="POST" action="/reports">
+          <div class="mb-3">
+            <label for="password" class="form-label">Token</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter token" autofocus required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit</button>
+        </form>
+      </div>
+    </body>
+    <!-- Scripts -->
+    <script src="../scripts/auth.js"></script>
+    <!-- Scripts -->
+    </html>
+  `);
+});
+app.post('/reports', async (req, res) => {
+    const { password } = req.body;
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename="report.pdf"');
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
-    doc.pipe(res);
+    const renderErrorForm = (res) => {
+        res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Enter Password</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="../styles/stylesheet.css">
+        </head>
+        <body>
+        <header class="p-3 border-bottom bg-white">
+        <div class="d-flex justify-content-between container">
+            <div class="row align-items-center gap-3">
+                <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
+                    <a onclick="location.replace(document.referrer)" class="btn pt-1 btn-link text-decoration-none p-0">
+                        <i class="fa fa-angle-left fs-3"></i>
+                    </a>
+                    <a id="header-brand" href="/homepage" class="ms-1 pe-3 me-3"
+                        style="border-right: 1px solid lightgray;">
+                        <img alt="TechThrift's logo" src="../media/images/logo_hor.png">
+                    </a>
+                    <h4 class="mb-1 ps-1">Usage Reports</h4>
+                </div>
+            </div>
+        </div>
+    </header>
+        <div class="container mt-5" style="max-width: 400px;">
+            <h3 class="mb-4">Enter Token</h3>
+            <div class="alert alert-danger" role="alert">
+            Incorrect token, try again.
+            </div>
+            <form method="POST" action="/reports">
+            <div class="mb-3">
+                <label for="password" class="form-label">Token</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter token" autofocus required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Submit</button>
+            </form>
+        </div>
+        </body>
+        </html>
+        <script src="../scripts/auth.js"></script>
+    `);
+    }
+    db.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (primaryErr, primaryRows) => {
+        if (primaryErr) {
+            console.warn('Primary DB query failed, trying replica...', primaryErr);
 
-    doc
-      .fillColor('#000080')
-      .font('Helvetica-Bold')
-      .fontSize(30)
-      .text('TechThrift', { align: 'center' }
+            dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (replicaErr, replicaRows) => {
+                if (replicaErr) {
+                    console.error('Both primary and replica DB queries failed', replicaErr);
+                    return res.status(500).send('Internal Server Error');
+                }
 
-    );
+                if (replicaRows.length > 0) {
+                    return res.redirect('/report');
+                } else {
+                    return renderErrorForm(res);
+                }
+            });
 
-    doc
-      .moveDown(0.5)
-      .fillColor('black')
-      .font('Helvetica')
-      .fontSize(20)
-      .text('Usage Reports', { align: 'center' }
-
-    );
-
-
-    const drawSectionHeader = (title) => {
-        doc
-        .fontSize(18)
-        .fillColor('#000080')
-        .text(title)
-        .moveDown(0.5);
-    };
-
-    // Helper to display key metrics
-    const drawMetric = (label, value) => {
-        doc
-        .fontSize(14)
-        .fillColor('black')
-        .text(`${label}: `, { continued: true })
-        .fillColor('#333')
-        .text(`${value}`, { continued: false })
-        .moveDown(0.5);
-    };
-
-    
-
-    db.query('SELECT COUNT(*) AS unsoldItems FROM products p WHERE p.availability = TRUE', [], (err, rows) => {
-      
-        drawSectionHeader('Inventory Summary');
-        drawMetric('Unsold Items', rows[0].unsoldItems);
-    });
-    
-
-
-    db.query('SELECT COUNT(*) AS charityCount FROM charityProjects c WHERE c.endDate IS NOT NULL', [], (err, rows) => {
-      
-        drawSectionHeader('Charity Projects');
-        drawMetric('Number of Charity Projects', rows[0].charityCount);
-
-        
-    });
-   
-   
-
-    db.query('SELECT COUNT(*) AS interestCount FROM interests i', [], (err, rows) => {
-        
-        drawSectionHeader('User Interests');
-        drawMetric('Total number of Interests', rows[0].interestCount);
-
-    });
-
-
-    db.query('SELECT COUNT(*) AS wishlistCount FROM wishlist w', [], (err, rows) => {
-      
-        drawMetric('Total Wishlisted items', rows[0].wishlistCount);
-    });
-
-
-    db.query('SELECT COUNT(*) AS clientCount FROM clients c WHERE c.dob IS NOT NULL ' +
-        'AND c.id NOT IN (SELECT e.id FROM employees e)', [], (err, rows) => {
-      
-        drawSectionHeader('People Summary');
-        drawMetric('Number of registered Clients', rows[0].clientCount);
-
-    });
-    
-    db.query('SELECT COUNT(*) AS employeeCount FROM employees e', [], (err, rows) => {
-      
-        drawMetric('Number of Employees', rows[0].employeeCount);
-
-    });
-
-    
-    db.query('SELECT st.id, st.name, COUNT(s.transaction_id) AS total_sales FROM clients st JOIN entities e ON st.id = e.id ' +
-        'LEFT JOIN sales s ON s.store = e.nipc GROUP BY st.id, st.name ORDER BY st.name;', [], (err, rows) => {
-
-        drawSectionHeader('Sales by Store');
-
-        rows.forEach(row => {
-            drawMetric(row.name, `${row.total_sales} sales`);
-        });
-
-        
-    });
-
-
-    db.query('SELECT s.id, s.name, COUNT(r.transaction_id) AS total_repairs FROM clients s JOIN entities e ON s.id = e.id ' +
-        'LEFT JOIN repairs r ON r.store = e.nipc GROUP BY s.id, s.name ORDER BY s.name;', [], async (err, rows) => {
-
-         drawSectionHeader('Repairs by Store');
-
-        rows.forEach(row => {
-            drawMetric(row.name, `${row.total_repairs} repairs`);
-        });
-
-        // Finalize the PDF and end the stream
-        doc.end();
-  
+        } else {
+            if (primaryRows.length > 0) {
+                return res.redirect('/report');
+            } else {
+                return renderErrorForm(res);
+            }
+        }
     });
 });
