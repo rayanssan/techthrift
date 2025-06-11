@@ -242,21 +242,6 @@ CREATE TABLE IF NOT EXISTS repairs (
     FOREIGN KEY (employee) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS donations (
-    transaction_id INT PRIMARY KEY,
-    product_id INT NOT NULL,
-    store CHAR(9) NOT NULL,
-    employee INT NOT NULL,
-    non_registered_client VARCHAR(255),
-    charity CHAR(9) NOT NULL,
-
-    FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (store) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (employee) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (charity) REFERENCES entities(nipc) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS interests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     interested_user VARCHAR(255) NOT NULL,
