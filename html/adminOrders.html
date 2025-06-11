@@ -770,7 +770,7 @@
 
                 // Fetch Repair Orders
                 try {
-                    const resRepairs = await fetch('/tttransactions/repair');
+                    const resRepairs = await fetch('/tt/repair');
                     const repairs = await resRepairs.json();
 
                     console.log('Fetched repair orders:', repairs);
@@ -872,7 +872,7 @@
                     try {
 
 
-                        renderPayPal(client, non_registered_client, price, productId, store, employee, network);
+                        renderPayPalRepair(client, non_registered_client, price, productId, store, employee, network);
                         /*const response = await fetch('/tt/repair/add', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -898,17 +898,26 @@
                     }
 
                 } else if (isSell) {
-                    const productId = document.getElementById("sell-product-id").value.trim();
-                    const clientEmail = document.getElementById("purchase-product-seller-email").value.trim();
-                    const price = parseFloat(document.getElementById("purchase-price").value.trim());
+                    const description = document.getElementById("repair-description").value.trim();
+                    const client = "janesmith@example.com";
+                    const non_registered_client = "maria";
+                    const price = document.getElementById("repair-price").value;
+                    const productId = document.getElementById("repair-product-id").value.trim();
+                    const userJSON = localStorage.getItem('loggedInUser');
+                    const user = JSON.parse(userJSON);
+                    const store = user.store;
+                    const employee = user.id;
+                    const network = "visa";
 
-                    if (!productId || !clientEmail || isNaN(price)) {
+                    if (!productId || !client || isNaN(price)) {
                         alert("Please fill in all required buy-back fields.");
                         return;
                     }
 
                     try {
-                        const response = await fetch('/tttransaction/sales/add', {
+                            //function renderPayPalSale(client, price, productId)
+                        renderPayPalSale(client, price, productId, employee, store, network);
+                        /*const response = await fetch('/tttransaction/sales/add', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -934,7 +943,7 @@
                             showOrdersTable();
                         } else {
                             alert("Error: " + (result.error || response.statusText));
-                        }
+                        }*/
                     } catch (err) {
                         console.error("Buy-back submit failed:", err);
                         alert("An unexpected error occurred.");
@@ -957,8 +966,8 @@
             };
 
 
-            // PayPal Render Logic
-            function renderPayPal(client, non_registered_client, transaction_value, product_id, store, employee, network) {
+            // PayPal Render Logic For Repair
+            function renderPayPalRepair(client, non_registered_client, transaction_value, product_id, store, employee, network) {
 
                 const totalPrice = 33;
 
@@ -1020,7 +1029,87 @@
                                 </svg>
                             </div>
                             <h2 class="text-center mb-3">Your repair is on its way!</h2>
-                            <p class="text-muted mb-4">Repair Code: <code> 1234 </code></p>
+                            <p class="text-muted mb-4">Repair Code: <code>1234</code></p>
+                            <p class="text-center mb-4">Thank you for your purchase!</p>
+                            <a href="/" class="btn btn-success btn-lg">Thrift More</a>
+                        </div>`;
+                        } catch (err) {
+                            console.error(err);
+                            showMessage("Purchase Unsuccessful", err.message || "An error occurred.", "danger");
+                        }
+                    }
+                }).render('#paypal');
+            }
+
+             // PayPal Render Logic For Repair
+            function renderPayPalSale(client, price, productId, employee, store, network) {
+
+                const totalPrice = 33;
+
+                const paypalContainer = document.getElementById("paypal");
+                paypalContainer.innerHTML = "";
+
+                paypal.Buttons({
+                    style: {
+                        layout: 'vertical',
+                        borderRadius: 10,
+                        label: 'paypal'
+                    },
+                    createOrder: (data, actions) => actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: String(totalPrice.toFixed(2))
+                            }
+                        }]
+                    }),
+                    onError: (err) => {
+                        showMessage("Payment Declined", "Your payment was declined or cancelled.", "danger");
+                    },
+                    onApprove: async (data, actions) => {
+                        
+
+                        try {
+                            
+                            const newSale = await fetch('/tttransaction/sales/add', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    client: clientEmail,
+                                    transaction_value: price,
+                                    is_online: false,
+                                    order_number: null,
+                                    employee: employee,
+                                    store: store,
+                                    network: network,
+                                    shipping_address: null,
+                                    shipping_postal_code: null,
+                                    shipping_city: null,
+                                    shipping_country: null,
+                                    products: productId
+                                })
+                            });
+
+                            const result = await newSale.json();
+
+                            if (newSale.ok) {
+                                alert("Repair order added successfully.");
+                                showOrdersTable();
+                                fetchRepairOrders();
+                            } else {
+                                alert("Error: " + (result.error || response.statusText));
+                            }
+
+                            paypalContainer.classList.add("d-none");
+
+                            document.getElementById("paymentInterface").innerHTML = `
+                        <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">
+                            <div class="text-success mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08-.02l3.992-4.99a.75.75 0 1 0-1.16-.96L7.477 8.417 5.383 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647z"/>
+                                </svg>
+                            </div>
+                            <h2 class="text-center mb-3">Your repair is on its way!</h2>
+                            <p class="text-muted mb-4">Repair Code: <code>${productId}</code></p>
                             <p class="text-center mb-4">Thank you for your purchase!</p>
                             <a href="/" class="btn btn-success btn-lg">Thrift More</a>
                         </div>`;
@@ -1033,7 +1122,8 @@
             }
 
 
-            renderPayPal();
+            renderPayPalRepair();
+           // renderPayPalSale();
         
         function animateListItems(containerSelector) {
             const container = document.querySelector(containerSelector);
