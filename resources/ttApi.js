@@ -2227,7 +2227,7 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
         employee, store, network, shipping_address, shipping_postal_code,
         shipping_city, shipping_country, products } = req.body;
 
-    if (!client || !transaction_value ||
+    if (!transaction_value ||
         typeof is_online !== 'boolean' || !Array.isArray(products)) {
         return res.status(400).send({ error: 'Missing required fields' });
     }

@@ -77,6 +77,25 @@ window.addEventListener('userAuthenticated', (event) => {
                     showMessage("Payment Declined", "Your payment was declined or cancelled.", "danger");
                 },
                 onApprove: async function (data, actions) {
+                    const overlay = document.createElement('div');
+                    overlay.id = 'paypal-loading-overlay';
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100vw';
+                    overlay.style.height = '100vh';
+                    overlay.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    overlay.style.zIndex = '2000';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+                    overlay.innerHTML = `
+                        <div class="text-center">
+                            <p class="text-center fw-bold display-6 loading-dots"></p>
+                        </div>
+                    `;
+                    document.body.appendChild(overlay);
+
                     // Triggered when purchase is approved
                     const cartProductIds = JSON.parse(localStorage.getItem('cartProducts')) || [];
                     // Check availability before payment capture
@@ -90,6 +109,7 @@ window.addEventListener('userAuthenticated', (event) => {
                         .then(response => response.json())
                         .then(data => {
                             if (!data.allAvailable) {
+                                overlay.remove();
                                 // Highlight unavailable products
                                 data.unavailable.forEach(id => {
                                     const productCard = document.querySelector(`[data-product-id="${id}"]`).parentElement;
@@ -147,6 +167,7 @@ window.addEventListener('userAuthenticated', (event) => {
                                     if (!response.ok) throw new Error("Failed to store transaction.");
                                     // Clear cartProducts
                                     localStorage.removeItem("cartProducts");
+                                    overlay.remove();
                                     // Show success
                                     document.getElementById("paymentInterface").innerHTML = `
                                     <div class="d-flex flex-column align-items-center my-5 justify-content-center" style="min-height: 60vh;">

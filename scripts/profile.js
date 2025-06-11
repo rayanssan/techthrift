@@ -997,7 +997,7 @@ window.addEventListener('userAuthenticated', async (event) => {
 
                                         showMessage("Editing successful",
                                             `Your ${(field === "nipc") ? field.toUpperCase() :
-                                                field.replace("_", " ")} was successfully edited.`,
+                                                field.replace("_", " ")} ${field === "opening_hours" ? "were" : "was"} successfully edited.`,
                                             "success");
                                     }).catch(err => {
                                         showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
