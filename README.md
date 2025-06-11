@@ -7,4 +7,4 @@
 - Pedro Monteiro: 60275
 - Rayan S. Santana: 60282
 
-Token para visualizar relatório de utilização: `report_password`
+Token to access usage report: `report_password`
