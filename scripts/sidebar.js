@@ -22,4 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
             this.classList.add("active");
         });
     });
+
+    if (JSON.parse(localStorage.getItem("loggedInUser")).user_type === "employee") {
+        document.querySelector("a[href='adminCharities'].nav-link")?.parentElement.remove();
+    } else if (JSON.parse(localStorage.getItem("loggedInUser")).user_type === "charity") {
+        document.querySelector("a[href='adminProducts'].nav-link")?.parentElement.remove();
+        document.querySelector("a[href='adminOrders'].nav-link")?.parentElement.remove();
+        document.querySelector("a[href='adminDonations'].nav-link")?.parentElement.remove();
+    }
 });

@@ -5,14 +5,13 @@ if (!localStorage.getItem("loggedInUser")) {
 } else if (JSON.parse(localStorage.getItem("loggedInUser")).id) {
   location.href = "/";
 }
-
 let customHourIndex = 1;
 
 /**
  * Dynamically adds a new row of custom store hours to the form.
  *
- * The inputs use `customHourIndex` to uniquely name each group.
- * The new row is appended to the `#custom-hours-container` element.
+ * The inputs use customHourIndex to uniquely name each group.
+ * The new row is appended to the #custom-hours-container element.
  *
  * @function addCustomHour
  * @returns {void}
@@ -30,7 +29,7 @@ function addCustomHour() {
       onclick="this.closest('.custom-hour-entry').remove()">
         <i class="fas fa-times"></i>
       </button>
-      <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Custom Day" class="form-control" required>
+      <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Day" class="form-control" required>
     </div>
     <div class="col">
       <input type="time" name="custom_hours[${customHourIndex}][open]" class="form-control" required>
@@ -38,11 +37,67 @@ function addCustomHour() {
     <div class="col">
       <input type="time" name="custom_hours[${customHourIndex}][close]" class="form-control" required>
     </div>
+    <div class="col text-center">
+      <button type="button" class="btn btn-outline-danger not-open-toggle-custom" aria-pressed="false" style="min-width: 80px;">
+        Not Open
+      </button>
+    </div>
   `;
 
   container.appendChild(newRow);
+
+  const toggleButton = newRow.querySelector('.not-open-toggle-custom');
+  const openInput = newRow.querySelector(`input[name="custom_hours[${customHourIndex}][open]"]`);
+  const closeInput = newRow.querySelector(`input[name="custom_hours[${customHourIndex}][close]"]`);
+
+  toggleButton.addEventListener('click', () => {
+    const isActive = toggleButton.classList.toggle('active');
+    toggleButton.setAttribute('aria-pressed', isActive);
+
+    if (isActive) {
+      openInput.disabled = true;
+      closeInput.disabled = true;
+      openInput.required = false;
+      closeInput.required = false;
+      openInput.value = '';
+      closeInput.value = '';
+    } else {
+      openInput.disabled = false;
+      closeInput.disabled = false;
+      openInput.required = true;
+      closeInput.required = true;
+    }
+  });
+
   customHourIndex++;
 }
+
+document.querySelectorAll('.not-open-toggle').forEach(button => {
+  button.addEventListener('click', () => {
+    const day = button.getAttribute('data-day');
+    if (!day) return;
+
+    const openInput = document.querySelector(`input[name="hours[${day}][open]"]`);
+    const closeInput = document.querySelector(`input[name="hours[${day}][close]"]`);
+
+    const isActive = button.classList.toggle('active');
+    button.setAttribute('aria-pressed', isActive);
+
+    if (isActive) {
+      openInput.disabled = true;
+      closeInput.disabled = true;
+      openInput.required = false;
+      closeInput.required = false;
+      openInput.value = '';
+      closeInput.value = '';
+    } else {
+      openInput.disabled = false;
+      closeInput.disabled = false;
+      openInput.required = true;
+      closeInput.required = true;
+    }
+  });
+});
 
 document.addEventListener('DOMContentLoaded', function () {
   const userTypeSelect = document.getElementById('userType');
@@ -346,6 +401,8 @@ document.addEventListener('DOMContentLoaded', function () {
               const close = document.querySelector(`input[name="hours[${day}][close]"]`)?.value;
               if (open && close) {
                 storeHours[day] = `${open}-${close}`;
+              } else {
+                storeHours[day] = `Closed`;
               }
             });
 
@@ -362,6 +419,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const close = closeInput.value;
                 if (label && open && close) {
                   storeHours[label] = `${open}-${close}`;
+                } else if (label) {
+                  storeHours[label] = `Closed`;
                 }
               }
             });

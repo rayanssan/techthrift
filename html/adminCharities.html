@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechThrift Partners - Charities</title>
+  <title>TechThrift Partners - Manage Charity</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -22,8 +22,7 @@
       <div class="row align-items-center gap-3">
         <!-- Left elements -->
         <div class="col-lg-5 col-md-12 col-12 d-flex w-auto align-items-center">
-          <a id="header-brand" href="/adminDashboard"
-            class="ms-1">
+          <a id="header-brand" href="/adminDashboard" class="ms-1">
             <img alt="TechThrift's logo" src="../media/images/logo_hor_partners.png">
           </a>
         </div>
@@ -55,17 +54,7 @@
           <a class="nav-link text-dark" href="adminDashboard"><i class="fas fa-tachometer-alt me-2"></i>Start</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-dark" href="adminProducts"><i class="fas fa-box me-2"></i>Products</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="adminOrders"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Charities</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="adminDonations"><i
-              class="fas fa-hand-holding-heart me-2"></i>Donations</a>
+          <a class="nav-link text-dark" href="adminCharities"><i class="fas fa-users me-2"></i>Manage Charity</a>
         </li>
       </ul>
     </div>
@@ -81,7 +70,8 @@
           <div>
             <button class="btn btn-danger me-2" onclick="deleteSelectedProjects()">
               <i class="fas fa-trash-alt me-1"></i> Delete Selected</button>
-            <button class="btn btn-success" onclick="toggleProjectForm()"><i class="fas fa-plus me-1"></i>Add Project</button>
+            <button class="btn btn-success" onclick="toggleProjectForm()"><i class="fas fa-plus me-1"></i>Add
+              Project</button>
           </div>
         </div>
 
@@ -115,14 +105,8 @@
         </div>
 
         <div class="row mb-3">
-          <div class="col-md-6 mb-2">
+          <div class="w-100 mb-2">
             <input type="text" id="productFilterInput" class="form-control" placeholder="Filter products by name">
-          </div>
-          <div class="col-md-6">
-            <select id="charityFilterSelect" class="form-select">
-              <option value="">All Charities</option>
-              <!-- Options will be dynamically inserted here -->
-            </select>
           </div>
         </div>
 
@@ -177,10 +161,7 @@
     <script src="../scripts/auth.js"></script>
     <script src="../scripts/ui.js"></script>
     <script>
-      // Hardcoded charity ID for testing
-      const TEST_CHARITY_ID = 2;
-      const TEST_CLIENT_ID = 1;
-      const TEST_CHARITY_NAME = "Michael's Charity";
+      const CHARITY_ID = JSON.parse(localStorage.getItem("loggedInUser")).id;
 
       let donationCharityFilter = '';
 
@@ -201,7 +182,7 @@
           name,
           description,
           endDate,
-          charity: TEST_CHARITY_ID,
+          charity: CHARITY_ID,
         };
 
         try {
@@ -254,7 +235,7 @@
 
       async function loadCharityProjects() {
         try {
-          const res = await fetch(`/ttuser/charityProjects?charity_id=${TEST_CHARITY_ID}`);
+          const res = await fetch(`/ttuser/charityProjects?charity_id=${CHARITY_ID}`);
           const projects = await res.json();
           const tbody = document.getElementById('project-list');
           tbody.innerHTML = '';
@@ -275,7 +256,7 @@
           <td>${p.id}</td>
           <td>${p.name}</td>
           <td>${p.description}</td>
-          <td>${p.endDate || 'N/A'}</td>
+          <td>${p.endDate ? new Date(p.endDate).toLocaleDateString() : 'N/A'}</td>
         `;
             tbody.appendChild(tr);
           });
@@ -284,29 +265,6 @@
         }
       }
 
-      async function setupCharityFilter() {
-        try {
-          const res = await fetch('/ttuser/charity');
-          const charities = await res.json();
-          const select = document.getElementById('charityFilterSelect');
-          select.innerHTML = `<option value="">All Charities</option>`;
-          charities.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.name;
-            option.textContent = c.name;
-            select.appendChild(option);
-          });
-
-          select.addEventListener('change', () => {
-            donationCharityFilter = select.value;
-            loadDonatedProducts(); // reapply filter
-          });
-        } catch (err) {
-          console.error('Failed to load charities for filter:', err);
-        }
-      }
-
-
       async function loadDonatedProducts() {
         try {
           const res = await fetch(`/tt/donation`);
@@ -314,50 +272,51 @@
           const tbody = document.getElementById('donation-list');
           tbody.innerHTML = '';
 
-          products
-            .filter(p => donationCharityFilter === '' || p.charity === donationCharityFilter)
-            .forEach(p => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-          <td>${p.id}</td>
-          <td>${p.name}</td>
-          <td>${p.brand}</td>
-          <td>${p.product_condition}</td>
-          <td>${p.year || "N/A"}</td>
-          <td>${p.charity}</td>
-          <td>${p.store}</td>
-        `;
-              tbody.appendChild(tr);
-            });
+          const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+          const userNipc = loggedInUser?.nipc;
+
+          // Apply filters
+          const filteredProducts = products
+            .filter(p => p.store_nipc === userNipc)
+            .filter(p => donationCharityFilter === '' || p.charity === donationCharityFilter);
+
+          // Show empty message if no matching products
+          if (filteredProducts.length === 0) {
+            tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center text-muted">
+            No donations have been made to this charity so far.
+          </td>
+        </tr>`;
+            return;
+          }
+
+          // Otherwise render rows
+          filteredProducts.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.brand}</td>
+            <td>${p.product_condition}</td>
+            <td>${p.year || "N/A"}</td>
+            <td>${p.charity}</td>
+            <td>${p.store}</td>
+          `;
+            tbody.appendChild(tr);
+          });
         } catch (err) {
           console.error('Failed to load donations:', err);
         }
       }
 
-
       document.addEventListener('DOMContentLoaded', () => {
-        setupCharityFilter();
-
         loadCharityProjects();
         loadDonatedProducts();
       });
 
       const projectFilterInput = document.getElementById('projectFilterInput');
       const productFilterInput = document.getElementById('productFilterInput');
-      const charityFilterSelect = document.getElementById('charityFilterSelect');
-
-      function loadCharities() {
-        fetch('/ttuser/charity')
-          .then(res => res.json())
-          .then(charities => {
-            charities.forEach(c => {
-              const opt = document.createElement('option');
-              opt.value = c.id;
-              opt.textContent = c.name;
-              charityFilterSelect.appendChild(opt);
-            });
-          });
-      }
 
       function filterProjects() {
         const nameFilter = projectFilterInput.value.toLowerCase();
@@ -369,7 +328,6 @@
 
       function filterDonatedProducts() {
         const nameFilter = productFilterInput.value.toLowerCase();
-        const charityFilter = charityFilterSelect.value;
 
         document.querySelectorAll('#donation-list tr').forEach(row => {
           const name = row.children[1]?.textContent?.toLowerCase() || '';
@@ -385,10 +343,7 @@
       // Attach events
       projectFilterInput.addEventListener('input', filterProjects);
       productFilterInput.addEventListener('input', filterDonatedProducts);
-      charityFilterSelect.addEventListener('change', filterDonatedProducts);
 
-      // Initial setup
-      loadCharities();
     </script>
     <!-- Scripts -->
 </body>

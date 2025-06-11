@@ -36,6 +36,76 @@ window.addEventListener('userAuthenticated', async (event) => {
             .join('');
     }
 
+    let storeMap = null; 
+
+    async function renderStoreMap() {
+        // Build full display address
+        const displayAddress = `${JSON.parse(localStorage.getItem("loggedInUser")).address}, ${
+            JSON.parse(localStorage.getItem("loggedInUser")).city}, ${
+            JSON.parse(localStorage.getItem("loggedInUser")).country}`;
+
+        let geoRes;
+        let geoData;
+
+        // Attempt full address geocoding
+        geoRes = await fetch(`/geocode?q=${encodeURIComponent(displayAddress)}`);
+        geoData = await geoRes.json();
+
+        // Fallback to simplified address if not found
+        if (!geoData.length) {
+            function simplifyAddress(address) {
+                const parts = address.split(',');
+                if (parts.length > 1) {
+                    return `${parts[0].trim()}, ${parts[parts.length - 2].trim()} ${parts[parts.length - 1].trim()}`;
+                }
+                return address;
+            }
+
+            const simplifiedAddress = simplifyAddress(displayAddress);
+            geoRes = await fetch(`/geocode?q=${encodeURIComponent(simplifiedAddress)}`);
+            geoData = await geoRes.json();
+        }
+
+        // Set coordinates (fallback to 0,0 if nothing found)
+        if (geoData.length) {
+            const lat = parseFloat(geoData[0].lat);
+            const lon = parseFloat(geoData[0].lon);
+
+            // If a map instance exists, remove it first
+            if (storeMap) {
+                storeMap.remove();
+            }
+
+            // Initialize the map with the known coordinates
+            storeMap = L.map('store-map').setView([lat, lon], 13);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(storeMap);
+
+            // Create and add Leaflet marker with custom icon
+            const markerIcon = new L.divIcon({
+                html: '<i class="text-primary fa fa-map-marker fa-3x"></i>',
+                className: 'marker-icon',
+                iconSize: [30, 30],
+                iconAnchor: [14, 35],
+                popupAnchor: [0, -35]
+            });
+
+            L.marker([lat, lon], { icon: markerIcon })
+                .addTo(storeMap)
+                .bindPopup(`<b style="font-size: 14px;">${JSON.parse(localStorage.getItem("loggedInUser")).nickname}</b><br><br>${displayAddress}`)
+                .openPopup();
+        } else {
+            // Display location not found message if geodata is empty
+            document.getElementById('store-map').innerHTML = `
+            <p class="text-secondary text-center" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                The location of the store could not be found on the map.
+            </p>
+        `;
+        }
+    }
 
     if (document.body.id == "adminProfilePage" && loggedInUser.user_type === 'store') {
         const headerBrand = document.querySelector('#header-brand');
@@ -241,6 +311,12 @@ window.addEventListener('userAuthenticated', async (event) => {
 
         <hr>
 
+        ${loggedInUser.user_type == "store" ?
+            `<div id="store-map" class="rounded" style="height: 300px; width: 100%;">
+            <p class="text-center fw-bold display-6 loading-dots"
+            style="display: flex; justify-content: center; align-items: center; height: 100%;"></p></div><hr>` : ""
+        }
+
         <h3 class="text-start my-4">My Orders</h3>
         <div id="orders-list" class="list-group"></div>
 
@@ -294,6 +370,10 @@ window.addEventListener('userAuthenticated', async (event) => {
             getCountryDisplay(loggedInUser.country);
         }
 
+        if (loggedInUser.user_type === "store") {
+            renderStoreMap();
+        }
+
     }
 
     /**
@@ -332,44 +412,105 @@ window.addEventListener('userAuthenticated', async (event) => {
     }
 
     let customHourIndex = 1;
+
     /**
      * Dynamically adds a new row of custom store hours to the form.
      *
-     * The inputs use `customHourIndex` to uniquely name each group.
-     * The new row is appended to the `#custom-hours-container` element.
+     * Appends the new row to the provided container element.
+     * If an entry object is passed, it populates the inputs accordingly.
      *
-     * @function addCustomHour
+     * @param {HTMLElement} container Optional, The DOM element to which the new custom hour row will be appended.
+     * @param {Object} [entry] Optional entry with properties:
+     *                         - day (string)
+     *                         - hours (string, e.g. "09:00-17:00" or "Closed")
      * @returns {void}
      */
-    function addCustomHour() {
-        const container = document.getElementById('custom-hours-container');
+    function addCustomHour(container = document.getElementById("custom-hours-container"), entry = {}) {
+
+        const isClosed = entry.hours === "Closed";
+
+        let open = '', close = '';
+        if (entry.hours && !isClosed) {
+            [open, close] = entry.hours.split('-');
+        }
 
         const newRow = document.createElement('div');
         newRow.className = 'row mb-2 align-items-center custom-hour-entry';
         newRow.innerHTML = `
-            <div class="col d-flex align-items-center gap-2">
+        <div class="col d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm btn-outline-danger 
-            rounded-circle d-flex align-items-center justify-content-center" 
-            style="width: 28px; height: 28px;" 
-            onclick="this.closest('.custom-hour-entry').remove()">
+                rounded-circle d-flex align-items-center justify-content-center" 
+                style="width: 28px; height: 28px;" 
+                onclick="this.closest('.custom-hour-entry').remove()">
                 <i class="fas fa-times"></i>
             </button>
-            <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Custom Day" class="form-control" required>
-            </div>
-            <div class="col">
+            <input type="text" name="custom_hours[${customHourIndex}][label]" placeholder="Day" class="form-control" required>
+        </div>
+        <div class="col">
             <input type="time" name="custom_hours[${customHourIndex}][open]" class="form-control" required>
-            </div>
-            <div class="col">
+        </div>
+        <div class="col">
             <input type="time" name="custom_hours[${customHourIndex}][close]" class="form-control" required>
-            </div>
-        `;
+        </div>
+        <div class="col text-center">
+            <button type="button" class="btn btn-outline-danger not-open-toggle-custom" aria-pressed="false" style="min-width: 80px;">
+                Not Open
+            </button>
+        </div>
+    `;
+
         container.appendChild(newRow);
+
+        const toggleButton = newRow.querySelector('.not-open-toggle-custom');
+        const dayInput = newRow.querySelector(`input[name="custom_hours[${customHourIndex}][label]"]`);
+        const openInput = newRow.querySelector(`input[name="custom_hours[${customHourIndex}][open]"]`);
+        const closeInput = newRow.querySelector(`input[name="custom_hours[${customHourIndex}][close]"]`);
+
+        // Populate inputs if entry provided
+        dayInput.value = entry.day || '';
+        openInput.value = open;
+        closeInput.value = close;
+
+        // If closed, toggle button active and disable inputs
+        if (isClosed) {
+            toggleButton.classList.add('active');
+            toggleButton.setAttribute('aria-pressed', 'true');
+            openInput.disabled = true;
+            closeInput.disabled = true;
+            openInput.required = false;
+            closeInput.required = false;
+        } else {
+            openInput.disabled = false;
+            closeInput.disabled = false;
+            openInput.required = true;
+            closeInput.required = true;
+        }
+
+        toggleButton.addEventListener('click', () => {
+            const isActive = toggleButton.classList.toggle('active');
+            toggleButton.setAttribute('aria-pressed', isActive);
+
+            if (isActive) {
+                openInput.disabled = true;
+                closeInput.disabled = true;
+                openInput.required = false;
+                closeInput.required = false;
+                openInput.value = '';
+                closeInput.value = '';
+            } else {
+                openInput.disabled = false;
+                closeInput.disabled = false;
+                openInput.required = true;
+                closeInput.required = true;
+            }
+        });
+
         customHourIndex++;
     }
 
     profileInfo.querySelector("#resendVerificationBtn")?.addEventListener("click", resendVerificationEmail);
 
-    profileInfo.querySelectorAll('button.btn-outline-secondary').forEach(button => {
+    profileInfo.querySelectorAll('button.btn-outline-secondary.rounded-circle').forEach(button => {
         button.addEventListener('click', function onEditClick() {
             const p = button.closest('p') || button.closest('h2') || button.closest('div').parentElement;
             const valueSpan = p.querySelector('.field-value');
@@ -460,12 +601,15 @@ window.addEventListener('userAuthenticated', async (event) => {
                         }
                     }
 
-                } else if (field === 'nif' || field === 'nic') {
+                } else if (field === 'nif' || field === 'nic' || field == 'nipc') {
                     input.type = 'text';
                     input.maxLength = 9;
                     input.pattern = '\\d{9}'
                     input.title = 'Exactly 9 numeric characters';
                     input.value = currentValue;
+                    if (field == "nipc") {
+                        input.required = "true";
+                    }
                 } else if (field === 'name') {
                     input.type = 'text';
                     input.required = true;
@@ -474,19 +618,26 @@ window.addEventListener('userAuthenticated', async (event) => {
                     input.title = 'Name cannot be empty';
                     input.value = currentValue;
                 } else if (field === "opening_hours") {
-
+                    currentValue = "";
                     // Create a container div to hold the store hours inputs
                     input = document.createElement('div');
                     input.className = 'store-hours-edit-container border p-3 w-50 rounded bg-light';
 
                     const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-                    const openingHoursArray = Array.isArray(currentValue) ? currentValue : [];
+                    let openingHoursArray = JSON.parse(localStorage.getItem("loggedInUser")).opening_hours;
 
                     dayOrder.forEach(day => {
                         // Find entry for this day
                         const entry = openingHoursArray.find(e => e.day === day) || {};
-                        const [open = '', close = ''] = (entry.hours || '').split('-');
+                        const isClosed = entry.hours === "Closed";
+
+                        // Default open/close to empty strings if Closed
+                        let open = '', close = '';
+
+                        if (!isClosed) {
+                            [open, close] = (entry.hours || '').split('-');
+                        }
 
                         const row = document.createElement('div');
                         row.className = 'row mb-2 align-items-center';
@@ -503,8 +654,9 @@ window.addEventListener('userAuthenticated', async (event) => {
                         openInput.type = 'time';
                         openInput.name = `hours[${day}][open]`;
                         openInput.className = 'form-control';
-                        openInput.required = true;
+                        openInput.required = !isClosed;  // required only if not closed
                         openInput.value = open;
+                        openInput.disabled = isClosed;   // disabled if closed
                         openCol.appendChild(openInput);
 
                         // Close time input
@@ -514,13 +666,53 @@ window.addEventListener('userAuthenticated', async (event) => {
                         closeInput.type = 'time';
                         closeInput.name = `hours[${day}][close]`;
                         closeInput.className = 'form-control';
-                        closeInput.required = true;
+                        closeInput.required = !isClosed;
                         closeInput.value = close;
+                        closeInput.disabled = isClosed;
                         closeCol.appendChild(closeInput);
+
+                        // Not Open toggle button column
+                        const notOpenCol = document.createElement('div');
+                        notOpenCol.className = 'col text-center';
+
+                        const notOpenBtn = document.createElement('button');
+                        notOpenBtn.type = 'button';
+                        notOpenBtn.className = 'btn btn-outline-danger not-open-toggle';
+                        notOpenBtn.style.minWidth = '80px';
+                        notOpenBtn.setAttribute('aria-pressed', isClosed ? 'true' : 'false');
+                        notOpenBtn.textContent = 'Not Open';
+
+                        // Set button active if Closed
+                        if (isClosed) {
+                            notOpenBtn.classList.add('active');
+                        }
+
+                        // Toggle click event
+                        notOpenBtn.addEventListener('click', () => {
+                            const isActive = notOpenBtn.classList.toggle('active');
+                            notOpenBtn.setAttribute('aria-pressed', isActive);
+
+                            if (isActive) {
+                                openInput.disabled = true;
+                                closeInput.disabled = true;
+                                openInput.required = false;
+                                closeInput.required = false;
+                                openInput.value = '';
+                                closeInput.value = '';
+                            } else {
+                                openInput.disabled = false;
+                                closeInput.disabled = false;
+                                openInput.required = true;
+                                closeInput.required = true;
+                            }
+                        });
+
+                        notOpenCol.appendChild(notOpenBtn);
 
                         row.appendChild(dayCol);
                         row.appendChild(openCol);
                         row.appendChild(closeCol);
+                        row.appendChild(notOpenCol);
 
                         input.appendChild(row);
                     });
@@ -540,6 +732,18 @@ window.addEventListener('userAuthenticated', async (event) => {
                     customHoursContainer.id = 'custom-hours-container';
                     input.appendChild(customHoursContainer);
 
+                    // Render holiday/custom hours entries (not in dayOrder)
+                    openingHoursArray.forEach(entry => {
+                        if (!dayOrder.includes(entry.day)) {
+                            if (typeof addCustomHour === 'function') {
+                                // Pass existing data so addCustomHour can populate fields
+                                addCustomHour(customHoursContainer, entry);
+                            } else {
+                                console.warn('addCustomHour function is not defined');
+                            }
+                        }
+                    });
+
                     // Add Holiday Hours button
                     const addHolidayBtn = document.createElement('button');
                     addHolidayBtn.type = 'button';
@@ -553,6 +757,7 @@ window.addEventListener('userAuthenticated', async (event) => {
                         }
                     };
                     input.appendChild(addHolidayBtn);
+
                 } else {
                     input.type = 'text';
                     input.maxLength = 255;
@@ -620,34 +825,38 @@ window.addEventListener('userAuthenticated', async (event) => {
                         return res.json();
                     })
                     .then(async userResult => {
-                        if (!input.reportValidity()) {
-                            // Invalid input: don't proceed
-                            return;
-                        }
-                        if (
-                            (field === 'dob' && new Date(input.value).setHours(0, 0, 0, 0) === new Date(currentValue).setHours(0, 0, 0, 0)
-                            ) ||
-                            (field !== 'dob' &&
-                                input.value.trim() === currentValue.trim())
-                        ) {
-                            const newSpan = document.createElement('span');
-                            newSpan.className = 'field-value';
-                            newSpan.dataset.field = field;
-                            newSpan.textContent = currentValue;
-                            p.replaceChild(newSpan, input);
-
-                            if (field === 'name') {
-                                const label = p.querySelector('label');
-                                if (label) label.remove();
+                        if (field !== "opening_hours") {
+                            if (!input.reportValidity()) {
+                                // Invalid input: don't proceed
+                                return;
                             }
 
-                            button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
-                            button.title = 'Edit ' + field.replace(/_/g, ' ');
-                            cancelBtn.remove();
 
-                            button.onclick = null;
-                            button.addEventListener('click', onEditClick);
-                            return;
+                            if (
+                                (field === 'dob' && new Date(input.value).setHours(0, 0, 0, 0) === new Date(currentValue).setHours(0, 0, 0, 0)
+                                ) ||
+                                (field !== 'dob' &&
+                                    input.value.trim() === currentValue.trim())
+                            ) {
+                                const newSpan = document.createElement('span');
+                                newSpan.className = 'field-value';
+                                newSpan.dataset.field = field;
+                                newSpan.textContent = currentValue;
+                                p.replaceChild(newSpan, input);
+
+                                if (field === 'name') {
+                                    const label = p.querySelector('label');
+                                    if (label) label.remove();
+                                }
+
+                                button.innerHTML = '<i class="fa fa-pen fs-6"></i>';
+                                button.title = 'Edit ' + field.replace(/_/g, ' ');
+                                cancelBtn.remove();
+
+                                button.onclick = null;
+                                button.addEventListener('click', onEditClick);
+                                return;
+                            }
                         }
 
                         if (field === "nipc") {
@@ -693,8 +902,11 @@ window.addEventListener('userAuthenticated', async (event) => {
                             }
                         }
 
-                        let newValue = input.value.trim();
-                        if (!newValue) newValue = 'Not given';
+                        let newValue;
+                        if (field != "opening_hours") {
+                            newValue = input.value.trim();
+                            if (!newValue) newValue = 'Not given';
+                        }
 
                         if (field === 'dob' && newValue !== 'Not given') {
                             const d = new Date(newValue);
@@ -794,6 +1006,52 @@ window.addEventListener('userAuthenticated', async (event) => {
                                         input.focus();
                                     });
                             } else if (loggedInUser.user_type == "store") {
+
+                                if (field == "opening_hours") {
+                                    let storeHours = [];
+
+                                    // Gather store hours for standard days
+                                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                                    days.forEach(day => {
+                                        const open = input.querySelector(`input[name="hours[${day}][open]"]`)?.value;
+                                        const close = input.querySelector(`input[name="hours[${day}][close]"]`)?.value;
+                                        let hours = 'Closed';
+                                        if (open && close) {
+                                            hours = `${open}-${close}`;
+                                        }
+                                        storeHours.push({ day, hours });
+                                    });
+
+                                    // Custom holiday hours
+                                    const customHoursEntries = input.querySelectorAll('.custom-hour-entry');
+                                    customHoursEntries.forEach(entry => {
+                                        const labelInput = entry.querySelector('input[name$="[label]"]');
+                                        const openInput = entry.querySelector('input[name$="[open]"]');
+                                        const closeInput = entry.querySelector('input[name$="[close]"]');
+
+                                        if (labelInput && openInput && closeInput) {
+                                            const label = labelInput.value.trim();
+                                            const open = openInput.value;
+                                            const close = closeInput.value;
+                                            let hours = 'Closed';
+                                            if (label) {
+                                                if (open && close) {
+                                                    hours = `${open}-${close}`;
+                                                }
+                                                storeHours.push({ day: label, hours });
+                                            }
+                                        }
+                                    });
+
+                                    updatedClient.opening_hours = storeHours;
+
+                                    newValue = storeHours;
+                                    newSpan.innerHTML = newValue
+                                        .map(entry => `${entry.day}: ${entry.hours}`)
+                                        .join('<br>');
+                                }
+
+
                                 fetch('/ttuser/edit/store', {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
@@ -819,9 +1077,12 @@ window.addEventListener('userAuthenticated', async (event) => {
                                         currentValue = newValue;
                                         // Update localStorage
                                         const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
-                                        if (newValue.toLowerCase() == "not given") {
-                                            newValue = null;
+                                        if (typeof newValue === 'string') {
+                                            if (newValue.toLowerCase() === "not given") {
+                                                newValue = null;
+                                            }
                                         }
+
                                         loggedInUser[field] = newValue;
                                         localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
@@ -831,7 +1092,7 @@ window.addEventListener('userAuthenticated', async (event) => {
                                             "success");
 
                                         getCountryDisplay(loggedInUser.country);
-
+                                        renderStoreMap();
                                     }).catch(err => {
                                         showMessage("Editing error", `An unknown error happened while editing your ${(field === "nipc") ? field.toUpperCase()
                                             : field.replace("_", " ")}.`, "danger");

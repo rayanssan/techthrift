@@ -329,6 +329,12 @@ select {
     }
 }
 
+.not-open-toggle.active {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border-color: #dc3545 !important;
+}
+
 // Price slider styling
 .slider-container {
     display: flex;

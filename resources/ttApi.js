@@ -1349,7 +1349,10 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
 
         // Fields that belong to clients and entities tables
         const clientCols = ['name', 'email', 'phone_number', 'nif', 'nic', 'gender', 'dob'];
-        const storeCols = ['nipc', 'address', 'city', 'country', 'opening_hours'];
+        const storeCols = ['nipc', 'address', 'city', 'country'];
+
+        // Separate opening_hours from other storeCols
+        const { opening_hours, ...otherStoreFields } = updated;
 
         // Prepare SET clauses and values
         const setClauses = [];
@@ -1365,12 +1368,11 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
             }
         }
 
-        if (setClauses.length === 0) {
+        if (setClauses.length === 0 && !opening_hours) {
             return res.status(400).json({ error: 'No updatable fields provided' });
         }
 
         // Prepare WHERE clauses for identifiers
-        // For email, prefix with 'c', for others with 'e'
         const whereClauses = [];
         for (const id of providedIdentifiers) {
             const prefix = id === 'email' ? 'c' : 'e';
@@ -1378,30 +1380,93 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
             values.push(updated[id]);
         }
 
-        const query = `
+        const updateQuery = `
         UPDATE clients c
         JOIN entities e ON c.id = e.id
         SET ${setClauses.join(', ')}
         WHERE ${whereClauses.join(' OR ')}
         `;
 
-        // Execute on primary DB
+        // Execute update on primary DB
         await new Promise((resolve, reject) => {
-            db.execute(query, values, (err) => {
+            db.execute(updateQuery, values, (err) => {
                 if (err) return reject(err);
                 resolve();
             });
         });
 
-        // Execute on replica DB
+        // Execute update on replica DB
         await new Promise((resolve, reject) => {
-            dbR.execute(query, values, (err) => {
+            dbR.execute(updateQuery, values, (err) => {
                 if (err) return reject(err);
                 resolve();
             });
         });
 
-        res.json({ message: 'Store successfully updated' });
+        // If no opening_hours provided, finish here
+        if (!opening_hours) {
+            return res.json({ message: 'Store successfully updated' });
+        }
+
+        // Update entityHours table for the store hours
+
+        let entityId = updated.id;
+
+        if (!entityId) {
+            // Fetch entity id by nipc, email, or phone_number
+            const idQueryParts = [];
+            const idValues = [];
+            if (updated.nipc) {
+                idQueryParts.push('e.nipc = ?');
+                idValues.push(updated.nipc);
+            }
+            if (updated.email) {
+                idQueryParts.push('c.email = ?');
+                idValues.push(updated.email);
+            }
+            if (updated.phone_number) {
+                idQueryParts.push('c.phone_number = ?');
+                idValues.push(updated.phone_number);
+            }
+
+            const fetchIdQuery = `
+                SELECT e.id FROM entities e
+                JOIN clients c ON c.id = e.id
+                WHERE ${idQueryParts.join(' OR ')}
+                LIMIT 1
+            `;
+
+            const [rows] = await db.promise().query(fetchIdQuery, idValues);
+            if (rows.length === 0) {
+                return res.status(404).json({ error: 'Store not found to update hours' });
+            }
+            entityId = rows[0].id;
+        }
+
+        // Delete existing hours for this entity
+        const deleteHoursQuery = `DELETE FROM entityHours WHERE entity = ?`;
+        await db.promise().execute(deleteHoursQuery, [entityId]);
+        await dbR.promise().execute(deleteHoursQuery, [entityId]);
+
+        // Insert new hours
+        // Format: (entity, day, hours)
+        const insertValues = [];
+        const placeholders = [];
+
+        for (const entry of opening_hours) {
+            const hours = entry.hours;
+            const storedHours = (hours === 'Closed') ? "Closed" : hours;
+            placeholders.push('(?, ?, ?)');
+            insertValues.push(entityId, entry.day, storedHours);
+        }
+
+        if (insertValues.length > 0) {
+            const insertQuery = `INSERT INTO entityHours (entity, day, hours) VALUES ${placeholders.join(', ')}`;
+            await db.promise().execute(insertQuery, insertValues);
+            await dbR.promise().execute(insertQuery, insertValues);
+        }
+
+        res.json({ message: 'Store and hours successfully updated' });
 
     } catch (error) {
         console.error('DB operation failed:', error.message);
