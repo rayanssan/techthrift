@@ -1,4 +1,5 @@
 "use strict";
+import { BASE_URL } from './config.js';
 
 // test-create-products.js
 
@@ -89,15 +90,14 @@ function getDummyValue(field) {
 
 function generateProduct(category) {
   const fields = categoryFieldMap[category];
-  const product = { category };
+  const product = { category, store_nipc: 112233445 };  // 👈 adiciona store_nipc
   for (const field of fields) {
     product[field] = getDummyValue(field);
   }
   return product;
 }
-
 async function submitProduct(product) {
-    const res = await fetch('/tt/add', {
+    const res = await fetch(`${BASE_URL}/tt/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product)
