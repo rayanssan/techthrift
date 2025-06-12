@@ -1,5 +1,7 @@
 # TechThrift
 
+<img src="./media/images/logo.png" alt="TechThrift Logo" width="250">
+
 Developers:
 - Bruno Campos: 60472
 - Guilherme Bastos: 60471
