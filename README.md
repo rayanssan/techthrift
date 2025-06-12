@@ -2,6 +2,15 @@
 
 <img src="./media/images/logo.png" alt="TechThrift Logo" width="250">
 
+**TechThrift** is a full-featured platform for managing sales, inventory, repairs, and donations. It handles product listings, client transactions, user interactions, and store logistics. The backend is built with **Node.js (Express)** and **MySQL**, and it integrates with services and libraries like **Auth0**, **Nominatim OpenStreetMap**, **Leaflet**, **Sass**, **Bootstrap**, and **FontAwesome**.
+
+TechThrift is composed of two main platforms:
+
+- **TechThrift** – the public-facing website where clients can browse and purchase refurbished electronics.
+- **TechThrift Partners** – a management portal for stores, employees, and charities. This side handles internal operations such as inventory control, transaction processing, repair tracking, and donation oversight.
+
+---
+
 Developers:
 - Bruno Campos: 60472
 - Guilherme Bastos: 60471
@@ -9,13 +18,6 @@ Developers:
 - João Martins: 60290
 - Pedro Monteiro: 60275
 - Rayan S. Santana: 60282
-
-**TechThrift** is a full-featured platform for managing sales, inventory, repairs, and donations. It handles product listings, client transactions, user interactions, and store logistics. The backend is built with **Node.js (Express)** and **MySQL**, and it integrates with services and libraries like **Auth0**, **Nominatim OpenStreetMap**, **Leaflet**, **Sass**, **Bootstrap**, and **FontAwesome**.
-
-TechThrift is composed of two main platforms:
-
-- **TechThrift** – the public-facing website where clients can browse and purchase refurbished electronics.
-- **TechThrift Partners** – a management portal for stores, employees, and charities. This side handles internal operations such as inventory control, transaction processing, repair tracking, and donation oversight.
 
 ---
 
