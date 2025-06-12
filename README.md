@@ -91,7 +91,4 @@ Certain routes are protected and require access tokens:
 ## 📁 Documentation
 
 - **API Documentation**  
-  OpenAPI specifications can be found in the `docs` folder.
-
-- **Database Diagram**  
-  A complete ER diagram of the database is also located in the `docs` folder.
+  The OpenAPI specification can be found in the `docs` folder.
