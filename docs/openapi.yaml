@@ -1,1343 +1,4188 @@
 openapi: 3.0.0
 info:
   title: TechThrift API
-  version: 1.0.0
-  description: | 
-    Esta API permite a gestão do sistema TechThrift.
+  version: 4.0.0
+  description: |
+    This API powers the TechThrift platform, facilitating the management of users, products, repairs, donations, and transactions.
 
-    #### Funcionalidades de Gestão:
-    * Usuários
-    * Compras
-    * Vendas
-    * Doações
-    * Reparações
-    * Manifestações de interesse de usuários acerca de produtos
-    * Relatórios de atividade do sistema
-
+    #### Management Functionalities:
+    * Products
+    * Users
+    * Transactions
+    * Donations
+    * Product Alerts
 servers:
-  - url: https://api.techthrift.com/v1
-
+- url: https://www.techthrift.duckdns.org
 tags:
-  - name: tt
-    description: Gestão de produtos no sistema TechThrift
-  - name: ttuser
-    description: Gestão de usuários no sistema TechThrift
+- name: tt
+  description: Management of products in the TechThrift System
+- name: ttuser
+  description: Management of users in the TechThrift System
+- name: tttransaction
+  description: Management of transactions in the TechThrift System
+- name: report
+  description: Usage Reporting in the TechThrift System
+- name: geocode
+  description: Geocoding services using OpenStreetMap Nominatim
+- name: auth-verification
+  description: Auth0 authentication verification
+
 paths:
   /tt:
     get:
       tags:
-        - tt
-      summary: Listar todos os equipamentos disponíveis no sistema para venda.
-      description: Retorna uma lista de equipamentos disponíveis para venda no sistema, com opção de busca e filtros.
+      - tt
+      summary: Get all products up for sale
+      description: Retrieve a list of available products for sale with optional filters for product attributes and store name.
       parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nome dos equipamentos (busca parcial permitida).
-          schema:
-            type: string
-        - name: category
-          in: query
-          required: false
-          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
-          schema:
-            type: string
-        - name: product_condition
-          in: query
-          required: false
-          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
-          schema:
-            type: string
-        - name: brand
-          in: query
-          required: false
-          description: Marca do equipamento (ex. Apple, Dell, Samsung).
-          schema:
-            type: string
-        - name: color
-          in: query
-          required: false
-          description: Cor do equipamento (ex. Preto, Branco, Azul).
-          schema:
-            type: string
-        - name: processor
-          in: query
-          required: false
-          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
-          schema:
-            type: string
-        - name: storage
-          in: query
-          required: false
-          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
-          schema:
-            type: string
-        - name: os
-          in: query
-          required: false
-          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
-          schema:
-            type: string
-        - name: year
-          in: query
-          required: false
-          description: Ano de fabricação do equipamento.
-          schema:
-            type: integer
-        - name: max_price
-          in: query
-          required: false
-          description: Preço máximo permitido nos resultados (aplicado a produtos em venda).
-          schema:
-            type: number
-            format: float
-        - name: store
-          in: query
-          required: false
-          description: Nome da loja que detém os equipamentos.
-          schema:
-            type: string
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: Filter products by name (partial match).
+      - in: query
+        name: condition
+        schema:
+          type: string
+          enum: [ 'Like New', 'Excellent', 'Good', 'Needs Repair' ]
+        description: Filter products by condition.
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter products by category (partial match).
+      - in: query
+        name: brand
+        schema:
+          type: string
+        description: Filter products by brand (partial match).
+      - in: query
+        name: color
+        schema:
+          type: string
+        description: Filter products by color (partial match).
+      - in: query
+        name: processor
+        schema:
+          type: string
+        description: Filter products by processor (partial match).
+      - in: query
+        name: storage
+        schema:
+          type: string
+        description: Filter products by storage (partial match).
+      - in: query
+        name: screen
+        schema:
+          type: string
+        description: Filter products by screen type or size (partial match).
+      - in: query
+        name: os
+        schema:
+          type: string
+        description: Filter products by operating system (partial match).
+      - in: query
+        name: year
+        schema:
+          type: integer
+          format: int32
+        description: Filter products by manufacturing year (exact match).
+      - in: query
+        name: maxPrice
+        schema:
+          type: number
+          format: float
+        description: Filter products with price less than or equal to maxPrice.
+      - in: query
+        name: store
+        schema:
+          type: string
+        description: Filter products by store name (partial match).
       responses:
         '200':
-          description: ""
+          description: A list of products available for sale
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Product'
-  
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    store_nipc:
+                      type: string
+                    name:
+                      type: string
+                    product_condition:
+                      type: string
+                    availability:
+                      type: boolean
+                    category:
+                      type: string
+                    date_inserted:
+                      type: string
+                      format: date-time
+                    description:
+                      type: string
+                      nullable: true
+                    brand:
+                      type: string
+                      nullable: true
+                    model_code:
+                      type: string
+                      nullable: true
+                    color:
+                      type: string
+                      nullable: true
+                    weight:
+                      type: number
+                      format: float
+                      nullable: true
+                    dimensions:
+                      type: string
+                      nullable: true
+                    processor:
+                      type: string
+                      nullable: true
+                    screen:
+                      type: string
+                      nullable: true
+                    ram_memory:
+                      type: string
+                      nullable: true
+                    graphics_card:
+                      type: string
+                      nullable: true
+                    storage:
+                      type: string
+                      nullable: true
+                    keyboard:
+                      type: string
+                      nullable: true
+                    os:
+                      type: string
+                      nullable: true
+                    year:
+                      type: integer
+                      nullable: true
+                    price:
+                      type: number
+                      format: float
+                    image:
+                      type: string
+                      nullable: true
+                    store:
+                      type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database query error
+
   /tt/product:
     get:
       tags:
-        - tt
-      summary: Listar todos os equipamentos disponíveis no sistema.
-      description: Retorna uma lista de equipamentos disponíveis no sistema, com opção de busca e filtros.
+      - tt
+      summary: Get all products in the system
+      description: Retrieve a list of all products, optionally filtered by various attributes including availability.
       parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nome dos equipamentos (busca parcial permitida).
-          schema:
-            type: string
-        - name: category
-          in: query
-          required: false
-          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
-          schema:
-            type: string
-        - name: product_condition
-          in: query
-          required: false
-          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
-          schema:
-            type: string
-        - name: brand
-          in: query
-          required: false
-          description: Marca do equipamento (ex. Apple, Dell, Samsung).
-          schema:
-            type: string
-        - name: color
-          in: query
-          required: false
-          description: Cor do equipamento (ex. Preto, Branco, Azul).
-          schema:
-            type: string
-        - name: processor
-          in: query
-          required: false
-          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
-          schema:
-            type: string
-        - name: storage
-          in: query
-          required: false
-          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
-          schema:
-            type: string
-        - name: os
-          in: query
-          required: false
-          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
-          schema:
-            type: string
-        - name: year
-          in: query
-          required: false
-          description: Ano de fabricação do equipamento.
-          schema:
-            type: integer
-        - name: availability
-          in: query
-          required: false
-          description: Disponibilidade do equipamento (true, false, 1, 0).
-          schema:
-            type: string
-            enum: ["true", "false", "1", "0"]
-        - name: store
-          in: query
-          required: false
-          description: Nome da loja que detém os equipamentos.
-          schema:
-            type: string
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: Filter products by name (partial match).
+      - in: query
+        name: condition
+        schema:
+          type: string
+          enum: [ 'Like New', 'Excellent', 'Good', 'Needs Repair' ]
+        description: Filter products by condition.
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter products by category (partial match).
+      - in: query
+        name: brand
+        schema:
+          type: string
+        description: Filter products by brand (partial match).
+      - in: query
+        name: color
+        schema:
+          type: string
+        description: Filter products by color (partial match).
+      - in: query
+        name: processor
+        schema:
+          type: string
+        description: Filter products by processor (partial match).
+      - in: query
+        name: storage
+        schema:
+          type: string
+        description: Filter products by storage (partial match).
+      - in: query
+        name: os
+        schema:
+          type: string
+        description: Filter products by operating system (partial match).
+      - in: query
+        name: year
+        schema:
+          type: integer
+          format: int32
+        description: Filter products by manufacturing year (exact match).
+      - in: query
+        name: availability
+        schema:
+          type: boolean
+        description: Filter products by availability status.
+      - in: query
+        name: store
+        schema:
+          type: string
+        description: Filter products by store name (partial match).
       responses:
         '200':
-          description: ""
+          description: A list of products in the system
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Product'
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    store_nipc:
+                      type: string
+                    name:
+                      type: string
+                    product_condition:
+                      type: string
+                    availability:
+                      type: boolean
+                    category:
+                      type: string
+                    date_inserted:
+                      type: string
+                      format: date-time
+                    description:
+                      type: string
+                      nullable: true
+                    brand:
+                      type: string
+                      nullable: true
+                    model_code:
+                      type: string
+                      nullable: true
+                    color:
+                      type: string
+                      nullable: true
+                    weight:
+                      type: number
+                      format: float
+                      nullable: true
+                    dimensions:
+                      type: string
+                      nullable: true
+                    processor:
+                      type: string
+                      nullable: true
+                    screen:
+                      type: string
+                      nullable: true
+                    ram_memory:
+                      type: string
+                      nullable: true
+                    graphics_card:
+                      type: string
+                      nullable: true
+                    storage:
+                      type: string
+                      nullable: true
+                    keyboard:
+                      type: string
+                      nullable: true
+                    os:
+                      type: string
+                      nullable: true
+                    year:
+                      type: integer
+                      nullable: true
+                    store:
+                      type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database query error
 
   /tt/product/{id}:
     get:
       tags:
-        - tt
-      summary: Consultar detalhes de um equipamento específico.
-      description: Obtém as informações detalhadas de um equipamento específico.
+      - tt
+      summary: Get details about a product by ID
+      description: >
+        Retrieve detailed information about a specific product by its ID.   Includes product info, images (keyed by image_order), and if the product is on sale, includes sale-related details and store name.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique ID of the product to retrieve.
+        schema:
+          type: integer
       responses:
         '200':
-          description: ""
+          description: Product details retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  store_nipc:
+                    type: string
+                  name:
+                    type: string
+                  product_condition:
+                    type: string
+                  availability:
+                    type: boolean
+                  category:
+                    type: string
+                  date_inserted:
+                    type: string
+                    format: date-time
+                  description:
+                    type: string
+                    nullable: true
+                  brand:
+                    type: string
+                    nullable: true
+                  model_code:
+                    type: string
+                    nullable: true
+                  color:
+                    type: string
+                    nullable: true
+                  weight:
+                    type: number
+                    format: float
+                    nullable: true
+                  dimensions:
+                    type: string
+                    nullable: true
+                  processor:
+                    type: string
+                    nullable: true
+                  screen:
+                    type: string
+                    nullable: true
+                  ram_memory:
+                    type: string
+                    nullable: true
+                  graphics_card:
+                    type: string
+                    nullable: true
+                  storage:
+                    type: string
+                    nullable: true
+                  keyboard:
+                    type: string
+                    nullable: true
+                  os:
+                    type: string
+                    nullable: true
+                  year:
+                    type: integer
+                    nullable: true
+                  price:
+                    type: number
+                    format: float
+                    nullable: true
+                  sale_start_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  sale_end_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  store:
+                    type: string
+                  images:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      description: Image path URL
         '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-  
+          description: Product not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database query error
+
   /tt/add:
     post:
       tags:
-        - tt
-      summary: Registar um equipamento no sistema.
-      description: Permite registar equipamentos no sistema.
+      - tt
+      summary: Add a new product
+      description: Add a new product to the system with detailed attributes.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              type: object
+              required:
+              - name
+              - store_nipc
+              - product_condition
+              - availability
+              - category
+              properties:
+                name:
+                  type: string
+                store_nipc:
+                  type: string
+                  description: The store's NIPC identifier where the product belongs
+                product_condition:
+                  type: string
+                availability:
+                  type: boolean
+                  description: Whether the product is available or not
+                description:
+                  type: string
+                  nullable: true
+                category:
+                  type: string
+                brand:
+                  type: string
+                  nullable: true
+                model_code:
+                  type: string
+                  nullable: true
+                color:
+                  type: string
+                  nullable: true
+                weight:
+                  type: number
+                  format: float
+                  nullable: true
+                dimensions:
+                  type: string
+                  nullable: true
+                processor:
+                  type: string
+                  nullable: true
+                screen:
+                  type: string
+                  nullable: true
+                ram_memory:
+                  type: string
+                  nullable: true
+                graphics_card:
+                  type: string
+                  nullable: true
+                storage:
+                  type: string
+                  nullable: true
+                keyboard:
+                  type: string
+                  nullable: true
+                os:
+                  type: string
+                  nullable: true
+                year:
+                  type: integer
+                  nullable: true
       responses:
         '201':
-          description: ""
+          description: Product created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The newly created product ID
+                  name:
+                    type: string
+                  store_nipc:
+                    type: string
+                  product_condition:
+                    type: string
+                  availability:
+                    type: boolean
+                  description:
+                    type: string
+                    nullable: true
+                  category:
+                    type: string
+                  brand:
+                    type: string
+                    nullable: true
+                  model_code:
+                    type: string
+                    nullable: true
+                  color:
+                    type: string
+                    nullable: true
+                  weight:
+                    type: number
+                    format: float
+                    nullable: true
+                  dimensions:
+                    type: string
+                    nullable: true
+                  processor:
+                    type: string
+                    nullable: true
+                  screen:
+                    type: string
+                    nullable: true
+                  ram_memory:
+                    type: string
+                    nullable: true
+                  graphics_card:
+                    type: string
+                    nullable: true
+                  storage:
+                    type: string
+                    nullable: true
+                  keyboard:
+                    type: string
+                    nullable: true
+                  os:
+                    type: string
+                    nullable: true
+                  year:
+                    type: integer
+                    nullable: true
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /tt/upload:
+    post:
+      tags:
+      - tt
+      summary: Upload images for a product
+      description: Upload multiple images and associate them with a product by product ID, with optional order for each image.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: string
+                  description: The ID of the product to which images are being uploaded
+                orders:
+                  type: string
+                  description: JSON stringified array of image order integers, optional
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: The image files to upload
+      responses:
+        '200':
+          description: Images uploaded and metadata saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Images uploaded and metadata saved.
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-                
+          description: Missing images or product_id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Missing images.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /tt/remove/{id}:
     delete:
       tags:
-        - tt
-      summary: Remover um equipamento do sistema.
-      description: Permite remover um equipamento do sistema.
+      - tt
+      summary: Remove a product and its associated images
+      description: Deletes the product identified by ID along with all related images from the database.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      - name: id
+        in: path
+        description: The ID of the product to remove
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: "Product successfully removed"
-        '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-          
+          description: Product and related images successfully removed
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product and related images successfully removed
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /tt/sale/add:
     post:
       tags:
-        - tt
-      summary: Adicionar um equipamento para venda no sistema.
-      description: Permite adicionar um euipamento para venda no sistema.
+      - tt
+      summary: Set a product up for sale
+      description: Adds a product to the saleProducts table and updates its availability.
       requestBody:
+        description: Product sale info
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              type: object
+              required:
+              - id
+              - price
+              properties:
+                id:
+                  type: integer
+                  description: The product ID
+                price:
+                  type: number
+                  format: float
+                  description: The sale price of the product
       responses:
-        '200':
-          description: "Product set for sale"
+        '201':
+          description: Product set for sale successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
-        '404':
-          description: "Product not found"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product set for sale
+                  product:
+                    type: array
+                    items:
+                      type: object
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-          
+          description: Bad request (e.g., missing fields)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /tt/sale/remove/{id}:
     put:
       tags:
-        - tt
-      summary: Remover um equipamento para venda no sistema.
-      description: Permite remover um equipamento para venda no sistema.
+      - tt
+      summary: Remove a product from sale
+      description: Deletes the product from the saleProducts table.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      - name: id
+        in: path
+        required: true
+        description: The ID of the product to remove from sale
+        schema:
+          type: integer
       responses:
         '200':
-          description: "Product removed from sale"
+          description: Product successfully removed from sale
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product removed from sale
+                  productId:
+                    type: integer
+                    example: 123
         '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Product not found in saleProducts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Product not found in saleProducts
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
 
-  /tt/repair:
+  /tt/repairParts:
     get:
       tags:
-        - tt
-      summary: Listar todos os equipamentos disponíveis no sistema para reparação.
-      description: Retorna uma lista de equipamentos disponíveis para reparação no sistema, com opção de busca e filtros.
-      parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nome dos equipamentos (busca parcial permitida).
-          schema:
-            type: string
-        - name: category
-          in: query
-          required: false
-          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
-          schema:
-            type: string
-        - name: product_condition
-          in: query
-          required: false
-          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
-          schema:
-            type: string
-        - name: brand
-          in: query
-          required: false
-          description: Marca do equipamento (ex. Apple, Dell, Samsung).
-          schema:
-            type: string
-        - name: color
-          in: query
-          required: false
-          description: Cor do equipamento (ex. Preto, Branco, Azul).
-          schema:
-            type: string
-        - name: processor
-          in: query
-          required: false
-          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
-          schema:
-            type: string
-        - name: storage
-          in: query
-          required: false
-          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
-          schema:
-            type: string
-        - name: os
-          in: query
-          required: false
-          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
-          schema:
-            type: string
-        - name: year
-          in: query
-          required: false
-          description: Ano de fabricação do equipamento.
-          schema:
-            type: integer
-        - name: max_price
-          in: query
-          required: false
-          description: Preço máximo permitido nos resultados (aplicado a produtos em venda).
-          schema:
-            type: number
-            format: float
-        - name: store
-          in: query
-          required: false
-          description: Nome da loja que detém os equipamentos.
-          schema:
-            type: string
+      - tt
+      summary: Get all repair parts in the system
+      description: Retrieve all repair parts with details such as name, price, and associated store.
       responses:
         '200':
-          description: ""
+          description: List of repair parts
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProductForRepair'
-
-  /tt/repair/{id}:
-    get:
-      tags:
-        - tt
-      summary: Consultar detalhes de um equipamento para reparação específico.
-      description: Obtém as informações detalhadas de um equipamento para reparação específico.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: ""
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Replacement Battery
+                    price:
+                      type: number
+                      format: float
+                      example: 49.99
+                    store:
+                      type: string
+                      description: Store's NIPC (tax id)
+                      example: "123456789"
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductForRepair' 
-        '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
 
-  /tt/repair/add:
+  /tt/repairPart/add:
     post:
       tags:
-        - tt
-      summary: Registar um equipamento para reparação no sistema.
-      description: Permite registar os detalhes de um equipamento avariado no sistema.
+      - tt
+      summary: Add a new repair part
+      description: Add a new repair part with name, price, and associated store.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductForRepair'
+              type: object
+              required:
+              - name
+              - price
+              - store
+              properties:
+                name:
+                  type: string
+                  example: Replacement Battery
+                price:
+                  type: number
+                  format: float
+                  example: 49.99
+                store:
+                  type: string
+                  description: Store's NIPC (tax id)
+                  example: "123456789"
       responses:
         '201':
-          description: ""
+          description: Repair part added successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductForRepair'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Repair part added successfully
+                  id:
+                    type: integer
+                    example: 10
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-                
-  /tt/repair/remove/{id}:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Name, price, and store are required
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
+
+  /tt/repairParts/remove/{id}:
     put:
       tags:
-        - tt
-      summary: Remover um equipamento que estava em reparação do sistema.
-      description: Permite remover um equipamento que estava em reparação do sistema.
+      - tt
+      summary: Delete a repair part by ID
+      description: Deletes a repair part from the system by its ID.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      - name: id
+        in: path
+        description: ID of the repair part to delete
+        required: true
+        schema:
+          type: integer
+          example: 5
       responses:
         '200':
-          description: "Product removed from repairs"
+          description: Repair part deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductForRepair'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Repair part deleted successfully
         '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Repair part not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Repair part not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
 
   /tt/donation:
     get:
       tags:
-        - tt
-      summary: Listar todos os equipamentos disponíveis no sistema para doação.
-      description: Retorna uma lista de equipamentos disponíveis para doação no sistema, com opção de busca e filtros.
+      - tt
+      summary: Get all products up for donation
+      description: Retrieve all products available for donation, with optional filtering by various product and store attributes.
       parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nome dos equipamentos (busca parcial permitida).
-          schema:
-            type: string
-        - name: category
-          in: query
-          required: false
-          description: Categoria dos equipamentos (ex. Laptops & PCs, Smartphones).
-          schema:
-            type: string
-        - name: product_condition
-          in: query
-          required: false
-          description: Condição dos equipamentos (Like New, Excellent, Good, Needs Repair).
-          schema:
-            type: string
-        - name: brand
-          in: query
-          required: false
-          description: Marca do equipamento (ex. Apple, Dell, Samsung).
-          schema:
-            type: string
-        - name: color
-          in: query
-          required: false
-          description: Cor do equipamento (ex. Preto, Branco, Azul).
-          schema:
-            type: string
-        - name: processor
-          in: query
-          required: false
-          description: Processador do equipamento (ex. Intel i7, AMD Ryzen 5).
-          schema:
-            type: string
-        - name: storage
-          in: query
-          required: false
-          description: Capacidade de armazenamento (ex. 256GB, 512GB SSD).
-          schema:
-            type: string
-        - name: os
-          in: query
-          required: false
-          description: Sistema operativo do equipamento (ex. Windows, macOS, Linux).
-          schema:
-            type: string
-        - name: year
-          in: query
-          required: false
-          description: Ano de fabricação do equipamento.
-          schema:
-            type: integer
-        - name: store
-          in: query
-          required: false
-          description: Nome da loja que detém os equipamentos.
-          schema:
-            type: string
-        - name: charity
-          in: query
-          required: false
-          description: Nome da entidade de beneficência que recebe os equipamentos.
-          schema:
-            type: string
+      - name: name
+        in: query
+        description: Filter by product name (partial match)
+        schema:
+          type: string
+      - name: category
+        in: query
+        description: Filter by product category (partial match)
+        schema:
+          type: string
+      - name: condition
+        in: query
+        description: Filter by product condition (exact match)
+        schema:
+          type: string
+      - name: brand
+        in: query
+        description: Filter by product brand (partial match)
+        schema:
+          type: string
+      - name: color
+        in: query
+        description: Filter by product color (partial match)
+        schema:
+          type: string
+      - name: processor
+        in: query
+        description: Filter by product processor (partial match)
+        schema:
+          type: string
+      - name: storage
+        in: query
+        description: Filter by product storage (partial match)
+        schema:
+          type: string
+      - name: os
+        in: query
+        description: Filter by product operating system (partial match)
+        schema:
+          type: string
+      - name: year
+        in: query
+        description: Filter by product manufacturing year (exact match)
+        schema:
+          type: integer
+          format: int32
+      - name: store
+        in: query
+        description: Filter by store name (partial match)
+        schema:
+          type: string
+      - name: charity
+        in: query
+        description: Filter by charity name (partial match)
+        schema:
+          type: string
       responses:
         '200':
-          description: ""
+          description: List of donation products
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProductForDonation'
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Product ID
+                    name:
+                      type: string
+                    product_condition:
+                      type: string
+                    category:
+                      type: string
+                    brand:
+                      type: string
+                    color:
+                      type: string
+                    processor:
+                      type: string
+                    storage:
+                      type: string
+                    os:
+                      type: string
+                    year:
+                      type: integer
+                    availability:
+                      type: integer
+                    store_nipc:
+                      type: string
+                    price:
+                      type: number
+                      format: float
+                      description: Price if any (from donationProducts)
+                    charity_nipc:
+                      type: string
+                    store:
+                      type: string
+                      description: Store name
+                    charity:
+                      type: string
+                      description: Charity name
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
   /tt/donation/{id}:
     get:
       tags:
-        - tt
-      summary: Consultar detalhes de um equipamento para doação específico.
-      description: Obtém as informações detalhadas de um equipamento para doação específico.
+      - tt
+      summary: Get details about a product up for donation
+      description: Retrieve detailed information about a single donation product by its ID.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      - name: id
+        in: path
+        required: true
+        description: ID of the donation product
+        schema:
+          type: integer
+          format: int32
       responses:
         '200':
-          description: ""
+          description: Donation product details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductForDonation' 
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: Product ID
+                  name:
+                    type: string
+                  product_condition:
+                    type: string
+                  category:
+                    type: string
+                  brand:
+                    type: string
+                  color:
+                    type: string
+                  processor:
+                    type: string
+                  storage:
+                    type: string
+                  os:
+                    type: string
+                  year:
+                    type: integer
+                  availability:
+                    type: integer
+                  store_nipc:
+                    type: string
+                  price:
+                    type: number
+                    format: float
+                    description: Price if available
+                  charity_nipc:
+                    type: string
         '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Product not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
   /tt/donation/add:
     post:
       tags:
-        - tt
-      summary: Registar equipamentos para doação no sistema.
-      description: Permite registar equipamentos para doação no sistema.
+      - tt
+      summary: Set product up for donation
+      description: Adds a product to the donation system linked to a charity and optionally a donor.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductForDonation'
+              type: object
+              required:
+              - id
+              - charity
+              properties:
+                id:
+                  type: integer
+                  description: Product ID
+                donor:
+                  type: string
+                  description: Donor NIF (optional)
+                charity:
+                  type: string
+                  description: Charity NIPC (required)
       responses:
         '201':
-          description: ""
+          description: Product set for donation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductForDonation'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product set for donation
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No product given
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
   /tt/donation/remove/{id}:
     put:
       tags:
-        - tt
-      summary: Remover um equipamento que estava para doação do sistema.
-      description: Permite remover um equipamento que estava para doação do sistema.
+      - tt
+      summary: Remove product from donation
+      description: Removes a product from the donationProducts table.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID do equipamento.
-          schema:
-            type: integer
+      - name: id
+        in: path
+        description: ID of the product to remove from donation
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
-          description: "Product removed from donation"
+          description: Product removed from donation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductForRepair'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product removed from donation
+                  product:
+                    type: array
+                    description: The removed donation product entry (if any)
+                    items:
+                      type: object
         '404':
-          description: "Product not found"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-  
+          description: Product not found in donationProducts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Donation product not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /tt/categories:
+    get:
+      tags:
+      - tt
+      summary: Get all categories
+      description: Retrieve all product categories available in the system.
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Electronics
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
   /ttuser:
     get:
       tags:
-        - ttuser
-      summary: Listar todos os usuários registados no sistema.
-      description: Retorna uma lista de usuários (clientes, empregados, lojas, e entidades de beneficência) registados no sistema.
-      responses:
-        '200':
-          description: ""
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserClient'
-                  
-  /ttuser/client:
-    get:
-      tags:
-        - ttuser
-      summary: Listar todos os clientes compradores.
-      description: Retorna uma lista de clientes compradores registados no sistema.
-      responses:
-        '200':
-          description: ""
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserClient'
-  
-  /ttuser/client/{id}:
-    get:
-      tags:
-        - ttuser
-      summary: Consultar detalhes de um cliente específico.
-      description: Obtém as informações detalhadas de um cliente específico.
+      - ttuser
+      summary: Get clients/users in the system
+      description: Retrieve clients or users filtered by user type and optional criteria.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIF, NIC, email, telefone ou ID da base de dados do cliente.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum: [ store, charity, employee, client ]
+        description: Filter users by type.
+      - in: query
+        name: id
+        schema:
+          type: integer
+        description: Filter by client ID.
+      - in: query
+        name: nif
+        schema:
+          type: string
+        description: Filter by NIF.
+      - in: query
+        name: nic
+        schema:
+          type: string
+        description: Filter by NIC.
+      - in: query
+        name: email
+        schema:
+          type: string
+          format: email
+        description: Filter by email.
+      - in: query
+        name: phone_number
+        schema:
+          type: string
+        description: Filter by phone number.
       responses:
         '200':
-          description: ""
+          description: One or more users found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserClient'
-        '404':
-          description: "Client not found"
+                oneOf:
+                - type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 42
+                    nif:
+                      type: string
+                      example: "123456789"
+                    nic:
+                      type: string
+                      example: "987654321"
+                    email:
+                      type: string
+                      format: email
+                      example: user@example.com
+                    phone_number:
+                      type: string
+                      example: "+44234567890"
+                    user_type:
+                      type: string
+                      enum: [ store, charity, employee, client ]
+                      example: client
+                - type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 42
+                      nif:
+                        type: string
+                        example: "123456789"
+                      nic:
+                        type: string
+                        example: "987654321"
+                      email:
+                        type: string
+                        format: email
+                        example: user@example.com
+                      phone_number:
+                        type: string
+                        example: "+44234567890"
+                      user_type:
+                        type: string
+                        enum: [ store, charity, employee, client ]
+                        example: client
+        '204':
+          description: No users found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
-  /ttuser/client/add:
+  /ttuser/add/client:
     post:
       tags:
-        - ttuser
-      summary: Adicionar um novo cliente.
-      description: Permite adicionar um cliente ao sistema.
+      - ttuser
+      summary: Add a new client to the system
+      description: Creates a new client entry with optional fields.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserClient'
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  description: Client's first name
+                  example: John
+                last_name:
+                  type: string
+                  description: Client's last name
+                  example: Doe
+                store_name:
+                  type: string
+                  description: Store name if client is a store
+                  example: John's Store
+                charity_name:
+                  type: string
+                  description: Charity name if client is a charity
+                  example: Helping Hands
+                name:
+                  type: string
+                  description: Full name (overridden by first_name + last_name or store/charity name)
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  description: Client's email address (required)
+                  example: john.doe@example.com
+                phone_number:
+                  type: string
+                  description: Client's phone number
+                  example: "+44234567890"
+                nif:
+                  type: string
+                  description: Client's NIF (9 characters)
+                  example: "123456789"
+                nic:
+                  type: string
+                  description: Client's NIC (9 characters)
+                  example: "987654321"
+                gender:
+                  type: string
+                  enum: [ Male, Female, Other ]
+                  description: Client's gender
+                  example: Male
+                dob:
+                  type: string
+                  format: date
+                  description: Date of birth (YYYY-MM-DD)
+                  example: "1980-05-15"
+              required:
+              - email
       responses:
         '201':
-          description: "Client successfully added"
+          description: Client successfully added or updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Client successfully added or updated
+                  id:
+                    type: integer
+                    example: 101
+                  clientData:
+                    type: object
+                    description: Data of the created client
+                    additionalProperties: true
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Bad request, missing required fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Missing email or invalid input
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
-  /ttuser/client/edit:
+  /ttuser/edit/client:
     put:
       tags:
-        - ttuser
-      summary: Editar informações de um cliente existente.
-      description: Atualiza os dados de um cliente no sistema.
+      - ttuser
+      summary: Edit an existing client's data
+      description: >
+        Update client information by specifying at least one identifier (`id`, `email`, `phone_number`, `nif`, or `nic`). Some fields (like `id` and `email`) are immutable and cannot be changed.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserClient'
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Client ID (optional identifier)
+                  example: 101
+                email:
+                  type: string
+                  format: email
+                  description: Client email (optional identifier)
+                  example: john.doe@example.com
+                phone_number:
+                  type: string
+                  description: Client phone number (optional identifier)
+                  example: "+44234567890"
+                nif:
+                  type: string
+                  description: Client NIF (optional identifier)
+                  example: "123456789"
+                nic:
+                  type: string
+                  description: Client NIC (optional identifier)
+                  example: "987654321"
+                name:
+                  type: string
+                  description: Full name (cannot be empty if provided)
+                  example: John Doe
+                phone_number_new:
+                  type: string
+                  description: New phone number to update (if updating)
+                nif_new:
+                  type: string
+                  description: New NIF to update (if updating)
+                nic_new:
+                  type: string
+                  description: New NIC to update (if updating)
+                gender:
+                  type: string
+                  enum: [ Male, Female, Other ]
+                  description: Gender
+                  example: Male
+                dob:
+                  type: string
+                  format: date
+                  description: Date of birth (YYYY-MM-DD)
+                  example: "1980-05-15"
+              example:
+                id: 101
+                name: John Updated
+                phone_number: "+44234567899"
       responses:
         '200':
-          description: "Client successfully updated"
+          description: Client successfully updated
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Client successfully updated
+        '400':
+          description: Bad request due to missing identifiers or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Must provide id, email, phone_number, nif, or nic as identifier
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
-  /ttuser/client/remove/{id}:
+  /ttuser/remove/client/{id}:
     delete:
       tags:
-        - ttuser
-      summary: Remover um cliente.
-      description: Exclui um cliente do sistema.
+      - ttuser
+      summary: Remove a client by ID
+      description: Delete a client record identified by the client ID.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIF, NIC, email, telefone ou ID da base de dados do cliente a ser removido.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
+      - name: id
+        in: path
+        description: ID of the client to remove
+        required: true
+        schema:
+          type: integer
+          example: 123
       responses:
         '200':
-          description: "Client successfully removed"
+          description: Client successfully removed
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Client successfully removed
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: DB operation failed
 
   /ttuser/employee:
     get:
       tags:
-        - ttuser
-      summary: Listar todos os empregados.
-      description: Retorna uma lista de empregados registados no sistema.
-      responses:
-        '200':
-          description: ""
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserEmployee'
-  
-  /ttuser/employee/{id}:
-    get:
-      tags:
-        - ttuser
-      summary: Consultar detalhes de um empregado específico.
-      description: Obtém as informações detalhadas de um empregado específico.
+      - ttuser
+      summary: Get all employees
+      description: Retrieve employee records, optionally filtered by id, email, or phone number.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: Número interno, NIF, NIC, email, telefone ou ID da base de dados do empregado.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
+      - name: id
+        in: query
+        description: Filter by employee ID
+        required: false
+        schema:
+          type: integer
+          example: 101
+      - name: email
+        in: query
+        description: Filter by employee email
+        required: false
+        schema:
+          type: string
+          format: email
+          example: employee@example.com
+      - name: phone_number
+        in: query
+        description: Filter by employee phone number
+        required: false
+        schema:
+          type: string
+          example: '+44234567890'
       responses:
         '200':
-          description: ""
+          description: A list of employees or a single employee
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserEmployee'
-        '404':
-          description: "Employee not found"
-          
-  /ttuser/employee/add:
+                oneOf:
+                - type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 101
+                      store:
+                        type: string
+                        example: '123456789'
+                      internal_number:
+                        type: string
+                        example: 'INT-456'
+                      name:
+                        type: string
+                        example: 'Jane Doe'
+                      email:
+                        type: string
+                        format: email
+                        example: 'jane@example.com'
+                      phone_number:
+                        type: string
+                        example: '+44234567890'
+                      nif:
+                        type: string
+                        example: '123456789'
+                      nic:
+                        type: string
+                        example: '987654321'
+                      gender:
+                        type: string
+                        enum: [ Male, Female, Other ]
+                      dob:
+                        type: string
+                        format: date
+                        example: '1985-06-15'
+                - type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 101
+                    store:
+                      type: string
+                      example: '123456789'
+                    internal_number:
+                      type: string
+                      example: 'INT-456'
+                    name:
+                      type: string
+                      example: 'Jane Doe'
+                    email:
+                      type: string
+                      format: email
+                      example: 'jane@example.com'
+                    phone_number:
+                      type: string
+                      example: '+44234567890'
+                    nif:
+                      type: string
+                      example: '123456789'
+                    nic:
+                      type: string
+                      example: '987654321'
+                    gender:
+                      type: string
+                      enum: [ Male, Female, Other ]
+                    dob:
+                      type: string
+                      format: date
+                      example: '1985-06-15'
+        '204':
+          description: No employees found matching criteria
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: DB operation failed
+
+  /ttuser/add/employee:
     post:
       tags:
-        - ttuser
-      summary: Adicionar um novo empregado.
-      description: Permite adicionar um empregado ao sistema.
+      - ttuser
+      summary: Add a new employee
+      description: Add a new employee linked to an existing client and a store.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserEmployee'
+              type: object
+              required:
+              - id
+              - store
+              - internal_number
+              properties:
+                id:
+                  type: integer
+                  description: Client ID of the employee (must exist in clients table)
+                  example: 101
+                store:
+                  type: string
+                  description: Store NIPC the employee belongs to
+                  example: "123456789"
+                internal_number:
+                  type: string
+                  description: Internal employee number
+                  example: "EMP-456"
       responses:
         '201':
-          description: "Employee successfully added"
+          description: Employee successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Employee successfully added
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields: id, store, internal_number"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: DB operation failed
 
-  /ttuser/employee/edit:
+  /ttuser/edit/employee:
     put:
       tags:
-        - ttuser
-      summary: Editar informações de um empregado existente.
-      description: Atualiza os dados de um empregado no sistema.
+      - ttuser
+      summary: Edit an existing employee
+      description: Update employee and linked client info. Requires at least one identifier to find the employee.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserEmployee'
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Client/Employee ID (identifier)
+                  example: 101
+                email:
+                  type: string
+                  description: Client email (identifier)
+                  example: user@example.com
+                phone_number:
+                  type: string
+                  description: Client phone number (identifier)
+                  example: "+4423456789"
+                name:
+                  type: string
+                  description: Client full name
+                  example: "John Doe"
+                nif:
+                  type: string
+                  description: Client NIF (tax number)
+                  example: "123456789"
+                nic:
+                  type: string
+                  description: Client NIC (another tax id)
+                  example: "987654321"
+                gender:
+                  type: string
+                  enum: [ Male, Female, Other ]
+                  description: Client gender
+                  example: "Male"
+                dob:
+                  type: string
+                  format: date
+                  description: Client date of birth
+                  example: "1990-05-21"
+                store:
+                  type: string
+                  description: Employee store NIPC
+                  example: "123456789"
+                internal_number:
+                  type: string
+                  description: Employee internal number
+                  example: "EMP-456"
+              anyOf:
+              - required: [ id ]
+              - required: [ email ]
+              - required: [ phone_number ]
       responses:
         '200':
-          description: "Employee successfully updated"
-        '404':
-          description: "Employee not found"
-
-  /ttuser/employee/remove/{id}:
-    delete:
-      tags:
-        - ttuser
-      summary: Remover um empregado.
-      description: Exclui um empregado do sistema.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Número interno, NIF, NIC, email, telefone, ou ID da base de dados do empregado a ser removido.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
-      responses:
-        '200':
-          description: "Employee successfully removed"
+          description: Employee successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Employee successfully updated
+        '400':
+          description: Bad request (missing identifiers or no fields to update)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Must provide at least one identifier: id, phone_number or email"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to update employee
 
   /ttuser/store:
     get:
       tags:
-        - ttuser
-      summary: Listar todos as lojas.
-      description: Retorna uma lista de lojas registadas no sistema, com opção de busca e filtros.
+      - ttuser
+      summary: Get all stores
+      description: Retrieve all stores with optional filters and their opening hours.
       parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nomes das lojas.
-          schema:
-            type: string
-        - name: address
-          in: query
-          required: false
-          description: Informação geográfica das lojas.
-          schema:
-            type: string
+      - name: id
+        in: query
+        description: Store client ID
+        schema:
+          type: integer
+        required: false
+      - name: nipc
+        in: query
+        description: Store NIPC (tax identification)
+        schema:
+          type: string
+        required: false
+      - name: email
+        in: query
+        description: Client email linked to the store
+        schema:
+          type: string
+        required: false
+      - name: phone_number
+        in: query
+        description: Client phone number linked to the store
+        schema:
+          type: string
+        required: false
       responses:
         '200':
-          description: ""
+          description: List of stores with opening hours
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserEntity'
-  
-  /ttuser/store/{id}:
-    get:
-      tags:
-        - ttuser
-      summary: Consultar detalhes de uma loja específica.
-      description: Obtém as informações detalhadas de uma loja específica.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIPC, email, telefone ou ID da base de dados da loja.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
-      responses:
-        '200':
-          description: ""
+                oneOf:
+                - type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 101
+                    nipc:
+                      type: string
+                      example: "123456789"
+                    name:
+                      type: string
+                      example: "Main Street Store"
+                    email:
+                      type: string
+                      example: "store@example.com"
+                    phone_number:
+                      type: string
+                      example: "+4423456789"
+                    address:
+                      type: string
+                      example: "123 High St"
+                    city:
+                      type: string
+                      example: "London"
+                    country:
+                      type: string
+                      example: "United Kingdom"
+                    opening_hours:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          day:
+                            type: string
+                            example: "Monday"
+                          hours:
+                            type: string
+                            example: "09:00-17:00"
+                - type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 101
+                      nipc:
+                        type: string
+                        example: "123456789"
+                      name:
+                        type: string
+                        example: "Main Street Store"
+                      email:
+                        type: string
+                        example: "store@example.com"
+                      phone_number:
+                        type: string
+                        example: "+4423456789"
+                      address:
+                        type: string
+                        example: "123 High St"
+                      city:
+                        type: string
+                        example: "London"
+                      country:
+                        type: string
+                        example: "United Kingdom"
+                      opening_hours:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            day:
+                              type: string
+                              example: "Monday"
+                            hours:
+                              type: string
+                              example: "09:00-17:00"
+        '204':
+          description: No stores found
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserEntity'
-        '404':
-          description: "Store not found"
-          
-  /ttuser/store/add:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /ttuser/add/store:
     post:
       tags:
-        - ttuser
-      summary: Adicionar uma nova loja.
-      description: Permite adicionar uma loja ao sistema.
+      - ttuser
+      summary: Add a new store
+      description: Adds a new store to the system, including optional opening hours.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserEntity'
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Client ID (must exist in clients table)
+                  example: 101
+                nipc:
+                  type: string
+                  description: Store tax identification number
+                  example: "123456789"
+                address:
+                  type: string
+                  description: Store address
+                  example: "123 High St"
+                city:
+                  type: string
+                  description: City where the store is located
+                  example: "London"
+                country:
+                  type: string
+                  description: Country of the store
+                  example: "United Kingdom"
+                opening_hours:
+                  type: object
+                  description: Opening hours keyed by day
+                  additionalProperties:
+                    type: string
+                    example: "09:00-17:00"
+              required:
+              - id
+              - nipc
       responses:
         '201':
-          description: "Store successfully added"
+          description: Store successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Store successfully added
+                  product:
+                    type: array
+                    description: Client data associated with the store
+                    items:
+                      type: object
+                      additionalProperties: true
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Missing required fields or invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields: id, nipc"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
-  /ttuser/store/edit:
+  /ttuser/edit/store:
     put:
       tags:
-        - ttuser
-      summary: Editar informações de uma loja existente.
-      description: Atualiza os dados de uma loja no sistema.
+      - ttuser
+      summary: Edit store information and opening hours
+      description: >
+        Updates store data fields in the entities table. Also updates opening hours in entityHours table if provided. Requires at least one identifier (id, nipc, email, or phone_number).
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserEntity'
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Store client ID
+                  example: 101
+                nipc:
+                  type: string
+                  description: Store tax ID number
+                  example: "123456789"
+                email:
+                  type: string
+                  description: Store email (client table)
+                  format: email
+                  example: "store@example.com"
+                phone_number:
+                  type: string
+                  description: Store phone number (client table)
+                  example: "+44234567890"
+                name:
+                  type: string
+                  description: Store name (client table)
+                  example: "SuperStore"
+                address:
+                  type: string
+                  description: Store address (entities table)
+                  example: "123 Main St"
+                city:
+                  type: string
+                  description: Store city (entities table)
+                  example: "London"
+                country:
+                  type: string
+                  description: Store country (entities table)
+                  example: "United Kingdom"
+                opening_hours:
+                  type: array
+                  description: List of opening hours to update
+                  items:
+                    type: object
+                    properties:
+                      day:
+                        type: string
+                        example: "Monday"
+                      hours:
+                        type: string
+                        example: "09:00-17:00"
       responses:
         '200':
-          description: "Store successfully updated"
+          description: Store and hours successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Store and hours successfully updated
+        '400':
+          description: Missing identifier or no updatable fields provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Must provide at least one identifier: id, nipc, phone_number, or email"
         '404':
-          description: "Store not found"
-
-  /ttuser/store/remove/{id}:
-    delete:
-      tags:
-        - ttuser
-      summary: Remover uma loja.
-      description: Exclui uma loja do sistema.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIPC, email, telefone ou ID da base de dados loja a ser removida.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
-      responses:
-        '200':
-          description: "Store successfully removed"
+          description: Store not found to update hours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Store not found to update hours
+        '500':
+          description: Failed to update store
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to update store
 
   /ttuser/charity:
     get:
       tags:
-        - ttuser
-      summary: Listar todos as entidades de beneficência.
-      description: Retorna uma lista de entidades de beneficência registadas no sistema, com opção de busca e filtros.
+      - ttuser
+      summary: Get all charities or filter by identifiers
+      description: >
+        Retrieves all charities with optional filtering by id, nipc, email, or phone_number. Returns charity details with their opening hours if available.
       parameters:
-        - name: name
-          in: query
-          required: false
-          description: Nomes das entidades de beneficência.
-          schema:
-            type: string
-        - name: address
-          in: query
-          required: false
-          description: Informação geográfica das entidades de beneficência.
-          schema:
-            type: string
+      - name: id
+        in: query
+        description: Charity client ID
+        required: false
+        schema:
+          type: integer
+          example: 101
+      - name: nipc
+        in: query
+        description: Charity tax ID number
+        required: false
+        schema:
+          type: string
+          example: "123456789"
+      - name: email
+        in: query
+        description: Charity email
+        required: false
+        schema:
+          type: string
+          format: email
+          example: "charity@example.com"
+      - name: phone_number
+        in: query
+        description: Charity phone number
+        required: false
+        schema:
+          type: string
+          example: "+44234567890"
       responses:
         '200':
-          description: ""
+          description: List of charities (or single charity if one match)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 101
+                    nipc:
+                      type: string
+                      example: "123456789"
+                    name:
+                      type: string
+                      example: "Helping Hands"
+                    email:
+                      type: string
+                      format: email
+                      example: "contact@helpinghands.org"
+                    phone_number:
+                      type: string
+                      example: "+44234567890"
+                    address:
+                      type: string
+                      example: "456 Charity Lane"
+                    city:
+                      type: string
+                      example: "London"
+                    country:
+                      type: string
+                      example: "United Kingdom"
+                    opening_hours:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          day:
+                            type: string
+                            example: "Monday"
+                          hours:
+                            type: string
+                            example: "09:00-17:00"
+                - type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 101
+                      nipc:
+                        type: string
+                        example: "123456789"
+                      name:
+                        type: string
+                        example: "Helping Hands"
+                      email:
+                        type: string
+                        format: email
+                        example: "contact@helpinghands.org"
+                      phone_number:
+                        type: string
+                        example: "+44234567890"
+                      address:
+                        type: string
+                        example: "456 Charity Lane"
+                      city:
+                        type: string
+                        example: "London"
+                      country:
+                        type: string
+                        example: "United Kingdom"
+                      opening_hours:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            day:
+                              type: string
+                              example: "Monday"
+                            hours:
+                              type: string
+                              example: "09:00-17:00"
+        '204':
+          description: No charities found matching the query
+        '500':
+          description: Server error retrieving charities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /ttuser/add/charity:
+    post:
+      tags:
+      - ttuser
+      summary: Add a new charity
+      description: >
+        Inserts a new charity into the `entities` table with a foreign key referencing an existing client. The charity must already exist in the `clients` table by ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              - nipc
+              properties:
+                id:
+                  type: integer
+                  description: Must match an existing client ID
+                  example: 123
+                nipc:
+                  type: string
+                  minLength: 9
+                  maxLength: 9
+                  description: Unique 9-digit tax ID for the charity
+                  example: "123456789"
+                address:
+                  type: string
+                  description: Physical address of the charity
+                  example: "123 High Street"
+                city:
+                  type: string
+                  description: City where the charity is located
+                  example: "London"
+                country:
+                  type: string
+                  description: Country of the charity
+                  example: "United Kingdom"
+      responses:
+        '201':
+          description: Charity successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Charity successfully added
+                  charity:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 123
+                        name:
+                          type: string
+                          example: "Charity Name"
+                        email:
+                          type: string
+                          example: "charity@example.com"
+                        phone_number:
+                          type: string
+                          example: "+44234567890"
+        '400':
+          description: Bad request, missing or invalid input
+        '500':
+          description: Internal server error during DB operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "DB operation failed: Duplicate entry for nipc"
+
+  /ttuser/edit/charity:
+    put:
+      tags:
+      - ttuser
+      summary: Edit charity
+      description: >
+        Updates charity using one or more identifiers. Only provided fields will be updated. Requires the charity to already exist in both `clients` and `entities` tables.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Charity fields to update
+              properties:
+                id:
+                  type: integer
+                  example: 123
+                nipc:
+                  type: string
+                  example: "123456789"
+                email:
+                  type: string
+                  format: email
+                  example: "charity@example.com"
+                phone_number:
+                  type: string
+                  example: "+351912345678"
+                name:
+                  type: string
+                  example: "Charity Name"
+                address:
+                  type: string
+                  example: "Rua da Liberdade, 45"
+                city:
+                  type: string
+                  example: "Porto"
+                country:
+                  type: string
+                  example: "Portugal"
+      responses:
+        '200':
+          description: Charity successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Charity successfully updated
+        '400':
+          description: >
+            Bad request. Either no identifier provided or no updatable fields given.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Must provide at least one identifier: id, nipc, phone_number, or email"
+        '500':
+          description: Database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to update charity
+
+  /ttuser/add/charityProject:
+    post:
+      tags:
+      - ttuser
+      summary: Add new charity project
+      description: >
+        Creates a new charity project and associates it with a specific charity.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - description
+              - charity
+              properties:
+                name:
+                  type: string
+                  example: "Laptops for Students Initiative"
+                description:
+                  type: string
+                  example: "Providing laptops for students in poor areas."
+                endDate:
+                  type: string
+                  format: date
+                  nullable: true
+                  example: "2025-12-31"
+                charity:
+                  type: integer
+                  description: ID of the charity (must exist in `entities`)
+                  example: 101
+      responses:
+        '200':
+          description: Charity project successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  insertedId:
+                    type: integer
+                    example: 123
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Missing required fields
+        '500':
+          description: Database error occurred on both primary and replica
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: DB operation failed
+
+  /ttuser/remove/charityProjects:
+    post:
+      tags:
+      - ttuser
+      summary: Delete charity projects in bulk
+      description: Deletes multiple charity projects based on their IDs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  description: List of project IDs to delete
+                  items:
+                    type: integer
+                  example: [ 1, 2, 3 ]
+      responses:
+        '200':
+          description: Projects successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  deleted:
+                    type: integer
+                    description: Number of deleted rows
+                    example: 3
+        '400':
+          description: No project IDs provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No project IDs provided
+        '500':
+          description: Database operation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: DB operation failed
+
+  /ttuser/charityProjects:
+    get:
+      tags:
+      - ttuser
+      summary: Get charity projects
+      description: Retrieves a list of charity projects for a specific charity.
+      parameters:
+      - in: query
+        name: charity_id
+        required: true
+        schema:
+          type: integer
+        description: ID of the charity entity
+      responses:
+        '200':
+          description: List of charity projects
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserEntity'
-  
-  /ttuser/charity/{id}:
-    get:
-      tags:
-        - ttuser
-      summary: Consultar detalhes de uma entidade de beneficência.
-      description: Obtém as informações detalhadas de uma entidade de beneficiência específica.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficência.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
-      responses:
-        '200':
-          description: ""
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: "Laptops for Students Initiative"
+                    description:
+                      type: string
+                      example: "Providing laptops for students in poor areas."
+                    endDate:
+                      type: string
+                      format: date
+                      example: "2025-12-31"
+        '400':
+          description: Missing charity_id
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserEntity'
-        '404':
-          description: "Charity not found"
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: charity_id required
+        '500':
+          description: Database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
 
-  /ttuser/charity/add:
-    post:
+  /ttuser/interests:
+    get:
       tags:
-        - ttuser
-      summary: Adicionar uma nova entidade de beneficência.
-      description: Permite adicionar uma entidade de beneficência ao sistema.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserEntity'
-      responses:
-        '201':
-          description: "Charity successfully added"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
-
-  /ttuser/charity/edit:
-    put:
-      tags:
-        - ttuser
-      summary: Editar informações de uma entidade de beneficência existente.
-      description: Atualiza os dados de uma entidade de beneficência no sistema.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserEntity'
+      - ttuser
+      summary: Get all product interests
+      description: Retrieves all product interests stored in the database.
       responses:
         '200':
-          description: "Charity successfully updated"
-        '404':
-          description: "Charity not found"
-
-  /ttuser/charity/remove/{id}:
-    delete:
-      tags:
-        - ttuser
-      summary: Remover uma entidade de beneficência.
-      description: Exclui uma entidade de beneficência do sistema.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIPC, email, telefone ou ID da base de dados da entidade de beneficência a ser removida.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
-      responses:
-        '200':
-          description: "Charity successfully removed"
+          description: A list of product interests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    interested_user:
+                      type: string
+                      example: user@example.com
+                    brand:
+                      type: string
+                      example: Dell
+                    product_model:
+                      type: string
+                      example: XPS 13
+                    category:
+                      type: string
+                      example: Laptops
+                    max_price:
+                      type: number
+                      format: float
+                      example: 1200.00
+                    color:
+                      type: string
+                      example: Silver
+                    graphics_card:
+                      type: string
+                      example: NVIDIA GTX 1650
+                    os:
+                      type: string
+                      example: Windows 11
+                    processor:
+                      type: string
+                      example: Intel i7
+                    product_condition:
+                      type: string
+                      enum: [ Like New, Excellent, Good ]
+                      example: Excellent
+                    ram_memory:
+                      type: string
+                      example: 16GB
+                    screen:
+                      type: string
+                      example: 13.3"
+                    storage:
+                      type: string
+                      example: 512GB SSD
+                    year:
+                      type: integer
+                      example: 2022
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: 2025-06-11T10:30:00Z
+                    unread_notifications:
+                      type: integer
+                      example: 2
+        '500':
+          description: Internal server/database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database connection failed
 
   /ttuser/interest:
     post:
       tags:
-        - ttuser
-      summary: Manifestar interesse por um equipamento.
-      description: Registra o interesse de um usuário em um equipamento específico.
+      - ttuser
+      summary: Add product interest alert
+      description: Creates a new product interest entry for a user with optional filters on specifications and preferences.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InterestRequest'
+              type: object
+              required:
+              - interested_user
+              - brand
+              - product_model
+              - category
+              properties:
+                interested_user:
+                  type: string
+                  format: email
+                  example: user@example.com
+                brand:
+                  type: string
+                  example: HP
+                product_model:
+                  type: string
+                  example: Pavilion 15
+                category:
+                  type: string
+                  example: Laptops
+                max_price:
+                  type: number
+                  format: float
+                  example: 850.00
+                color:
+                  type: string
+                  example: Black
+                graphics_card:
+                  type: string
+                  example: Intel Iris Xe
+                os:
+                  type: string
+                  example: Windows 10
+                processor:
+                  type: string
+                  example: AMD Ryzen 5
+                product_condition:
+                  type: string
+                  enum: [ Like New, Excellent, Good ]
+                  example: Good
+                ram_memory:
+                  type: string
+                  example: 8GB
+                screen:
+                  type: string
+                  example: 15.6"
+                storage:
+                  type: string
+                  example: 256GB SSD
+                year:
+                  type: integer
+                  example: 2021
       responses:
         '201':
-          description: "Interest successfully added"
-        '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Product alert successfully added
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product alert successfully added
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to insert interest
 
-  /ttuser/notifications/{id}:
+  /ttuser/interest/{email}:
     get:
       tags:
-        - ttuser
-      summary: Consultar notificações de disponibilidade.
-      description: Obtém notificações de disponibilidade para os equipamentos de interesse de um cliente.
+      - ttuser
+      summary: Get product interests by user email
+      description: Retrieves all product interest alerts associated with the given user email.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: NIF, NIC, email, telefone ou ID da base de dados do cliente.
-          schema:
-            oneOf:
-              - type: string
-              - type: integer
+      - name: email
+        in: path
+        required: true
+        description: Email address of the user
+        schema:
+          type: string
+          format: email
+          example: user@example.com
       responses:
         '200':
-          description: ""
+          description: List of product alerts
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Notification'
-        '404':
-          description: "No product interests set"
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 101
+                    interested_user:
+                      type: string
+                      format: email
+                      example: user@example.com
+                    brand:
+                      type: string
+                      example: Apple
+                    product_model:
+                      type: string
+                      example: MacBook Pro 13
+                    category:
+                      type: string
+                      example: Laptops
+                    max_price:
+                      type: number
+                      format: float
+                      example: 1400.00
+                    color:
+                      type: string
+                      example: Silver
+                    graphics_card:
+                      type: string
+                      example: Apple M1 GPU
+                    os:
+                      type: string
+                      example: macOS
+                    processor:
+                      type: string
+                      example: Apple M1
+                    product_condition:
+                      type: string
+                      enum: [ Like New, Excellent, Good ]
+                      example: Excellent
+                    ram_memory:
+                      type: string
+                      example: 16GB
+                    screen:
+                      type: string
+                      example: 13.3"
+                    storage:
+                      type: string
+                      example: 512GB SSD
+                    year:
+                      type: integer
+                      example: 2022
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: 2025-06-11T10:42:00Z
+                    unread_notifications:
+                      type: integer
+                      example: 0
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to fetch interests
 
-  /ttuser/reports:
-    get:
+  /ttuser/remove/interest/{id}:
+    delete:
       tags:
-        - ttuser
-      summary: Listar todos os relatórios de atividades.
-      description: Retorna relatórios de atividade, incluindo vendas, doações, reparações e interesses.
-      responses:
-        '200':
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Report'
-                
-  /ttuser/reports/{id}:
-    get:
-      tags:
-        - ttuser
-      summary: Consultar detalhes de um relatório de atividade.
-      description: Obtém as informações detalhadas de um relatório de atividade específico.
+      - ttuser
+      summary: Remove a product interest
+      description: Deletes a specific product interest alert by its ID.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: Data ou ID da base de dados do relatório.
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        description: ID of the product interest to delete
+        schema:
+          type: integer
+          example: 123
       responses:
         '200':
-          description: ""
+          description: Product alert successfully removed
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product alert successfully removed
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Report'
-                
-  /ttuser/reports/add:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: DB operation failed
+
+  /ttuser/interest/addNotification/{interestId}:
+    get:
+      tags:
+      - ttuser
+      summary: Add notification to a product interest
+      description: Increments the unread notification count for a product interest by 1.
+      parameters:
+      - name: interestId
+        in: path
+        required: true
+        description: ID of the interest to update
+        schema:
+          type: integer
+          example: 101
+      responses:
+        '200':
+          description: Notification count updated successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Notification count updated successfully
+        '404':
+          description: Interest not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Interest with id 101 not found
+        '500':
+          description: Database or server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Some database error message
+
+  /ttuser/interest/clearNotifications/{id}:
+    put:
+      tags:
+      - ttuser
+      summary: Clear unread notifications for a product interest
+      description: Resets the unread_notifications count to zero for a given interest ID.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID of the interest to clear notifications for
+        schema:
+          type: integer
+          example: 101
+      responses:
+        '200':
+          description: Notifications cleared successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Notifications cleared successfully
+        '500':
+          description: Database or server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Some database error message
+
+  /ttuser/wishlist:
     post:
       tags:
-        - ttuser
-      summary: Adicionar um novo relatório de atividade.
-      description: Permite adicionar um relatório de atividade ao sistema.
+      - ttuser
+      summary: Add product to user's wishlist
+      description: Adds a product to a user's wishlist, ignoring duplicates.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              type: object
+              required:
+              - wishlisted_product
+              - interested_user
+              properties:
+                wishlisted_product:
+                  type: integer
+                  description: ID of the product to add to wishlist
+                  example: 123
+                interested_user:
+                  type: string
+                  description: Email of the user adding the product to wishlist
+                  example: user@example.com
       responses:
         '201':
-          description: "Report successfully added"
+          description: Product successfully added to wishlist
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product successfully added to wishlist
+        '500':
+          description: Database or server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Some database error message
+
+  /ttuser/wishlist/{email}:
+    get:
+      tags:
+      - ttuser
+      summary: Get wishlist products for a user
+      description: Retrieves the wishlist products for the specified user's email.
+      parameters:
+      - name: email
+        in: path
+        required: true
+        description: Email of the user whose wishlist to retrieve
+        schema:
+          type: string
+          format: email
+          example: user@example.com
+      responses:
+        '200':
+          description: List of wishlist products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    wishlisted_product:
+                      type: integer
+                      description: ID of the wishlisted product
+                      example: 456
+                    interested_user:
+                      type: string
+                      description: User's email
+                      example: user@example.com
+                    product_image:
+                      type: string
+                      description: URL or path of the product's image
+                      example: /images/products/1.jpg
+                    product_name:
+                      type: string
+                      example: Awesome Laptop
+                    product_availability:
+                      type: string
+                      example: In Stock
+                    category:
+                      type: string
+                      example: Electronics
+                    brand:
+                      type: string
+                      example: BrandX
+                    store_nipc:
+                      type: string
+                      example: 123456789
+                    product_id:
+                      type: integer
+                      example: 789
+                    price:
+                      type: number
+                      format: float
+                      example: 999.99
+        '500':
+          description: Server error or database failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Some database error message
+
+  /ttuser/remove/wishlist/{id}:
+    delete:
+      tags:
+      - ttuser
+      summary: Remove product from wishlist
+      description: Deletes a product from the wishlist by its wishlist entry ID.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Wishlist entry ID to remove
+        schema:
+          type: integer
+          example: 123
+      responses:
+        '200':
+          description: Product successfully removed from wishlist
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Product successfully removed from the user's wishlist
+        '500':
+          description: Server error or database failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Some database error message
+
+  /ttuser/wishlist/count/{product_id}:
+    get:
+      tags:
+      - ttuser
+      summary: Get wishlist count for a product
+      description: Returns the number of users who have wishlisted a specific product.
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        description: ID of the product to count wishlists for
+        schema:
+          type: integer
+          example: 456
+      responses:
+        '200':
+          description: Count of wishlist entries for the product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 12
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
+
+  /tttransaction/sales:
+    get:
+      tags:
+      - tttransaction
+      summary: Retrieve sale transactions
+      description: >
+        Returns a list of sale transactions with detailed sale info and sold products, grouped by transaction.
+      responses:
+        '200':
+          description: A list of sale transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Transaction ID
+                      example: 123
+                    client:
+                      type: string
+                      description: Client identifier or email
+                      nullable: true
+                      example: client@example.com
+                    transaction_value:
+                      type: number
+                      format: float
+                      example: 250.50
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: '2025-06-10T15:20:30Z'
+                    is_online:
+                      type: boolean
+                      example: true
+                    order_number:
+                      type: string
+                      example: 'ORD-20250610-0001'
+                    overseeing_employee:
+                      type: string
+                      nullable: true
+                      example: null
+                    store_of_sale:
+                      type: string
+                      nullable: true
+                      example: null
+                    shipping_address:
+                      type: string
+                      example: '123 Main St'
+                    shipping_postal_code:
+                      type: string
+                      example: '10001'
+                    shipping_city:
+                      type: string
+                      example: 'New York'
+                    shipping_country:
+                      type: string
+                      example: 'United States'
+                    network:
+                      type: string
+                      example: 'PayPal'
+                    sale_status:
+                      type: string
+                      example: 'To be Shipped'
+                    sold_products:
+                      type: array
+                      description: List of products sold in the transaction
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 456
+                          name:
+                            type: string
+                            example: 'Gaming Laptop'
+                          product_image:
+                            type: string
+                            format: uri
+                            example: 'https://example.com/images/product_456.jpg'
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
+
+  /tttransaction/sales/{email}:
+    get:
+      tags:
+      - tttransaction
+      summary: Retrieve sale transactions from a specific client
+      description: >
+        Returns a list of sale transactions for the specified client email, with detailed sale info and sold products, grouped by transaction.
+      parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+          format: email
+        description: Client email address to filter transactions
+      responses:
+        '200':
+          description: A list of sale transactions for the client
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Transaction ID
+                      example: 123
+                    client:
+                      type: string
+                      description: Client email
+                      example: client@example.com
+                    transaction_value:
+                      type: number
+                      format: float
+                      example: 250.50
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: '2025-06-10T15:20:30Z'
+                    is_online:
+                      type: boolean
+                      example: true
+                    order_number:
+                      type: string
+                      example: 'ORD-20250610-0001'
+                    overseeing_employee:
+                      type: string
+                      nullable: true
+                      example: null
+                    store_of_sale:
+                      type: string
+                      nullable: true
+                      example: null
+                    shipping_address:
+                      type: string
+                      example: '123 Main St'
+                    shipping_postal_code:
+                      type: string
+                      example: '10001'
+                    shipping_city:
+                      type: string
+                      example: 'New York'
+                    shipping_country:
+                      type: string
+                      example: 'United States'
+                    network:
+                      type: string
+                      example: 'PayPal'
+                    sale_status:
+                      type: string
+                      example: 'To be Shipped'
+                    sold_products:
+                      type: array
+                      description: List of products sold in the transaction
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 456
+                          name:
+                            type: string
+                            example: 'Gaming Laptop'
+                          product_image:
+                            type: string
+                            format: uri
+                            example: 'https://example.com/images/product_456.jpg'
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
+
+  /tttransaction/sales/add:
+    post:
+      tags:
+      - tttransaction
+      summary: Add a new sale transaction
+      description: >
+        Creates a sale transaction with its details, including sold products.  Updates product availability to unavailable (0).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - transaction_value
+              - is_online
+              - products
+              properties:
+                client:
+                  type: string
+                  description: Client identifier or email
+                  example: "client@example.com"
+                transaction_value:
+                  type: number
+                  format: float
+                  description: Total value of the transaction
+                  example: 250.50
+                is_online:
+                  type: boolean
+                  description: Indicates if the sale was online
+                  example: true
+                order_number:
+                  type: string
+                  description: Unique order number, can be autogenerated if default 'APPLE-PAY-'
+                  example: "ORD-20250610-0001"
+                employee:
+                  type: string
+                  description: Employee responsible for the sale
+                  example: "john.doe"
+                store:
+                  type: string
+                  description: Store where the sale occurred
+                  example: "Store 123"
+                network:
+                  type: string
+                  description: Payment or network provider
+                  example: "Visa"
+                shipping_address:
+                  type: string
+                  description: Shipping address for the sale
+                  example: "123 Main St"
+                shipping_postal_code:
+                  type: string
+                  example: "10001"
+                shipping_city:
+                  type: string
+                  example: "New York"
+                shipping_country:
+                  type: string
+                  example: "United States"
+                products:
+                  type: array
+                  description: Array of product IDs sold in this transaction
+                  items:
+                    type: integer
+                  example: [ 101, 102, 103 ]
+      responses:
+        '201':
+          description: Transaction, sale, and products added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Transaction, sale, and products added successfully"
+                  transactionId:
+                    type: integer
+                    example: 123
         '400':
-          description: "Invalid request. Data is incorrect or incomplete."
+          description: Missing or invalid required fields in the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields"
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Database error message"
 
-components:
-  schemas:
-    Product:
-      type: object
-      properties:
-        id:
+  /tttransaction/sales/updateStatus/{saleId}:
+    post:
+      tags:
+      - tttransaction
+      summary: Update the status of a sale transaction
+      description: >
+        Updates the sale_status field for a sale transaction by saleId. If status is changed to 'cancelled', associated sold products are relisted (availability set to 1).
+      parameters:
+      - name: saleId
+        in: path
+        required: true
+        schema:
           type: integer
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-        price:
-          type: number
-        store_nipc:
-          type: integer
-        condition:
-          type: string
-          enum: [new, used, refurbished]
-        availability:
-          type: string
-          enum: [in_stock, out_of_stock]
-    
-    ProductForRepair:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-        repair_cost:
-          type: number
-        store_nipc:
-          type: integer
-        issues:
-          type: array
-          items:
-            type: string
-        required_parts:
-          type: array
-          items:
-            type: string
+        description: The transaction ID of the sale to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - newStatus
+              properties:
+                newStatus:
+                  type: string
+                  description: The new status to set for the sale (e.g., "completed", "cancelled")
+                  example: "cancelled"
+      responses:
+        '200':
+          description: Sale status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Sale status updated successfully"
+        '400':
+          description: Missing or invalid newStatus in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing or invalid newStatus in request body"
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Database error message"
 
-    ProductForDonation:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-        store_nipc:
-          type: integer
-        condition:
-          type: string
-          enum: [new, used, refurbished]
-        donor_nif:
-          type: integer
-        charity_nipc:
-          type: string
+  /tttransaction/product-availability:
+    post:
+      tags:
+      - tttransaction
+      summary: Check availability of products
+      description: >
+        Checks if the given product IDs are available (availability != 0). Returns list of unavailable product IDs and a boolean flag if all are available.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - productIds
+              properties:
+                productIds:
+                  type: array
+                  items:
+                    type: integer
+                  description: Array of product IDs to check
+                  example: [ 101, 102, 103 ]
+      responses:
+        '200':
+          description: Availability check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allAvailable:
+                    type: boolean
+                    description: True if all products are available
+                    example: false
+                  unavailable:
+                    type: array
+                    items:
+                      type: integer
+                    description: List of unavailable product IDs
+                    example: [ 102, 103 ]
+        '400':
+          description: Invalid input - productIds missing or empty
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No products provided"
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Database error message"
 
-    InterestRequest:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_nif:
-          type: integer
-        device_category:
-          type: string
-        max_price:
-          type: number
+  /tttransaction/purchases/:
+    get:
+      tags:
+      - tttransaction
+      summary: Retrieve purchase transactions
+      description: >
+        Returns a list of purchase transactions with details including store, client info, purchased item, and transaction value.
+      responses:
+        '200':
+          description: A list of purchase transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Transaction ID
+                      example: 789
+                    purchasing_store:
+                      type: string
+                      description: Store where the purchase was made
+                      example: 'Main Street Store'
+                    client:
+                      type: string
+                      description: Email or identifier of the non-registered client
+                      example: 'guest@example.com'
+                    transaction_value:
+                      type: number
+                      format: float
+                      example: 120.75
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: '2025-06-10T14:12:00Z'
+                    item_purchased:
+                      type: integer
+                      description: ID of the purchased product
+                      example: 456
+                    item_name:
+                      type: string
+                      description: Name of the purchased product
+                      example: 'Wireless Mouse'
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
 
-    Notification:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_nif:
-          type: integer
-        device_id:
-          type: integer
-        status:
-          type: string
+  /tttransaction/purchases/add:
+    post:
+      tags:
+      - tttransaction
+      summary: Add a new purchase transaction
+      description: Creates a purchase transaction record along with its details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - purchasing_store
+              - transaction_value
+              - non_registered_client
+              - item_purchased
+              properties:
+                purchasing_store:
+                  type: string
+                  example: "Main Street Store"
+                  description: Store where purchase was made
+                transaction_value:
+                  type: number
+                  format: float
+                  example: 120.75
+                  description: Total value of the transaction
+                non_registered_client:
+                  type: string
+                  example: "guest@example.com"
+                  description: Identifier or email for the non-registered client
+                item_purchased:
+                  type: integer
+                  example: 456
+                  description: Product ID of the purchased item
+      responses:
+        '201':
+          description: Purchase transaction added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Purchase transaction added successfully"
+                  id:
+                    type: integer
+                    example: 123
+                    description: ID of the created transaction
+        '400':
+          description: Missing or invalid fields in the request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "All required fields (store, value, client, item) must be provided."
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
 
-    Report:
-      type: object
-      properties:
-        id:
-          type: integer
-        date:
-          type: string
-        sales:
-          type: array
-          items:
-            type: object
-            properties:
-              store_nipc:
-                type: integer
-              total_sales:
-                type: number
-              user_interests:
-                type: number
-        donations:
-          type: array
-          items:
-            type: object
-            properties:
-              store_nipc:
-                type: integer
-              total_donations:
-                type: number
-        repairs:
-          type: array
-          items:
-            type: object
-            properties:
-              store_nipc:
-                type: integer
-              total_repairs:
-                type: number
+  /tttransaction/repairs:
+    get:
+      tags:
+      - tttransaction
+      summary: Retrieve repair transactions
+      description: >
+        Returns a list of repair transactions joined with transaction details.
+      responses:
+        '200':
+          description: A list of repair transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    transaction_id:
+                      type: integer
+                      example: 789
+                    product_id:
+                      type: integer
+                      example: 456
+                    store:
+                      type: string
+                      example: '123456789'
+                    employee:
+                      type: integer
+                      example: 12
+                    non_registered_client:
+                      type: string
+                      nullable: true
+                      example: 'nonclient@example.com'
+                    repair_status:
+                      type: string
+                      enum:
+                      - 'In repairs'
+                      - 'Repaired; Awaiting Collection'
+                      - 'Repaired; Collected'
+                      example: 'In repairs'
+                    order_number:
+                      type: string
+                      nullable: true
+                      example: 'ORD-REPAIR-001'
+                    network:
+                      type: string
+                      nullable: true
+                      example: 'PayPal'
+                    id:
+                      type: integer
+                      description: Transaction ID (from transactions table)
+                      example: 789
+                    client:
+                      type: string
+                      description: Client identifier/email
+                      example: 'client@example.com'
+                    transaction_value:
+                      type: number
+                      format: float
+                      example: 120.50
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: '2025-06-11T10:00:00Z'
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Database error message'
 
-    UserClient:
-      type: object
-      properties:
-        id:
-          type: integer
-        nif:
-          type: integer
-        nic:
-          type: integer
-        name:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-        address:
-          type: string
-        gender:
-          type: string
-        dob:
-          type: string
-        password:
-          type: string
-          format: password
+  /tttransaction/repairs/add:
+    post:
+      tags:
+      - tttransaction
+      summary: Add a new repair transaction
+      description: >
+        Creates a new transaction and inserts related repair details. Either `client` or `non_registered_client` must be provided.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client:
+                  type: string
+                  nullable: true
+                  description: Registered client identifier or email
+                  example: 'client@example.com'
+                non_registered_client:
+                  type: string
+                  nullable: true
+                  description: Name or identifier of non-registered client
+                  example: 'John Doe'
+                transaction_value:
+                  type: number
+                  format: float
+                  description: Total value of the transaction
+                  example: 150.75
+                product_id:
+                  type: integer
+                  description: ID of the product being repaired
+                  example: 123
+                store:
+                  type: string
+                  description: Store identifier (NIPC)
+                  example: '123456789'
+                employee:
+                  type: integer
+                  description: Employee ID handling the repair
+                  example: 42
+                repair_status:
+                  type: string
+                  description: Status of the repair
+                  enum:
+                  - 'In repairs'
+                  - 'Repaired; Awaiting Collection'
+                  - 'Repaired; Collected'
+                  default: 'In repairs'
+                  example: 'In repairs'
+                order_number:
+                  type: string
+                  nullable: true
+                  description: Order number related to the repair
+                  example: 'ORD-REPAIR-20250611-0001'
+                network:
+                  type: string
+                  nullable: true
+                  description: Payment network or channel used
+                  example: 'PayPal'
+              required:
+              - transaction_value
+              - product_id
+              - store
+              - employee
+      responses:
+        '201':
+          description: Repair transaction added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Repair transaction added successfully'
+                  id:
+                    type: integer
+                    description: Newly created transaction ID
+                    example: 789
+        '400':
+          description: Missing or invalid required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Required fields missing or invalid.'
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Database error message'
 
-    UserEmployee:
-      type: object
-      properties:
-        id:
-          type: integer
-        nif:
-            type: integer
-        nic:
-          type: integer
-        name:
+  /tttransaction/repairs/{email}:
+    get:
+      tags:
+      - tttransaction
+      summary: Retrieve repair transactions for a specific client
+      description: >
+        Returns a list of repair transactions associated with the specified client email.
+      parameters:
+      - name: email
+        in: path
+        description: Client's email or identifier
+        required: true
+        schema:
           type: string
-        internal_number:
-          type: integer
-        email:
-          type: string
-        phone:
-          type: string
-        address:
-          type: string
-        gender:
-            type: string
-        dob:
-            type: string
-        password:
-            type: string
-            format: password
+          format: email
+          example: client@example.com
+      responses:
+        '200':
+          description: A list of repair transactions for the client
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    transaction_id:
+                      type: integer
+                      example: 123
+                    client:
+                      type: string
+                      nullable: true
+                      example: client@example.com
+                    transaction_value:
+                      type: number
+                      format: float
+                      example: 150.75
+                    date_inserted:
+                      type: string
+                      format: date-time
+                      example: '2025-06-11T10:15:00Z'
+                    product_id:
+                      type: integer
+                      example: 456
+                    store:
+                      type: string
+                      example: '123456789'
+                    employee:
+                      type: integer
+                      example: 42
+                    non_registered_client:
+                      type: string
+                      nullable: true
+                      example: 'John Doe'
+                    repair_status:
+                      type: string
+                      enum:
+                      - 'In repairs'
+                      - 'Repaired; Awaiting Collection'
+                      - 'Repaired; Collected'
+                      example: 'In repairs'
+                    order_number:
+                      type: string
+                      nullable: true
+                      example: 'ORD-REPAIR-20250611-0001'
+                    network:
+                      type: string
+                      nullable: true
+                      example: 'PayPal'
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Database error message'
 
-    UserEntity:
-      type: object
-      properties:
-        id:
+  /tttransaction/repairs/updateStatus/{repairId}:
+    post:
+      tags:
+      - tttransaction
+      summary: Update repair transaction status
+      description: Updates the status of a repair transaction by its ID.
+      parameters:
+      - name: repairId
+        in: path
+        description: ID of the repair transaction to update
+        required: true
+        schema:
           type: integer
-        nipc:
-          type: integer
-        name:
+      requestBody:
+        description: New status for the repair transaction
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - newStatus
+              properties:
+                newStatus:
+                  type: string
+                  example: "Repaired; Awaiting Collection"
+      responses:
+        '200':
+          description: Repair status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Repair status updated successfully"
+        '400':
+          description: Missing or invalid newStatus in request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing or invalid newStatus in request body"
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Database error message"
+
+  /tttransaction/shipping:
+    get:
+      tags:
+      - tttransaction
+      summary: Retrieve current shipping cost
+      description: Returns the current shipping cost from the system.
+      responses:
+        '200':
+          description: Current shipping cost information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_shipping_cost:
+                    type: number
+                    format: float
+                    example: 12.99
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
+
+  /tttransaction/shipping/update:
+    post:
+      tags:
+      - tttransaction
+      summary: Update the current shipping cost
+      description: Updates the value of the `current_shipping_cost` field in the shipping table.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - newCost
+              properties:
+                newCost:
+                  type: number
+                  format: float
+                  minimum: 0
+                  example: 4.99
+      responses:
+        '200':
+          description: Shipping cost updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shipping cost updated successfully
+                  newCost:
+                    type: number
+                    format: float
+                    example: 4.99
+        '400':
+          description: Invalid input (e.g., missing or negative value)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid shipping cost. It must be a non-negative number.
+        '500':
+          description: Internal server error or database failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Database error message
+
+  /report:
+    get:
+      tags:
+      - report
+      summary: Generate usage report PDF
+      responses:
+        '200':
+          description: PDF report generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /geocode:
+    get:
+      tags:
+      - geocode
+      summary: Geocode address via Nominatim OpenStreetMap API
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
           type: string
-        email:
+      responses:
+        '200':
+          description: Geocode results returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /auth-verification:
+    get:
+      tags:
+      - auth-verification
+      summary: Send verification email to user
+      parameters:
+      - name: user_id
+        in: query
+        required: true
+        schema:
           type: string
-        phone:
-          type: string
-        address:
-          type: string
-        password:
-            type: string
-            format: password
+      responses:
+        '200':
+          description: Verification email sent successfully
+        '400':
+          description: Missing user id
+        '500':
+          description: Failed to send verification email
