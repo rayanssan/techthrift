@@ -11,7 +11,7 @@ TechThrift is composed of two main platforms:
 
 ---
 
-Developers:
+## 🔨 Developers
 - Bruno Campos: 60472
 - Guilherme Bastos: 60471
 - Guilherme Ovídio: 58752
