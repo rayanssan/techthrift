@@ -12,6 +12,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { exposeApi } from '../techthrift.js';
 import pkg from 'pdfkit';
 const PDFDocument = pkg;
+// Setup multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../media/images/products'));
+    },
+    filename: function (req, file, cb) {
+        const uniqueName = Date.now() + '-' + file.originalname;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({ storage });
 
 /**
  * Middleware to verify the origin or referer of incoming requests.
@@ -40,19 +52,6 @@ function verifyRequestOrigin(req, res, next) {
     }
     next();
 }
-
-// Setup multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../media/images/products'));
-    },
-    filename: function (req, file, cb) {
-        const uniqueName = Date.now() + '-' + file.originalname;
-        cb(null, uniqueName);
-    }
-});
-
-const upload = multer({ storage });
 
 // Get all products up for sale
 router.get('/tt', verifyRequestOrigin, (req, res) => {
@@ -1600,7 +1599,7 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
                                 console.error('DB operation failed:', err.message);
                             }
 
-                            res.status(201).json({ message: 'Charity successfully added', product: row });
+                            res.status(201).json({ message: 'Charity successfully added', charity: row });
                         }
                     );
                 });
@@ -2140,87 +2139,6 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
     });
 });
 
-// Get purchase transactions
-router.get('/tttransaction/purchases/', verifyRequestOrigin, (req, res) => {
-    const query = `
-        SELECT 
-            t.id,
-            p.purchasing_store,
-            p.non_registered_client AS client,
-            t.transaction_value,
-            t.date_inserted,
-            p.item_purchased,
-            prod.name AS item_name
-        FROM transactions t
-        INNER JOIN purchases p ON p.transaction_id = t.id
-        INNER JOIN products prod ON prod.id = p.item_purchased
-        ORDER BY t.date_inserted DESC
-    `;
-
-    db.query(query, (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query(query, (errR, rowsR) => {
-                if (errR) {
-                    return res.status(500).send({ error: err.message });
-                }
-                return res.json(rowsR);
-            });
-        } else {
-            return res.json(rows);
-        }
-    });
-});
-
-// Add purchase transaction
-router.post('/tttransaction/purchases/add', verifyRequestOrigin, (req, res) => {
-    const { purchasing_store, transaction_value, non_registered_client, item_purchased } = req.body;
-
-    // Validate input
-    if (!transaction_value || transaction_value <= 0 || !non_registered_client || !purchasing_store || !item_purchased) {
-        return res.status(400).json({ error: 'All required fields (store, value, client, item) must be provided.' });
-    }
-
-    const insertTransactionQuery = `
-        INSERT INTO transactions (transaction_value)
-        VALUES (?)
-    `;
-    const transactionValues = [transaction_value];
-
-    db.query(insertTransactionQuery, transactionValues, (err, result) => {
-        if (err) {
-            console.error('DB operation failed:', err.message);
-        }
-
-        const transactionId = result.insertId;
-
-        const insertPurchaseQuery = `
-            INSERT INTO purchases (transaction_id, non_registered_client, purchasing_store, item_purchased)
-            VALUES (?, ?, ?, ?)
-        `;
-        const purchaseValues = [transactionId, non_registered_client, purchasing_store, item_purchased];
-
-        db.query(insertPurchaseQuery, purchaseValues, (err2) => {
-            if (err2) {
-                console.error('DB operation failed:', err.message);
-            }
-
-            // Update Replica
-            dbR.query(insertTransactionQuery, transactionValues, (errR1, resultR) => {
-                if (errR1) console.error('DB operation failed:', err.message);
-                else {
-                    const transactionIdR = resultR.insertId;
-                    dbR.query(insertPurchaseQuery, [transactionIdR, non_registered_client, purchasing_store, item_purchased], (errR2) => {
-                        if (errR2) console.error('DB operation failed:', err.message);
-                    });
-                }
-            });
-
-            return res.status(201).json({ message: 'Purchase transaction added successfully', id: transactionId });
-        });
-    });
-});
-
 // Add sale transaction
 router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
     let { client, transaction_value, is_online, order_number,
@@ -2382,7 +2300,33 @@ router.post('/tttransaction/sales/updateStatus/:saleId', verifyRequestOrigin, (r
                     }
                 });
             } else {
-                res.status(200).send({ message: 'Sale status updated successfully' });
+                const getProductsQuery = `
+                    SELECT product_id FROM soldProducts WHERE sale_id = ?
+                `;
+
+                db.query(getProductsQuery, [saleId], (err, rows) => {
+                    if (err) {
+                        console.error('DB operation failed:', err.message);
+                    }
+
+                    const productIds = rows.map(r => r.product_id);
+
+                    if (productIds.length === 0) {
+                        // No products to update, just respond success
+                        return res.status(200).send({ message: 'Sale status updated, no products to relist.' });
+                    } else {
+                        const relistQuery = `UPDATE products SET availability = 0 WHERE id IN (${productIds.map(() => '?').join(',')})`;
+
+                        db.query(relistQuery, productIds, (err) => {
+                            if (err) console.error('DB operation failed:', err.message);
+                            // Update replica
+                            dbR.query(relistQuery, productIds, (err) => {
+                                if (err) console.error('DB operation failed:', err.message);
+                            });
+                        });
+                        res.status(200).send({ message: 'Sale status updated successfully' });
+                    }
+                });
             }
         });
     });
@@ -2417,6 +2361,87 @@ router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, re
         res.json({
             allAvailable: unavailable.length === 0,
             unavailable
+        });
+    });
+});
+
+// Get purchase transactions
+router.get('/tttransaction/purchases/', verifyRequestOrigin, (req, res) => {
+    const query = `
+        SELECT 
+            t.id,
+            p.purchasing_store,
+            p.non_registered_client AS client,
+            t.transaction_value,
+            t.date_inserted,
+            p.item_purchased,
+            prod.name AS item_name
+        FROM transactions t
+        INNER JOIN purchases p ON p.transaction_id = t.id
+        INNER JOIN products prod ON prod.id = p.item_purchased
+        ORDER BY t.date_inserted DESC
+    `;
+
+    db.query(query, (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query(query, (errR, rowsR) => {
+                if (errR) {
+                    return res.status(500).send({ error: err.message });
+                }
+                return res.json(rowsR);
+            });
+        } else {
+            return res.json(rows);
+        }
+    });
+});
+
+// Add purchase transaction
+router.post('/tttransaction/purchases/add', verifyRequestOrigin, (req, res) => {
+    const { purchasing_store, transaction_value, non_registered_client, item_purchased } = req.body;
+
+    // Validate input
+    if (!transaction_value || transaction_value <= 0 || !non_registered_client || !purchasing_store || !item_purchased) {
+        return res.status(400).json({ error: 'All required fields (store, value, client, item) must be provided.' });
+    }
+
+    const insertTransactionQuery = `
+        INSERT INTO transactions (transaction_value)
+        VALUES (?)
+    `;
+    const transactionValues = [transaction_value];
+
+    db.query(insertTransactionQuery, transactionValues, (err, result) => {
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
+
+        const transactionId = result.insertId;
+
+        const insertPurchaseQuery = `
+            INSERT INTO purchases (transaction_id, non_registered_client, purchasing_store, item_purchased)
+            VALUES (?, ?, ?, ?)
+        `;
+        const purchaseValues = [transactionId, non_registered_client, purchasing_store, item_purchased];
+
+        db.query(insertPurchaseQuery, purchaseValues, (err2) => {
+            if (err2) {
+                console.error('DB operation failed:', err.message);
+            }
+
+            // Update Replica
+            dbR.query(insertTransactionQuery, transactionValues, (errR1, resultR) => {
+                if (errR1) console.error('DB operation failed:', err.message);
+                else {
+                    const transactionIdR = resultR.insertId;
+                    dbR.query(insertPurchaseQuery, [transactionIdR, non_registered_client, purchasing_store, item_purchased], (errR2) => {
+                        if (errR2) console.error('DB operation failed:', err.message);
+                    });
+                }
+            });
+
+            return res.status(201).json({ message: 'Purchase transaction added successfully', id: transactionId });
         });
     });
 });
@@ -2536,6 +2561,85 @@ router.get('/tttransaction/repairs/:email', verifyRequestOrigin, (req, res) => {
         } else {
             res.json(rows);
         }
+    });
+});
+
+// Update repair transaction status
+router.post('/tttransaction/repairs/updateStatus/:repairId', verifyRequestOrigin, (req, res) => {
+    const { repairId } = req.params;
+    const { newStatus } = req.body;
+
+    if (!newStatus || typeof newStatus !== 'string') {
+        return res.status(400).send({ error: 'Missing or invalid newStatus in request body' });
+    }
+
+    const updateQuery = `
+        UPDATE repairs
+        SET repair_status = ?
+        WHERE transaction_id = ?
+    `;
+
+    // Update repair status
+    db.query(updateQuery, [newStatus, repairId], (err, result) => {
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
+
+        // Update replica
+        dbR.query(updateQuery, [newStatus, repairId], (err) => {
+            if (err) {
+                console.error('DB operation failed:', err.message);
+            }
+
+            res.status(200).send({ message: 'Repair status updated successfully' });
+
+        });
+    });
+});
+
+// Get shipping costs
+router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {
+    db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+        if (err) {
+            // Fallback to replica DB
+            dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+                if (err) {
+                    return res.status(500).send({ error: err.message });
+                }
+                res.json(rows[0]);
+            });
+        } else {
+            res.json(rows[0]);
+        }
+    });
+});
+
+// Update shipping cost
+router.post('/tttransaction/shipping/update', verifyRequestOrigin, (req, res) => {
+    let { newCost } = req.body;
+
+    newCost = parseFloat(req.body.newCost);
+
+    if (isNaN(newCost) || newCost < 0) {
+        return res.status(400).json({ error: 'Invalid shipping cost. It must be a non-negative number.' });
+    }
+
+    const updateQuery = `UPDATE shipping SET current_shipping_cost = ? WHERE id = 1`;
+
+    // Update primary DB
+    db.query(updateQuery, [newCost], (err) => {
+        if (err) {
+            console.error('DB operation failed:', err.message);
+        }
+
+        // Update replica
+        dbR.query(updateQuery, [newCost], (errR) => {
+            if (errR) {
+                console.error('DB operation failed:', err.message);
+            }
+
+            res.status(200).json({ message: 'Shipping cost updated successfully', newCost });
+        });
     });
 });
 
@@ -2660,24 +2764,6 @@ router.get('/report', verifyRequestOrigin, (req, res) => {
             doc.end();
 
         });
-});
-
-
-// Get shipping costs
-router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {
-    db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
-        if (err) {
-            // Fallback to replica DB
-            dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                res.json(rows[0]);
-            });
-        } else {
-            res.json(rows[0]);
-        }
-    });
 });
 
 // Nominatim OpenStreetMap API

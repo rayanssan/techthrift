@@ -733,7 +733,7 @@ if (document.body.id === "homepage") {
             'cart': cartPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
             'total': (cartPrice + shippingPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
-        document.getElementById('shipping-price').innerHTML = `€${prices.shipping}`;
+        document.getElementById('shipping-price').innerHTML = shippingPrice == 0 ? `${prices.shipping}` : `€${prices.shipping}`;
         document.getElementById('total-price').innerHTML = `€${prices.total}`;
         return prices;
     }

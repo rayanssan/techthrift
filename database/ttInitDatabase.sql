@@ -522,4 +522,6 @@ INSERT INTO repairParts (name, price, store) VALUES
 INSERT INTO donationProducts (id, charity_nipc, donor_nif) VALUES (2, 556677889, 220349535);
 INSERT INTO shipping (current_shipping_cost) VALUES (4.99);
 
-INSERT INTO tokens (token) VALUES ("1d05aae0d996762cdb6073b0ba854779af53b45f20ece0b1091f55bf83ae9383");
+INSERT INTO tokens (token) VALUES 
+("1d05aae0d996762cdb6073b0ba854779af53b45f20ece0b1091f55bf83ae9383"),
+("ac69d22cf3d34fcc3282cb9c8cfa9470abeb430cb0998f74a81c7dfd658ab9c5");
