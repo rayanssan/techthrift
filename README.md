@@ -83,7 +83,7 @@ Certain routes are protected and require access tokens:
   Use the pre-registered store NIPC:
 
   ```
-  NIPC: 11223344
+  NIPC: 112233445
   ```
 
 ---
