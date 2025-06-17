@@ -333,9 +333,8 @@
           const charityId = row.getAttribute('data-charity-id');
 
           const matchesName = name.includes(nameFilter);
-          const matchesCharity = !charityFilter || charityFilter === charityId;
 
-          row.style.display = matchesName && matchesCharity ? '' : 'none';
+          row.style.display = matchesName ? '' : 'none';
         });
       }
 
