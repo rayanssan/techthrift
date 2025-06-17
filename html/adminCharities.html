@@ -277,8 +277,7 @@
 
           // Apply filters
           const filteredProducts = products
-            .filter(p => p.store_nipc === userNipc)
-            .filter(p => donationCharityFilter === '' || p.charity === donationCharityFilter);
+            .filter(p => p.charity_nipc === userNipc);
 
           // Show empty message if no matching products
           if (filteredProducts.length === 0) {
