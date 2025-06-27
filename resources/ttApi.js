@@ -264,8 +264,8 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
 
             //             res.json(response);
             //         }
-                });
-            });
+            //     });
+            // });
         } else {
             // If the product is found in the saleProducts table, set isSaleProduct to true
             isSaleProduct = result.length > 0;
