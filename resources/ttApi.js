@@ -1,4 +1,4 @@
-"use strict";
+    "use strict";
 
 import { Router } from 'express';
 const router = Router();
@@ -193,12 +193,12 @@ router.get('/tt/product', verifyRequestOrigin, (req, res) => {
     db.query(query, params, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, params, (replicaErr, replicaRows) => {
-                if (replicaErr) {
-                    return res.status(500).json({ error: err.message });
-                }
-                res.json(replicaRows);
-            });
+            // dbR.query(query, params, (replicaErr, replicaRows) => {
+            //     if (replicaErr) {
+            //         return res.status(500).json({ error: err.message });
+            //     }
+            //     res.json(replicaRows);
+            // });
         } else {
             res.json(rows);
         }
@@ -218,52 +218,52 @@ router.get('/tt/product/:id', verifyRequestOrigin, (req, res) => {
     db.query(checkSaleQuery, [id], (err, result) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(checkSaleQuery, [id], (err, result) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                // If the product is found in the saleProducts table, set isSaleProduct to true
-                isSaleProduct = result.length > 0;
+            // dbR.query(checkSaleQuery, [id], (err, result) => {
+            //     if (err) {
+            //         return res.status(500).json({ error: err.message });
+            //     }
+            //     // If the product is found in the saleProducts table, set isSaleProduct to true
+            //     isSaleProduct = result.length > 0;
 
-                // Based on whether it's a sale product, modify the main query
-                let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
-                    products.id = productImages.product WHERE id = ?`;
-                let params = [id];
+            //     // Based on whether it's a sale product, modify the main query
+            //     let query = `SELECT * FROM products, productImages LEFT JOIN productImages ON 
+            //         products.id = productImages.product WHERE id = ?`;
+            //     let params = [id];
 
-                if (isSaleProduct) {
-                    query = `
-                    SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
-                    FROM products
-                    JOIN saleProducts ON products.id = saleProducts.id
-                    LEFT JOIN productImages ON products.id = productImages.product
-                    JOIN entities ON products.store_nipc = entities.nipc
-                    JOIN clients ON entities.id = clients.id
-                    WHERE products.id = ?;
-                    `;
-                }
+            //     if (isSaleProduct) {
+            //         query = `
+            //         SELECT products.*, saleProducts.*, productImages.*, clients.name AS store
+            //         FROM products
+            //         JOIN saleProducts ON products.id = saleProducts.id
+            //         LEFT JOIN productImages ON products.id = productImages.product
+            //         JOIN entities ON products.store_nipc = entities.nipc
+            //         JOIN clients ON entities.id = clients.id
+            //         WHERE products.id = ?;
+            //         `;
+            //     }
 
-                // Execute the final query
-                dbR.query(query, params, (err, rows) => {
-                    if (err || rows.length === 0) {
-                        return res.status(404).send('Product not found');
-                    } else {
-                        // Create images object with keys as image_order and values as image_path
-                        const product = rows[0];
-                        const images = {};
+            //     // Execute the final query
+            //     dbR.query(query, params, (err, rows) => {
+            //         if (err || rows.length === 0) {
+            //             return res.status(404).send('Product not found');
+            //         } else {
+            //             // Create images object with keys as image_order and values as image_path
+            //             const product = rows[0];
+            //             const images = {};
 
-                        rows.forEach(row => {
-                            // Assign the image path to the key being the image_order
-                            images[row.image_order] = row.image_path;
-                        });
+            //             rows.forEach(row => {
+            //                 // Assign the image path to the key being the image_order
+            //                 images[row.image_order] = row.image_path;
+            //             });
 
-                        // Build the response object
-                        const response = {
-                            ...product, // product info
-                            images: images // image info
-                        };
+            //             // Build the response object
+            //             const response = {
+            //                 ...product, // product info
+            //                 images: images // image info
+            //             };
 
-                        res.json(response);
-                    }
+            //             res.json(response);
+            //         }
                 });
             });
         } else {
@@ -359,15 +359,15 @@ router.post('/tt/add', verifyRequestOrigin, (req, res) => {
         }
 
         // Update replica
-        dbR.execute(query, values, function (err, result) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
+        // dbR.execute(query, values, function (err, result) {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
 
-            res.status(201).json({
-                id: result.insertId,
-                ...newProduct
-            }); // Send back the newly added product
+        //     res.status(201).json({
+        //         id: result.insertId,
+        //         ...newProduct
+        //     }); // Send back the newly added product
         });
     });
 });
@@ -406,13 +406,13 @@ router.post('/tt/upload', verifyRequestOrigin, upload.array('images'), (req, res
             console.error('DB operation failed:', err.message);
         }
 
-        dbR.execute(query, flatValues, (err) => {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
+        // dbR.execute(query, flatValues, (err) => {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
 
-            res.status(200).json({ message: 'Images uploaded and metadata saved.' });
-        });
+        //     res.status(200).json({ message: 'Images uploaded and metadata saved.' });
+        // });
     });
 });
 
@@ -432,17 +432,17 @@ router.delete('/tt/remove/:id', verifyRequestOrigin, (req, res) => {
                 console.error('DB operation failed:', err.message);
             }
             // Also delete from replica
-            dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => {
-                if (err) {
-                    console.error('DB operation failed:', err.message);
-                }
-            });
-            dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => {
-                if (err) {
-                    console.error('DB operation failed:', err.message);
-                }
-                res.status(200).send('Product and related images successfully removed');
-            });
+            // dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => {
+            //     if (err) {
+            //         console.error('DB operation failed:', err.message);
+            //     }
+            // });
+            // dbR.execute('DELETE FROM products WHERE id = ?', [productId], () => {
+            //     if (err) {
+            //         console.error('DB operation failed:', err.message);
+            //     }
+            //     res.status(200).send('Product and related images successfully removed');
+            // });
         });
     });
 });
@@ -467,25 +467,25 @@ router.post('/tt/sale/add', verifyRequestOrigin, (req, res) => {
                         console.error('DB operation failed:', err.message);
                     }
                     // Update replica
-                    dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
-                        if (err) {
-                            console.error('DB operation failed:', err.message);
-                        }
-                        // Insert the product into the saleProducts table
-                        dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
-                            [newSaleProduct.id, newSaleProduct.price], function (err) {
-                                if (err) {
-                                    console.error('DB operation failed:', err.message);
-                                }
-                                dbR.execute('UPDATE products SET availability = 1 WHERE id = ?', [newSaleProduct.id], (err) => {
-                                    if (err) {
-                                        console.error('DB operation failed:', err.message);
-                                    }
+                    // dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
+                    //     if (err) {
+                    //         console.error('DB operation failed:', err.message);
+                    //     }
+                    //     // Insert the product into the saleProducts table
+                    //     dbR.execute('INSERT INTO saleProducts (id, price) VALUES (?, ?)',
+                    //         [newSaleProduct.id, newSaleProduct.price], function (err) {
+                    //             if (err) {
+                    //                 console.error('DB operation failed:', err.message);
+                    //             }
+                    //             dbR.execute('UPDATE products SET availability = 1 WHERE id = ?', [newSaleProduct.id], (err) => {
+                    //                 if (err) {
+                    //                     console.error('DB operation failed:', err.message);
+                    //                 }
 
-                                    res.status(201).json({ message: 'Product set for sale', product: row });
-                                });
-                            });
-                    });
+                    //                 res.status(201).json({ message: 'Product set for sale', product: row });
+                    //             });
+                    //         });
+                    // });
                 });
             });
     });
@@ -504,18 +504,18 @@ router.put('/tt/sale/remove/:id', verifyRequestOrigin, (req, res) => {
                 console.error('DB operation failed:', err.message);
             }
             // Update replica
-            dbR.query('SELECT * FROM saleProducts WHERE id = ?', [req.params.id], (err, row) => {
-                if (err) {
-                    console.error('DB operation failed:', err.message);
-                }
-                // Remove the product from the saleProducts table
-                dbR.execute('DELETE FROM saleProducts WHERE id = ?', [req.params.id], function (err) {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    } else {
-                        res.status(200).json({ message: 'Product removed from sale', productId });
-                    }
-                });
+            // dbR.query('SELECT * FROM saleProducts WHERE id = ?', [req.params.id], (err, row) => {
+            //     if (err) {
+            //         console.error('DB operation failed:', err.message);
+            //     }
+            //     // Remove the product from the saleProducts table
+            //     dbR.execute('DELETE FROM saleProducts WHERE id = ?', [req.params.id], function (err) {
+            //         if (err) {
+            //             console.error('DB operation failed:', err.message);
+            //         } else {
+            //             res.status(200).json({ message: 'Product removed from sale', productId });
+            //         }
+            //     });
             });
         });
     });
@@ -528,13 +528,13 @@ router.get('/tt/repairParts', verifyRequestOrigin, (req, res) => {
     db.query(query, (err, results) => {
         if (err) {
             // Fallback to replica
-            dbR.query(query, (errR, resultsR) => {
-                if (errR) {
-                    return res.status(500).json({ error: errR.message });
-                } else {
-                    return res.json(resultsR);
-                }
-            });
+            // dbR.query(query, (errR, resultsR) => {
+            //     if (errR) {
+            //         return res.status(500).json({ error: errR.message });
+            //     } else {
+            //         return res.json(resultsR);
+            //     }
+            // });
         } else {
             return res.json(results);
         }
@@ -558,12 +558,12 @@ router.post('/tt/repairPart/add', verifyRequestOrigin, (req, res) => {
         }
 
         // Update replica
-        dbR.query(query, values, (errR, result) => {
-            if (errR) {
-                console.error('DB operation failed:', errR.message);
-            }
-            return res.status(201).json({ message: 'Repair part added successfully', id: result.insertId });
-        });
+        // dbR.query(query, values, (errR, result) => {
+        //     if (errR) {
+        //         console.error('DB operation failed:', errR.message);
+        //     }
+        //     return res.status(201).json({ message: 'Repair part added successfully', id: result.insertId });
+        // });
     });
 });
 
@@ -582,12 +582,12 @@ router.put('/tt/repairParts/remove/:id', verifyRequestOrigin, (req, res) => {
         }
 
         // Update replica
-        dbR.query(query, [id], (errR) => {
-            if (errR) {
-                console.error('DB operation failed:', errR.message);
-            }
-            return res.json({ message: 'Repair part deleted successfully' });
-        });
+        // dbR.query(query, [id], (errR) => {
+        //     if (errR) {
+        //         console.error('DB operation failed:', errR.message);
+        //     }
+        //     return res.json({ message: 'Repair part deleted successfully' });
+        // });
     });
 });
 
@@ -662,12 +662,12 @@ router.get('/tt/donation', verifyRequestOrigin,
         db.query(query, params, (err, rows) => {
             if (err) {
                 // Fallback to replica DB
-                dbR.query(query, params, (err, rows) => {
-                    if (err) {
-                        return res.status(500).json({ error: err.message });
-                    }
-                    res.json(rows);
-                });
+                // dbR.query(query, params, (err, rows) => {
+                //     if (err) {
+                //         return res.status(500).json({ error: err.message });
+                //     }
+                //     res.json(rows);
+                // });
             } else {
                 res.json(rows);
             }
@@ -681,16 +681,16 @@ router.get('/tt/donation/:id', verifyRequestOrigin,
             [req.params.id], (err, rows) => {
                 if (err) {
                     // Fallback to replica DB
-                    dbR.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?',
-                        [req.params.id], (err, rows) => {
-                            if (err) {
-                                return res.status(500).json({ error: err.message });
-                            } else if (rows.length === 0) {
-                                return res.status(404).send('Product not found');
-                            } else {
-                                res.json(rows[0]);
-                            }
-                        });
+                    // dbR.query('SELECT * FROM donationProducts dp INNER JOIN products p ON p.id = dp.id WHERE dp.id = ?',
+                    //     [req.params.id], (err, rows) => {
+                    //         if (err) {
+                    //             return res.status(500).json({ error: err.message });
+                    //         } else if (rows.length === 0) {
+                    //             return res.status(404).send('Product not found');
+                    //         } else {
+                    //             res.json(rows[0]);
+                    //         }
+                    //     });
                 } else if (rows.length === 0) {
                     return res.status(404).send('Product not found');
                 } else {
@@ -723,13 +723,13 @@ router.post('/tt/donation/add', verifyRequestOrigin, (req, res) => {
             if (err) console.error('DB operation failed:', err.message);
 
             // Update replica DB
-            dbR.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
-                if (err) console.error('DB operation failed:', err.message);
+            // dbR.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
+            //     if (err) console.error('DB operation failed:', err.message);
 
-                dbR.execute(insertQuery, insertValues, function (err) {
-                    if (err) console.error('DB operation failed:', err.message);
-                    res.status(201).json({ message: 'Product set for donation' });
-                });
+            //     dbR.execute(insertQuery, insertValues, function (err) {
+            //         if (err) console.error('DB operation failed:', err.message);
+            //         res.status(201).json({ message: 'Product set for donation' });
+            //     });
             });
         });
     });
@@ -749,17 +749,17 @@ router.put('/tt/donation/remove/:id', verifyRequestOrigin, (req, res) => {
             }
 
             // Update replica
-            dbR.query('SELECT * FROM donationProducts WHERE id = ?', [req.params.id], (err, row) => {
-                if (err) {
-                    console.error('DB operation failed:', err.message);
-                }
-                // Remove the product from the donationProducts table
-                dbR.execute('DELETE FROM donationProducts WHERE id = ?', [req.params.id], function (err) {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
-                    res.status(200).json({ message: 'Product removed from donation', product: row });
-                });
+            // dbR.query('SELECT * FROM donationProducts WHERE id = ?', [req.params.id], (err, row) => {
+            //     if (err) {
+            //         console.error('DB operation failed:', err.message);
+            //     }
+            //     // Remove the product from the donationProducts table
+            //     dbR.execute('DELETE FROM donationProducts WHERE id = ?', [req.params.id], function (err) {
+            //         if (err) {
+            //             console.error('DB operation failed:', err.message);
+            //         }
+            //         res.status(200).json({ message: 'Product removed from donation', product: row });
+            //     });
             });
         });
 
@@ -771,13 +771,13 @@ router.get('/tt/categories', verifyRequestOrigin,
     (req, res) => {
         db.query('SELECT * FROM categories', [], (err, rows) => {
             if (err) {
-                // Fallback to replica DB
-                dbR.query('SELECT * FROM categories', [], (err, rows) => {
-                    if (err) {
-                        return res.status(500).json({ error: err.message });
-                    }
-                    res.json(rows);
-                });
+                // // Fallback to replica DB
+                // dbR.query('SELECT * FROM categories', [], (err, rows) => {
+                //     if (err) {
+                //         return res.status(500).json({ error: err.message });
+                //     }
+                //     res.json(rows);
+                // });
             } else {
                 res.json(rows);
             }
@@ -850,15 +850,15 @@ router.get('/ttuser', verifyRequestOrigin, (req, res) => {
     db.query(query, params, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, params, (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                if (rows.length === 0) {
-                    return res.status(204).send();
-                }
-                res.json(rows.length === 1 ? rows[0] : rows);
-            });
+            // dbR.query(query, params, (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).json({ error: err.message });
+            //     }
+            //     if (rows.length === 0) {
+            //         return res.status(204).send();
+            //     }
+            //     res.json(rows.length === 1 ? rows[0] : rows);
+            // });
         } else {
             if (rows.length === 0) {
                 return res.status(204).send();
@@ -900,17 +900,17 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
         }
 
         // Update replica
-        dbR.execute(query, values, function (err, result) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
+        // dbR.execute(query, values, function (err, result) {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
 
-            res.status(201).json({
-                message: 'Client successfully added or updated',
-                id: result.insertId,
-                clientData: newClient
-            });
-        });
+        //     res.status(201).json({
+        //         message: 'Client successfully added or updated',
+        //         id: result.insertId,
+        //         clientData: newClient
+        //     });
+        // });
     });
 });
 
@@ -979,12 +979,12 @@ router.put('/ttuser/edit/client', verifyRequestOrigin, (req, res) => {
             console.error('DB operation failed:', err.message);
         }
         // Update replica
-        dbR.execute(query, values, function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
-            res.send('Client successfully updated');
-        });
+        // dbR.execute(query, values, function (err) {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
+        //     res.send('Client successfully updated');
+        // });
     });
 });
 
@@ -995,12 +995,12 @@ router.delete('/ttuser/remove/client/:id', verifyRequestOrigin, (req, res) => {
             console.error('DB operation failed:', err.message);
         }
         // Update replica
-        dbR.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
-            res.send('Client successfully removed');
-        });
+        // dbR.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
+        //     res.send('Client successfully removed');
+        // });
     });
 });
 
@@ -1035,15 +1035,15 @@ router.get('/ttuser/employee', verifyRequestOrigin, (req, res) => {
     db.query(sql, values, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(sql, values, (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                if (rows.length === 0) {
-                    return res.status(204).send();
-                }
-                res.json(rows.length === 1 ? rows[0] : rows);
-            });
+            // dbR.query(sql, values, (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).json({ error: err.message });
+            //     }
+            //     if (rows.length === 0) {
+            //         return res.status(204).send();
+            //     }
+            //     res.json(rows.length === 1 ? rows[0] : rows);
+            // });
         } else {
             if (rows.length === 0) {
                 return res.status(204).send();
@@ -1073,19 +1073,19 @@ router.post('/ttuser/add/employee', verifyRequestOrigin, (req, res) => {
                 if (err) console.error('DB operation failed:', err.message);
 
                 // Update replica
-                dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, row) => {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
-                    // Insert the user into the employees table
-                    dbR.execute('INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
-                        [newEmployee.id, newEmployee.store, newEmployee.internal_number], function (err) {
-                            if (err) {
-                                console.error('DB operation failed:', err.message);
-                            }
-                            res.status(201).json({ message: 'Employee successfully added' });
-                        });
-                });
+                // dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, row) => {
+                //     if (err) {
+                //         console.error('DB operation failed:', err.message);
+                //     }
+                //     // Insert the user into the employees table
+                //     dbR.execute('INSERT INTO employees (id, store, internal_number) VALUES (?, ?, ?)',
+                //         [newEmployee.id, newEmployee.store, newEmployee.internal_number], function (err) {
+                //             if (err) {
+                //                 console.error('DB operation failed:', err.message);
+                //             }
+                //             res.status(201).json({ message: 'Employee successfully added' });
+                //         });
+                // });
             }
         );
     });
@@ -1153,12 +1153,12 @@ router.put('/ttuser/edit/employee', verifyRequestOrigin, async (req, res) => {
         });
 
         // Execute on replica DB
-        await new Promise((resolve, reject) => {
-            dbR.execute(query, values, (err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        });
+        // await new Promise((resolve, reject) => {
+        //     dbR.execute(query, values, (err) => {
+        //         if (err) return reject(err);
+        //         resolve();
+        //     });
+        // });
 
         res.json({ message: 'Employee successfully updated' });
 
@@ -1252,7 +1252,7 @@ router.get('/ttuser/store', verifyRequestOrigin, (req, res) => {
     db.query(sql, values, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(sql, values, handleResult);
+            //dbR.query(sql, values, handleResult);
         } else {
             handleResult(null, rows);
         }
@@ -1296,39 +1296,39 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                 }
 
                 // Update replica
-                dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
+                // dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
+                //     if (err) {
+                //         console.error('DB operation failed:', err.message);
+                //     }
 
-                    dbR.execute(
-                        'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "store", ?, ?, ?)',
-                        [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
-                        function (err) {
-                            if (err) {
-                                console.error('DB operation failed:', err.message);
-                            }
+                //     dbR.execute(
+                //         'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "store", ?, ?, ?)',
+                //         [newStore.id, newStore.nipc, newStore.address || null, newStore.city || null, newStore.country || null],
+                //         function (err) {
+                //             if (err) {
+                //                 console.error('DB operation failed:', err.message);
+                //             }
 
-                            // If store hours are provided, insert into entityHours table
-                            if (newStore.opening_hours) {
-                                const hoursEntries = Object.entries(newStore.opening_hours);
+                //             // If store hours are provided, insert into entityHours table
+                //             if (newStore.opening_hours) {
+                //                 const hoursEntries = Object.entries(newStore.opening_hours);
 
-                                hoursEntries.forEach(([day, hours]) => {
-                                    dbR.execute(
-                                        'INSERT INTO entityHours (entity, day, hours) VALUES (?, ?, ?)',
-                                        [newStore.id, day, hours],
-                                        (err) => {
-                                            if (err) {
-                                                console.error(`Failed to insert hours for ${day}:`, err.message);
-                                            }
-                                        }
-                                    );
-                                });
-                            }
-                            res.status(201).json({ message: 'Store successfully added', product: row });
-                        }
-                    );
-                });
+                //                 hoursEntries.forEach(([day, hours]) => {
+                //                     dbR.execute(
+                //                         'INSERT INTO entityHours (entity, day, hours) VALUES (?, ?, ?)',
+                //                         [newStore.id, day, hours],
+                //                         (err) => {
+                //                             if (err) {
+                //                                 console.error(`Failed to insert hours for ${day}:`, err.message);
+                //                             }
+                //                         }
+                //                     );
+                //                 });
+                //             }
+                //             res.status(201).json({ message: 'Store successfully added', product: row });
+                //         }
+                //     );
+                // });
 
             }
         );
@@ -1397,12 +1397,12 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
         });
 
         // Execute update on replica DB
-        await new Promise((resolve, reject) => {
-            dbR.execute(updateQuery, values, (err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        });
+        // await new Promise((resolve, reject) => {
+        //     dbR.execute(updateQuery, values, (err) => {
+        //         if (err) return reject(err);
+        //         resolve();
+        //     });
+        // });
 
         // If no opening_hours provided, finish here
         if (!opening_hours) {
@@ -1447,7 +1447,7 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
         // Delete existing hours for this entity
         const deleteHoursQuery = `DELETE FROM entityHours WHERE entity = ?`;
         await db.promise().execute(deleteHoursQuery, [entityId]);
-        await dbR.promise().execute(deleteHoursQuery, [entityId]);
+        //await dbR.promise().execute(deleteHoursQuery, [entityId]);
 
         // Insert new hours
         // Format: (entity, day, hours)
@@ -1464,7 +1464,7 @@ router.put('/ttuser/edit/store', verifyRequestOrigin, async (req, res) => {
         if (insertValues.length > 0) {
             const insertQuery = `INSERT INTO entityHours (entity, day, hours) VALUES ${placeholders.join(', ')}`;
             await db.promise().execute(insertQuery, insertValues);
-            await dbR.promise().execute(insertQuery, insertValues);
+           // await dbR.promise().execute(insertQuery, insertValues);
         }
 
         res.json({ message: 'Store and hours successfully updated' });
@@ -1559,7 +1559,7 @@ router.get('/ttuser/charity', verifyRequestOrigin, (req, res) => {
     db.query(sql, values, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(sql, values, handleResult);
+            //dbR.query(sql, values, handleResult);
         } else {
             handleResult(null, rows);
         }
@@ -1586,23 +1586,23 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
                 }
 
                 // Update replica
-                dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
+                // dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
+                //     if (err) {
+                //         console.error('DB operation failed:', err.message);
+                //     }
 
-                    dbR.execute(
-                        'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "charity", ?, ?, ?)',
-                        [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
-                        function (err) {
-                            if (err) {
-                                console.error('DB operation failed:', err.message);
-                            }
+                //     dbR.execute(
+                //         'INSERT INTO entities (id, nipc, entity_type, address, city, country) VALUES (?, ?, "charity", ?, ?, ?)',
+                //         [newCharity.id, newCharity.nipc, newCharity.address || null, newCharity.city || null, newCharity.country || null],
+                //         function (err) {
+                //             if (err) {
+                //                 console.error('DB operation failed:', err.message);
+                //             }
 
-                            res.status(201).json({ message: 'Charity successfully added', charity: row });
-                        }
-                    );
-                });
+                //             res.status(201).json({ message: 'Charity successfully added', charity: row });
+                //         }
+                //     );
+                // });
             }
         );
     });
@@ -1668,12 +1668,12 @@ router.put('/ttuser/edit/charity', verifyRequestOrigin, async (req, res) => {
         });
 
         // Execute on replica DB
-        await new Promise((resolve, reject) => {
-            dbR.execute(query, values, (err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        });
+        // await new Promise((resolve, reject) => {
+        //     dbR.execute(query, values, (err) => {
+        //         if (err) return reject(err);
+        //         resolve();
+        //     });
+        // });
 
         res.json({ message: 'Charity successfully updated' });
 
@@ -1700,10 +1700,10 @@ router.post('/ttuser/add/charityProject', verifyRequestOrigin, (req, res) => {
 
     db.query(query, values, (err, result) => {
         if (err) {
-            dbR.query(query, values, (err, result) => {
-                if (err) console.error('DB operation failed:', err.message);
-                res.json({ success: true, insertedId: result.insertId });
-            });
+            // dbR.query(query, values, (err, result) => {
+            //     if (err) console.error('DB operation failed:', err.message);
+            //     res.json({ success: true, insertedId: result.insertId });
+            // });
         } else {
             res.json({ success: true, insertedId: result.insertId });
         }
@@ -1725,11 +1725,11 @@ router.post('/ttuser/remove/charityProjects', verifyRequestOrigin, (req, res) =>
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-        dbR.query(query, ids, (err, result) => {
-            if (err) console.error('DB operation failed:', err.message);
+        // dbR.query(query, ids, (err, result) => {
+        //     if (err) console.error('DB operation failed:', err.message);
 
-            return res.json({ success: true, deleted: result.affectedRows });
-        });
+        //     return res.json({ success: true, deleted: result.affectedRows });
+        // });
     });
 });
 
@@ -1749,14 +1749,14 @@ router.get('/ttuser/charityProjects', verifyRequestOrigin, (req, res) => {
 
     db.query(query, [charity_id], (err, rows) => {
         if (err) {
-            dbR.query(query, [charity_id], (err, rows) => {
-                if (err) {
-                    res.setHeader('Content-Type', 'application/json');
-                    return res.status(500).json({ error: err.message });
-                }
-                res.setHeader('Content-Type', 'application/json');
-                res.json(rows || []);
-            });
+            // dbR.query(query, [charity_id], (err, rows) => {
+            //     if (err) {
+            //         res.setHeader('Content-Type', 'application/json');
+            //         return res.status(500).json({ error: err.message });
+            //     }
+            //     res.setHeader('Content-Type', 'application/json');
+            //     res.json(rows || []);
+            // });
         } else {
             res.setHeader('Content-Type', 'application/json');
             res.json(rows || []);
@@ -1770,10 +1770,10 @@ router.get('/ttuser/interests', verifyRequestOrigin, (req, res) => {
 
     db.query(query, (err, rows) => {
         if (err) {
-            dbR.query(query, (err, rows) => {
-                if (err) return res.status(500).send({ error: err.message });
-                return res.status(200).json(rows || []);
-            });
+            // dbR.query(query, (err, rows) => {
+            //     if (err) return res.status(500).send({ error: err.message });
+            //     return res.status(200).json(rows || []);
+            // });
         } else {
             return res.status(200).json(rows || []);
         }
@@ -1800,11 +1800,11 @@ router.post('/ttuser/interest', verifyRequestOrigin, (req, res) => {
         if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
-        dbR.execute(query, values, function (err) {
-            if (err) console.error('DB operation failed:', err.message);
+        // dbR.execute(query, values, function (err) {
+        //     if (err) console.error('DB operation failed:', err.message);
 
-            res.status(201).send('Product alert successfully added');
-        });
+        //     res.status(201).send('Product alert successfully added');
+        // });
     });
 });
 
@@ -1819,12 +1819,12 @@ router.get('/ttuser/interest/:email', verifyRequestOrigin, (req, res) => {
     db.query(query, [req.params.email], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [req.params.email], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                return res.status(200).json(rows || []);
-            });
+            // dbR.query(query, [req.params.email], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     return res.status(200).json(rows || []);
+            // });
         } else {
             return res.status(200).json(rows || []);
         }
@@ -1839,11 +1839,11 @@ router.delete('/ttuser/remove/interest/:id', verifyRequestOrigin, (req, res) => 
         if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
-        dbR.execute(query, [req.params.id], function (err) {
-            if (err) console.error('DB operation failed:', err.message);
+        // dbR.execute(query, [req.params.id], function (err) {
+        //     if (err) console.error('DB operation failed:', err.message);
 
-            res.status(200).send('Product alert successfully removed');
-        });
+        //     res.status(200).send('Product alert successfully removed');
+        // });
     });
 });
 
@@ -1862,12 +1862,12 @@ router.get('/ttuser/interest/addNotification/:interestId', verifyRequestOrigin, 
                     else resolve(result);
                 });
             }),
-            new Promise((resolve, reject) => {
-                dbR.execute(interestQuery, [interestId], (err, result) => {
-                    if (err) reject(err);
-                    else resolve(result);
-                });
-            })
+            // new Promise((resolve, reject) => {
+            //     dbR.execute(interestQuery, [interestId], (err, result) => {
+            //         if (err) reject(err);
+            //         else resolve(result);
+            //     });
+            // })
         ]);
 
         // Check if either update affected zero rows (meaning interestId not found)
@@ -1889,11 +1889,11 @@ router.put('/ttuser/interest/clearNotifications/:id', verifyRequestOrigin, (req,
         if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
-        dbR.execute(query, [req.params.id], function (err) {
-            if (err) console.error('DB operation failed:', err.message);
+        // dbR.execute(query, [req.params.id], function (err) {
+        //     if (err) console.error('DB operation failed:', err.message);
 
-            res.send('Notifications cleared successfully');
-        });
+        //     res.send('Notifications cleared successfully');
+        // });
     });
 });
 
@@ -1907,12 +1907,12 @@ router.post('/ttuser/wishlist', verifyRequestOrigin, (req, res) => {
         }
 
         // Update replica
-        dbR.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err) {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
-            res.status(201).send('Product successfully added to wishlist');
-        });
+        // dbR.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err) {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
+        //     res.status(201).send('Product successfully added to wishlist');
+        // });
     });
 });
 
@@ -1935,12 +1935,12 @@ router.get('/ttuser/wishlist/:email', verifyRequestOrigin, (req, res) => {
     db.query(query, [req.params.email], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [req.params.email], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                return res.status(200).json(rows || []);
-            });
+            // dbR.query(query, [req.params.email], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     return res.status(200).json(rows || []);
+            // });
         } else {
             return res.status(200).json(rows || []);
         }
@@ -1955,11 +1955,11 @@ router.delete('/ttuser/remove/wishlist/:id', verifyRequestOrigin, (req, res) => 
         if (err) console.error('DB operation failed:', err.message);
 
         // Update replica
-        dbR.execute(query, [req.params.id], function (err) {
-            if (err) console.error('DB operation failed:', err.message);
+        // dbR.execute(query, [req.params.id], function (err) {
+        //     if (err) console.error('DB operation failed:', err.message);
 
-            return res.status(200).send("Product successfully removed from the user's wishlist");
-        });
+        //     return res.status(200).send("Product successfully removed from the user's wishlist");
+        // });
     });
 });
 
@@ -1974,12 +1974,12 @@ router.get('/ttuser/wishlist/count/:product_id', verifyRequestOrigin, (req, res)
     db.query(query, [parseInt(req.params.product_id)], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [parseInt(req.params.product_id)], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                return res.status(200).json(rows[0] || { count: 0 });
-            });
+            // dbR.query(query, [parseInt(req.params.product_id)], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     return res.status(200).json(rows[0] || { count: 0 });
+            // });
         } else {
             return res.status(200).json(rows[0] || { count: 0 });
         }
@@ -2048,13 +2048,13 @@ router.get('/tttransaction/sales', verifyRequestOrigin, (req, res) => {
     db.query(query, [], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                const result = groupSales(rows);
-                res.json(result);
-            });
+            // dbR.query(query, [], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     const result = groupSales(rows);
+            //     res.json(result);
+            // });
         } else {
             const result = groupSales(rows);
             res.json(result);
@@ -2125,13 +2125,13 @@ router.get('/tttransaction/sales/:email', verifyRequestOrigin, (req, res) => {
     db.query(query, [req.params.email], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                const result = groupSales(rows);
-                res.json(result);
-            });
+            // dbR.query(query, [], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     const result = groupSales(rows);
+            //     res.json(result);
+            // });
         } else {
             const result = groupSales(rows);
             res.json(result);
@@ -2204,40 +2204,40 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
                         });
 
                         // Update replica
-                        dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
-                            if (err) {
-                                console.error('DB operation failed:', err.message);
-                            }
+                        // dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
+                        //     if (err) {
+                        //         console.error('DB operation failed:', err.message);
+                        //     }
 
-                            const transactionId = result.insertId;
+                        //     const transactionId = result.insertId;
 
-                            // Insert into sales
-                            dbR.query(saleQuery,
-                                [transactionId, is_online, order_number, employee, store, shipping_address,
-                                    shipping_postal_code, shipping_city, shipping_country, network || null], (err) => {
-                                        if (err) {
-                                            console.error('DB operation failed:', err.message);
-                                        }
+                        //     // Insert into sales
+                        //     dbR.query(saleQuery,
+                        //         [transactionId, is_online, order_number, employee, store, shipping_address,
+                        //             shipping_postal_code, shipping_city, shipping_country, network || null], (err) => {
+                        //                 if (err) {
+                        //                     console.error('DB operation failed:', err.message);
+                        //                 }
 
-                                        // Insert sold products
-                                        const soldProductsData = products.map(productId => [productId, transactionId]);
+                        //                 // Insert sold products
+                        //                 const soldProductsData = products.map(productId => [productId, transactionId]);
 
-                                        dbR.query(soldProductsQuery, [soldProductsData], (err) => {
-                                            if (err) {
-                                                console.error('DB operation failed:', err.message);
-                                            }
+                        //                 dbR.query(soldProductsQuery, [soldProductsData], (err) => {
+                        //                     if (err) {
+                        //                         console.error('DB operation failed:', err.message);
+                        //                     }
 
-                                            // Update availability of sold products
-                                            products.forEach(productId => {
-                                                dbR.query(productsQuery, [productId], (err) => {
-                                                    if (err) console.error('Product update error:', err.message);
-                                                });
-                                            });
-                                        });
+                        //                     // Update availability of sold products
+                        //                     products.forEach(productId => {
+                        //                         dbR.query(productsQuery, [productId], (err) => {
+                        //                             if (err) console.error('Product update error:', err.message);
+                        //                         });
+                        //                     });
+                        //                 });
 
-                                        res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
-                                    });
-                        });
+                        //                 res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
+                        //             });
+                        // });
                     });
                 });
     });
@@ -2265,70 +2265,70 @@ router.post('/tttransaction/sales/updateStatus/:saleId', verifyRequestOrigin, (r
         }
 
         // Update replica
-        dbR.query(updateQuery, [newStatus, saleId], (err) => {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
+        // dbR.query(updateQuery, [newStatus, saleId], (err) => {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
 
-            // If order is cancelled, relist the products
-            if (newStatus.toLowerCase() === 'cancelled') {
-                const getProductsQuery = `
-                    SELECT product_id FROM soldProducts WHERE sale_id = ?
-                `;
+        //     // If order is cancelled, relist the products
+        //     if (newStatus.toLowerCase() === 'cancelled') {
+        //         const getProductsQuery = `
+        //             SELECT product_id FROM soldProducts WHERE sale_id = ?
+        //         `;
 
-                db.query(getProductsQuery, [saleId], (err, rows) => {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
+        //         db.query(getProductsQuery, [saleId], (err, rows) => {
+        //             if (err) {
+        //                 console.error('DB operation failed:', err.message);
+        //             }
 
-                    const productIds = rows.map(r => r.product_id);
+        //             const productIds = rows.map(r => r.product_id);
 
-                    if (productIds.length === 0) {
-                        // No products to update, just respond success
-                        return res.status(200).send({ message: 'Sale status updated, no products to relist.' });
-                    } else {
-                        const relistQuery = `UPDATE products SET availability = 1 WHERE id IN (${productIds.map(() => '?').join(',')})`;
+        //             if (productIds.length === 0) {
+        //                 // No products to update, just respond success
+        //                 return res.status(200).send({ message: 'Sale status updated, no products to relist.' });
+        //             } else {
+        //                 const relistQuery = `UPDATE products SET availability = 1 WHERE id IN (${productIds.map(() => '?').join(',')})`;
 
-                        db.query(relistQuery, productIds, (err) => {
-                            if (err) console.error('DB operation failed:', err.message);
-                            // Update replica
-                            dbR.query(relistQuery, productIds, (err) => {
-                                if (err) console.error('DB operation failed:', err.message);
-                            });
-                        });
-                        res.status(200).send({ message: 'Sale status updated successfully' });
-                    }
-                });
-            } else {
-                const getProductsQuery = `
-                    SELECT product_id FROM soldProducts WHERE sale_id = ?
-                `;
+        //                 db.query(relistQuery, productIds, (err) => {
+        //                     if (err) console.error('DB operation failed:', err.message);
+        //                     // Update replica
+        //                     dbR.query(relistQuery, productIds, (err) => {
+        //                         if (err) console.error('DB operation failed:', err.message);
+        //                     });
+        //                 });
+        //                 res.status(200).send({ message: 'Sale status updated successfully' });
+        //             }
+        //         });
+        //     } else {
+        //         const getProductsQuery = `
+        //             SELECT product_id FROM soldProducts WHERE sale_id = ?
+        //         `;
 
-                db.query(getProductsQuery, [saleId], (err, rows) => {
-                    if (err) {
-                        console.error('DB operation failed:', err.message);
-                    }
+        //         db.query(getProductsQuery, [saleId], (err, rows) => {
+        //             if (err) {
+        //                 console.error('DB operation failed:', err.message);
+        //             }
 
-                    const productIds = rows.map(r => r.product_id);
+        //             const productIds = rows.map(r => r.product_id);
 
-                    if (productIds.length === 0) {
-                        // No products to update, just respond success
-                        return res.status(200).send({ message: 'Sale status updated, no products to relist.' });
-                    } else {
-                        const relistQuery = `UPDATE products SET availability = 0 WHERE id IN (${productIds.map(() => '?').join(',')})`;
+        //             if (productIds.length === 0) {
+        //                 // No products to update, just respond success
+        //                 return res.status(200).send({ message: 'Sale status updated, no products to relist.' });
+        //             } else {
+        //                 const relistQuery = `UPDATE products SET availability = 0 WHERE id IN (${productIds.map(() => '?').join(',')})`;
 
-                        db.query(relistQuery, productIds, (err) => {
-                            if (err) console.error('DB operation failed:', err.message);
-                            // Update replica
-                            dbR.query(relistQuery, productIds, (err) => {
-                                if (err) console.error('DB operation failed:', err.message);
-                            });
-                        });
-                        res.status(200).send({ message: 'Sale status updated successfully' });
-                    }
-                });
-            }
-        });
+        //                 db.query(relistQuery, productIds, (err) => {
+        //                     if (err) console.error('DB operation failed:', err.message);
+        //                     // Update replica
+        //                     dbR.query(relistQuery, productIds, (err) => {
+        //                         if (err) console.error('DB operation failed:', err.message);
+        //                     });
+        //                 });
+        //                 res.status(200).send({ message: 'Sale status updated successfully' });
+        //             }
+        //         });
+        //     }
+        // });
     });
 });
 
@@ -2344,17 +2344,17 @@ router.post('/tttransaction/product-availability', verifyRequestOrigin, (req, re
 
     db.query(query, productIds, (err, rows) => {
         if (err) {
-            dbR.query(query, productIds, (err, rows) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
+            // dbR.query(query, productIds, (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).json({ error: err.message });
+            //     }
 
-                const unavailable = rows.map(row => row.id);
-                res.json({
-                    allAvailable: unavailable.length === 0,
-                    unavailable
-                });
-            });
+            //     const unavailable = rows.map(row => row.id);
+            //     res.json({
+            //         allAvailable: unavailable.length === 0,
+            //         unavailable
+            //     });
+            // });
         }
 
         const unavailable = rows.map(row => row.id);
@@ -2385,12 +2385,12 @@ router.get('/tttransaction/purchases/', verifyRequestOrigin, (req, res) => {
     db.query(query, (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, (errR, rowsR) => {
-                if (errR) {
-                    return res.status(500).send({ error: err.message });
-                }
-                return res.json(rowsR);
-            });
+            // dbR.query(query, (errR, rowsR) => {
+            //     if (errR) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     return res.json(rowsR);
+            // });
         } else {
             return res.json(rows);
         }
@@ -2431,15 +2431,15 @@ router.post('/tttransaction/purchases/add', verifyRequestOrigin, (req, res) => {
             }
 
             // Update Replica
-            dbR.query(insertTransactionQuery, transactionValues, (errR1, resultR) => {
-                if (errR1) console.error('DB operation failed:', err.message);
-                else {
-                    const transactionIdR = resultR.insertId;
-                    dbR.query(insertPurchaseQuery, [transactionIdR, non_registered_client, purchasing_store, item_purchased], (errR2) => {
-                        if (errR2) console.error('DB operation failed:', err.message);
-                    });
-                }
-            });
+            // dbR.query(insertTransactionQuery, transactionValues, (errR1, resultR) => {
+            //     if (errR1) console.error('DB operation failed:', err.message);
+            //     else {
+            //         const transactionIdR = resultR.insertId;
+            //         dbR.query(insertPurchaseQuery, [transactionIdR, non_registered_client, purchasing_store, item_purchased], (errR2) => {
+            //             if (errR2) console.error('DB operation failed:', err.message);
+            //         });
+            //     }
+            // });
 
             return res.status(201).json({ message: 'Purchase transaction added successfully', id: transactionId });
         });
@@ -2453,12 +2453,12 @@ router.get('/tttransaction/repairs', verifyRequestOrigin, (req, res) => {
     db.query(query, [], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                res.json(rows);
-            });
+            // dbR.query(query, [], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     res.json(rows);
+            // });
         } else {
             res.json(rows);
         }
@@ -2522,24 +2522,24 @@ router.post('/tttransaction/repairs/add', verifyRequestOrigin, (req, res) => {
             }
 
             // Now update replica DB
-            dbR.query(insertTransactionQuery, transactionValues, (errR, resultR) => {
-                if (errR) {
-                    console.error('DB operation failed:', errR.message);
-                } else {
-                    const replicaTransactionId = resultR.insertId;
+            // dbR.query(insertTransactionQuery, transactionValues, (errR, resultR) => {
+            //     if (errR) {
+            //         console.error('DB operation failed:', errR.message);
+            //     } else {
+            //         const replicaTransactionId = resultR.insertId;
 
-                    dbR.query(insertRepairQuery, repairValues.map(v => v === transactionId ? replicaTransactionId : v), (errR2) => {
-                        if (errR2) {
-                            console.error('DB operation failed:', errR2.message);
-                        }
-                    });
-                }
+            //         dbR.query(insertRepairQuery, repairValues.map(v => v === transactionId ? replicaTransactionId : v), (errR2) => {
+            //             if (errR2) {
+            //                 console.error('DB operation failed:', errR2.message);
+            //             }
+            //         });
+            //     }
 
-                return res.status(201).json({
-                    message: 'Repair transaction added successfully',
-                    id: transactionId
-                });
-            });
+            //     return res.status(201).json({
+            //         message: 'Repair transaction added successfully',
+            //         id: transactionId
+            //     });
+            // });
         });
     });
 });
@@ -2552,12 +2552,12 @@ router.get('/tttransaction/repairs/:email', verifyRequestOrigin, (req, res) => {
     db.query(query, [req.params.email], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query(query, [req.params.email], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                res.json(rows);
-            });
+            // dbR.query(query, [req.params.email], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     res.json(rows);
+            // });
         } else {
             res.json(rows);
         }
@@ -2586,14 +2586,14 @@ router.post('/tttransaction/repairs/updateStatus/:repairId', verifyRequestOrigin
         }
 
         // Update replica
-        dbR.query(updateQuery, [newStatus, repairId], (err) => {
-            if (err) {
-                console.error('DB operation failed:', err.message);
-            }
+        // dbR.query(updateQuery, [newStatus, repairId], (err) => {
+        //     if (err) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
 
-            res.status(200).send({ message: 'Repair status updated successfully' });
+        //     res.status(200).send({ message: 'Repair status updated successfully' });
 
-        });
+        // });
     });
 });
 
@@ -2602,12 +2602,12 @@ router.get('/tttransaction/shipping', verifyRequestOrigin, (req, res) => {
     db.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
         if (err) {
             // Fallback to replica DB
-            dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
-                if (err) {
-                    return res.status(500).send({ error: err.message });
-                }
-                res.json(rows[0]);
-            });
+            // dbR.query('SELECT current_shipping_cost FROM shipping WHERE id=1', [], (err, rows) => {
+            //     if (err) {
+            //         return res.status(500).send({ error: err.message });
+            //     }
+            //     res.json(rows[0]);
+            // });
         } else {
             res.json(rows[0]);
         }
@@ -2633,13 +2633,13 @@ router.post('/tttransaction/shipping/update', verifyRequestOrigin, (req, res) =>
         }
 
         // Update replica
-        dbR.query(updateQuery, [newCost], (errR) => {
-            if (errR) {
-                console.error('DB operation failed:', err.message);
-            }
+        // dbR.query(updateQuery, [newCost], (errR) => {
+        //     if (errR) {
+        //         console.error('DB operation failed:', err.message);
+        //     }
 
-            res.status(200).json({ message: 'Shipping cost updated successfully', newCost });
-        });
+        //     res.status(200).json({ message: 'Shipping cost updated successfully', newCost });
+        // });
     });
 });
 
