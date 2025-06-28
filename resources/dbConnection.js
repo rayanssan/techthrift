@@ -14,22 +14,22 @@ let connection = {
     database: process.env.DB_NAME,
     multipleStatements: true
 };
-let connectionReplica = {
-    host: process.env.DB_HOST_REPLICA,
-    port: Number(process.env.DB_PORT_REPLICA),
-    user: process.env.DB_USER_REPLICA,
-    password: process.env.DB_PASS_REPLICA,
-    database: process.env.DB_NAME_REPLICA,
-    multipleStatements: true
-};
+// let connectionReplica = {
+//     host: process.env.DB_HOST_REPLICA,
+//     port: Number(process.env.DB_PORT_REPLICA),
+//     user: process.env.DB_USER_REPLICA,
+//     password: process.env.DB_PASS_REPLICA,
+//     database: process.env.DB_NAME_REPLICA,
+//     multipleStatements: true
+// };
 
 let db;
-let dbR;
+//let dbR;
 
 const connectToDb = async () => {
     try {
         db = createPool(connection);
-        dbR = createPool(connectionReplica);
+        //dbR = createPool(connectionReplica);
 
         // Test connections by acquiring a connection from each pool
         await Promise.all([
@@ -40,13 +40,13 @@ const connectToDb = async () => {
                     resolve();
                 });
             }),
-            new Promise((resolve, reject) => {
-                dbR.getConnection((err, connection) => {
-                    if (err) return reject(err);
-                    connection.release();
-                    resolve();
-                });
-            }),
+            // new Promise((resolve, reject) => {
+            //     dbR.getConnection((err, connection) => {
+            //         if (err) return reject(err);
+            //         connection.release();
+            //         resolve();
+            //     });
+            // }),
         ]);
 
         console.log('Connected to the TechThrift databases.');
@@ -99,4 +99,5 @@ const connectToDb = async () => {
 const dbReady = connectToDb();
 
 // Export the database connection, router, and flag
-export { db, dbR, router, dbReady };
+//export { db, dbR, router, dbReady };
+export { db, router, dbReady };
