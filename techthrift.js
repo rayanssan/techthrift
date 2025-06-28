@@ -5,7 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { router as dbConnection, dbReady } from './resources/dbConnection.js';
 import { router as ttApi } from './resources/ttApi.js';
-import { db, dbR } from './resources/dbConnection.js';
+//import { db, dbR } from './resources/dbConnection.js';
+import { db } from './resources/dbConnection.js';
 import https from 'https';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -354,18 +355,18 @@ app.post('/reports', async (req, res) => {
         if (primaryErr) {
             console.warn('Primary DB query failed, trying replica...', primaryErr);
 
-            dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (replicaErr, replicaRows) => {
-                if (replicaErr) {
-                    console.error('Both primary and replica DB queries failed', replicaErr);
-                    return res.status(500).send('Internal Server Error');
-                }
+            // dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (replicaErr, replicaRows) => {
+            //     if (replicaErr) {
+            //         console.error('Both primary and replica DB queries failed', replicaErr);
+            //         return res.status(500).send('Internal Server Error');
+            //     }
 
-                if (replicaRows.length > 0) {
-                    return res.redirect('/report');
-                } else {
-                    return renderErrorForm(res);
-                }
-            });
+            //     if (replicaRows.length > 0) {
+            //         return res.redirect('/report');
+            //     } else {
+            //         return renderErrorForm(res);
+            //     }
+            // });
 
         } else {
             if (primaryRows.length > 0) {
@@ -581,10 +582,10 @@ app.post('/manageOrder', async (req, res) => {
         return new Promise((resolve, reject) => {
             db.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (err, rows) => {
                 if (err) {
-                    dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (replicaErr, replicaRows) => {
-                        if (replicaErr) return reject(replicaErr);
-                        resolve(replicaRows.length > 0);
-                    });
+                    // dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (replicaErr, replicaRows) => {
+                    //     if (replicaErr) return reject(replicaErr);
+                    //     resolve(replicaRows.length > 0);
+                    // });
                 } else {
                     resolve(rows.length > 0);
                 }
@@ -596,10 +597,10 @@ app.post('/manageOrder', async (req, res) => {
         return new Promise((resolve, reject) => {
             db.query(`SELECT * FROM ${transaction_type}s WHERE transaction_id = ?`, [transaction_id], (err, rows) => {
                 if (err) {
-                    dbR.query(`SELECT * FROM ${transaction_type}s WHERE transaction_id = ?`, [transaction_id], (replicaErr, replicaRows) => {
-                        if (replicaErr) return reject(replicaErr);
-                        resolve(replicaRows.length > 0);
-                    });
+                    // dbR.query(`SELECT * FROM ${transaction_type}s WHERE transaction_id = ?`, [transaction_id], (replicaErr, replicaRows) => {
+                    //     if (replicaErr) return reject(replicaErr);
+                    //     resolve(replicaRows.length > 0);
+                    // });
                 } else {
                     resolve(rows.length > 0);
                 }
@@ -848,13 +849,13 @@ app.post('/manageShipping', async (req, res) => {
     db.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (err, rows) => {
         if (err) {
             console.warn('Primary DB failed. Trying replica...', err);
-            dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (errR, rowsR) => {
-                if (errR) {
-                    console.error('Replica DB also failed:', errR);
-                    return res.status(500).send('Internal Server Error');
-                }
-                checkTokenAndUpdate(rowsR);
-            });
+            // dbR.query('SELECT id FROM tokens WHERE token = ?', [hashedPassword], (errR, rowsR) => {
+            //     if (errR) {
+            //         console.error('Replica DB also failed:', errR);
+            //         return res.status(500).send('Internal Server Error');
+            //     }
+            //     checkTokenAndUpdate(rowsR);
+            // });
         } else {
             checkTokenAndUpdate(rows);
         }
