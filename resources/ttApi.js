@@ -358,6 +358,10 @@ router.post('/tt/add', verifyRequestOrigin, (req, res) => {
             console.error('DB operation failed:', err.message);
         }
 
+         res.status(201).json({
+         id: result.insertId,
+         ...newProduct
+        }); // Send back the newly added product
         // Update replica
         // dbR.execute(query, values, function (err, result) {
         //     if (err) {
@@ -405,7 +409,7 @@ router.post('/tt/upload', verifyRequestOrigin, upload.array('images'), (req, res
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-
+        res.status(200).json({ message: 'Images uploaded and metadata saved.' });
         // dbR.execute(query, flatValues, (err) => {
         //     if (err) {
         //         console.error('DB operation failed:', err.message);
@@ -431,6 +435,7 @@ router.delete('/tt/remove/:id', verifyRequestOrigin, (req, res) => {
             if (err) {
                 console.error('DB operation failed:', err.message);
             }
+            res.status(200).send('Product and related images successfully removed');
             // Also delete from replica
             // dbR.execute('DELETE FROM productImages WHERE product = ?', [productId], () => {
             //     if (err) {
@@ -466,6 +471,7 @@ router.post('/tt/sale/add', verifyRequestOrigin, (req, res) => {
                     if (err) {
                         console.error('DB operation failed:', err.message);
                     }
+                    res.status(201).json({ message: 'Product set for sale', product: row });
                     // Update replica
                     // dbR.query('SELECT * FROM products WHERE id = ?', [newSaleProduct.id], (err, row) => {
                     //     if (err) {
@@ -503,6 +509,7 @@ router.put('/tt/sale/remove/:id', verifyRequestOrigin, (req, res) => {
             if (err) {
                 console.error('DB operation failed:', err.message);
             }
+            res.status(200).json({ message: 'Product removed from sale', productId });
             // Update replica
             // dbR.query('SELECT * FROM saleProducts WHERE id = ?', [req.params.id], (err, row) => {
             //     if (err) {
@@ -557,6 +564,7 @@ router.post('/tt/repairPart/add', verifyRequestOrigin, (req, res) => {
             console.error('DB operation failed:', err.message);
         }
 
+        return res.status(201).json({ message: 'Repair part added successfully', id: result.insertId });
         // Update replica
         // dbR.query(query, values, (errR, result) => {
         //     if (errR) {
@@ -580,7 +588,7 @@ router.put('/tt/repairParts/remove/:id', verifyRequestOrigin, (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Repair part not found' });
         }
-
+        return res.json({ message: 'Repair part deleted successfully' });
         // Update replica
         // dbR.query(query, [id], (errR) => {
         //     if (errR) {
@@ -721,7 +729,7 @@ router.post('/tt/donation/add', verifyRequestOrigin, (req, res) => {
 
         db.execute(insertQuery, insertValues, function (err) {
             if (err) console.error('DB operation failed:', err.message);
-
+            res.status(201).json({ message: 'Product set for donation' });
             // Update replica DB
             // dbR.query('SELECT * FROM products WHERE id = ?', [id], (err, rows) => {
             //     if (err) console.error('DB operation failed:', err.message);
@@ -747,7 +755,7 @@ router.put('/tt/donation/remove/:id', verifyRequestOrigin, (req, res) => {
             if (err) {
                 console.error('DB operation failed:', err.message);
             }
-
+            res.status(200).json({ message: 'Product removed from donation', product: row });
             // Update replica
             // dbR.query('SELECT * FROM donationProducts WHERE id = ?', [req.params.id], (err, row) => {
             //     if (err) {
@@ -898,7 +906,11 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-
+        res.status(201).json({
+             message: 'Client successfully added or updated',
+             id: result.insertId,
+             clientData: newClient
+        });
         // Update replica
         // dbR.execute(query, values, function (err, result) {
         //     if (err) {
@@ -978,6 +990,7 @@ router.put('/ttuser/edit/client', verifyRequestOrigin, (req, res) => {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
+        res.send('Client successfully updated');
         // Update replica
         // dbR.execute(query, values, function (err) {
         //     if (err) {
@@ -994,6 +1007,7 @@ router.delete('/ttuser/remove/client/:id', verifyRequestOrigin, (req, res) => {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
+        res.send('Client successfully removed');
         // Update replica
         // dbR.execute('DELETE FROM clients WHERE id = ?', [req.params.id], function (err) {
         //     if (err) {
@@ -1071,7 +1085,7 @@ router.post('/ttuser/add/employee', verifyRequestOrigin, (req, res) => {
             [newEmployee.id, newEmployee.store, newEmployee.internal_number],
             (err) => {
                 if (err) console.error('DB operation failed:', err.message);
-
+                res.status(201).json({ message: 'Employee successfully added' });
                 // Update replica
                 // dbR.query('SELECT * FROM clients WHERE id = ?', [newEmployee.id], (err, row) => {
                 //     if (err) {
@@ -1294,7 +1308,7 @@ router.post('/ttuser/add/store', verifyRequestOrigin, (req, res) => {
                         );
                     });
                 }
-
+                res.status(201).json({ message: 'Store successfully added', product: row });
                 // Update replica
                 // dbR.query('SELECT * FROM clients WHERE id = ?', [newStore.id], (err, row) => {
                 //     if (err) {
@@ -1584,7 +1598,7 @@ router.post('/ttuser/add/charity', verifyRequestOrigin, (req, res) => {
                 if (err) {
                     console.error('DB operation failed:', err.message);
                 }
-
+                res.status(201).json({ message: 'Charity successfully added', charity: row });
                 // Update replica
                 // dbR.query('SELECT * FROM clients WHERE id = ?', [newCharity.id], (err, row) => {
                 //     if (err) {
@@ -1725,6 +1739,7 @@ router.post('/ttuser/remove/charityProjects', verifyRequestOrigin, (req, res) =>
         if (err) {
             console.error('DB operation failed:', err.message);
         }
+        return res.json({ success: true, deleted: result.affectedRows });
         // dbR.query(query, ids, (err, result) => {
         //     if (err) console.error('DB operation failed:', err.message);
 
@@ -1798,7 +1813,7 @@ router.post('/ttuser/interest', verifyRequestOrigin, (req, res) => {
 
     db.execute(query, values, function (err) {
         if (err) console.error('DB operation failed:', err.message);
-
+        res.status(201).send('Product alert successfully added');
         // Update replica
         // dbR.execute(query, values, function (err) {
         //     if (err) console.error('DB operation failed:', err.message);
@@ -1837,7 +1852,7 @@ router.delete('/ttuser/remove/interest/:id', verifyRequestOrigin, (req, res) => 
 
     db.execute(query, [req.params.id], function (err) {
         if (err) console.error('DB operation failed:', err.message);
-
+        res.status(200).send('Product alert successfully removed');
         // Update replica
         // dbR.execute(query, [req.params.id], function (err) {
         //     if (err) console.error('DB operation failed:', err.message);
@@ -1887,7 +1902,7 @@ router.put('/ttuser/interest/clearNotifications/:id', verifyRequestOrigin, (req,
 
     db.execute(query, [req.params.id], function (err) {
         if (err) console.error('DB operation failed:', err.message);
-
+        res.send('Notifications cleared successfully');
         // Update replica
         // dbR.execute(query, [req.params.id], function (err) {
         //     if (err) console.error('DB operation failed:', err.message);
@@ -1905,7 +1920,7 @@ router.post('/ttuser/wishlist', verifyRequestOrigin, (req, res) => {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-
+        res.status(201).send('Product successfully added to wishlist');
         // Update replica
         // dbR.execute(query, [req.body.wishlisted_product, req.body.interested_user], function (err) {
         //     if (err) {
@@ -1953,7 +1968,7 @@ router.delete('/ttuser/remove/wishlist/:id', verifyRequestOrigin, (req, res) => 
 
     db.execute(query, [req.params.id], function (err) {
         if (err) console.error('DB operation failed:', err.message);
-
+        return res.status(200).send("Product successfully removed from the user's wishlist");
         // Update replica
         // dbR.execute(query, [req.params.id], function (err) {
         //     if (err) console.error('DB operation failed:', err.message);
@@ -2202,7 +2217,7 @@ router.post('/tttransaction/sales/add', verifyRequestOrigin, (req, res) => {
                                 if (err) console.error('Product update error:', err.message);
                             });
                         });
-
+                        res.status(201).send({ message: 'Transaction, sale, and products added successfully', transactionId });
                         // Update replica
                         // dbR.query(transactionQuery, [client, transaction_value], (err, result) => {
                         //     if (err) {
@@ -2520,7 +2535,10 @@ router.post('/tttransaction/repairs/add', verifyRequestOrigin, (req, res) => {
             if (err2) {
                 console.error('DB operation failed:', err2.message);
             }
-
+            return res.status(201).json({
+                 message: 'Repair transaction added successfully',
+                 id: transactionId
+            });
             // Now update replica DB
             // dbR.query(insertTransactionQuery, transactionValues, (errR, resultR) => {
             //     if (errR) {
@@ -2584,7 +2602,7 @@ router.post('/tttransaction/repairs/updateStatus/:repairId', verifyRequestOrigin
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-
+        res.status(200).send({ message: 'Repair status updated successfully' });
         // Update replica
         // dbR.query(updateQuery, [newStatus, repairId], (err) => {
         //     if (err) {
@@ -2631,7 +2649,7 @@ router.post('/tttransaction/shipping/update', verifyRequestOrigin, (req, res) =>
         if (err) {
             console.error('DB operation failed:', err.message);
         }
-
+        res.status(200).json({ message: 'Shipping cost updated successfully', newCost });
         // Update replica
         // dbR.query(updateQuery, [newCost], (errR) => {
         //     if (errR) {
