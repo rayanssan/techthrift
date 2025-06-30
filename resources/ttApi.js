@@ -368,7 +368,7 @@ router.post('/tt/add', verifyRequestOrigin, (req, res) => {
         //         id: result.insertId,
         //         ...newProduct
         //     }); // Send back the newly added product
-        });
+        //});
     });
 });
 
