@@ -4,7 +4,7 @@ import { Router } from 'express';
 const router = Router();
 import { createPool } from 'mysql2';
 import dotenv from 'dotenv';
-dotenv.config({ path: 'resources/dbCredentials.env' });
+dotenv.config({ path: 'dbCredentials.env' });
 
 let connection = {
     host: process.env.DB_HOST,
