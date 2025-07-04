@@ -69,7 +69,7 @@ const connectToDb = async () => {
         };
 
         db = createPool(connection);
-        dbR = createPool(connectionReplica);
+        //dbR = createPool(connectionReplica);
 
         // Test local connections
         await Promise.all([
@@ -80,13 +80,13 @@ const connectToDb = async () => {
                     resolve();
                 });
             }),
-            new Promise((resolve, reject) => {
-                dbR.getConnection((err, connection) => {
-                    if (err) return reject(err);
-                    connection.release();
-                    resolve();
-                });
-            }),
+            // new Promise((resolve, reject) => {
+            //     dbR.getConnection((err, connection) => {
+            //         if (err) return reject(err);
+            //         connection.release();
+            //         resolve();
+            //     });
+            // }),
         ]);
 
         console.log('Connected to the TechThrift databases (locally).');
