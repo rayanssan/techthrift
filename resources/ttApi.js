@@ -3,7 +3,8 @@
 import { Router } from 'express';
 const router = Router();
 // Import the db connection from dbConnection.js
-import { db, dbR } from './dbConnection.js';
+//import { db, dbR } from './dbConnection.js';
+import { db } from './dbConnection.js';
 import path from 'path';
 import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
@@ -523,7 +524,7 @@ router.put('/tt/sale/remove/:id', verifyRequestOrigin, (req, res) => {
             //             res.status(200).json({ message: 'Product removed from sale', productId });
             //         }
             //     });
-            });
+            //});
         });
     });
 });
@@ -738,7 +739,7 @@ router.post('/tt/donation/add', verifyRequestOrigin, (req, res) => {
             //         if (err) console.error('DB operation failed:', err.message);
             //         res.status(201).json({ message: 'Product set for donation' });
             //     });
-            });
+            //});
         });
     });
 });
@@ -768,7 +769,7 @@ router.put('/tt/donation/remove/:id', verifyRequestOrigin, (req, res) => {
             //         }
             //         res.status(200).json({ message: 'Product removed from donation', product: row });
             //     });
-            });
+            //});
         });
 
     });
