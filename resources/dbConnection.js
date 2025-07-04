@@ -60,13 +60,13 @@ const connectToDb = async () => {
             database: 'tt_database',
             multipleStatements: true
         };
-        connectionReplica = {
-            host: 'localhost',
-            user: 'root',
-            password: '',
-            database: 'tt_database_replica',
-            multipleStatements: true
-        };
+        // connectionReplica = {
+        //     host: 'localhost',
+        //     user: 'root',
+        //     password: '',
+        //     database: 'tt_database_replica',
+        //     multipleStatements: true
+        // };
 
         db = createPool(connection);
         dbR = createPool(connectionReplica);
@@ -80,13 +80,13 @@ const connectToDb = async () => {
                     resolve();
                 });
             }),
-            new Promise((resolve, reject) => {
-                dbR.getConnection((err, connection) => {
-                    if (err) return reject(err);
-                    connection.release();
-                    resolve();
-                });
-            }),
+            // new Promise((resolve, reject) => {
+            //     dbR.getConnection((err, connection) => {
+            //         if (err) return reject(err);
+            //         connection.release();
+            //         resolve();
+            //     });
+            // }),
         ]);
 
         console.log('Connected to the TechThrift databases (locally).');
