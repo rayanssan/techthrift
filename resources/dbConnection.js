@@ -14,14 +14,14 @@ let connection = {
     database: process.env.DB_NAME,
     multipleStatements: true
 };
-// let connectionReplica = {
-//     host: process.env.DB_HOST_REPLICA,
-//     port: Number(process.env.DB_PORT_REPLICA),
-//     user: process.env.DB_USER_REPLICA,
-//     password: process.env.DB_PASS_REPLICA,
-//     database: process.env.DB_NAME_REPLICA,
-//     multipleStatements: true
-// };
+let connectionReplica = {
+    host: process.env.DB_HOST_REPLICA,
+    port: Number(process.env.DB_PORT_REPLICA),
+    user: process.env.DB_USER_REPLICA,
+    password: process.env.DB_PASS_REPLICA,
+    database: process.env.DB_NAME_REPLICA,
+    multipleStatements: true
+};
 
 let db;
 //let dbR;
