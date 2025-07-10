@@ -903,7 +903,7 @@ router.post('/ttuser/add/client', verifyRequestOrigin, (req, res) => {
     const query = `INSERT INTO clients (${columns.join(', ')})
                VALUES (${columns.map(() => '?').join(', ')})`;
 
-    db.execute(query, values, function (err) {
+    db.execute(query, values, function (err, result) {
         if (err) {
             console.error('DB operation failed:', err.message);
         }
