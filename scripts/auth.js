@@ -1,7 +1,7 @@
 "use strict";
 
-const domain = "dev-1qdq127lj6aekksz.us.auth0.com";
-const clientId = "iZ7i3x872x2Lwwg9I3jwg50JgePjaB3a";
+const domain = "dev-zh7o488rqjbnxicm.us.auth0.com";
+const clientId = "tjm04Mw5yKgG5NDkcvXKnlptNTTAe5xM";
 const redirectUri = window.location.origin;
 
 /**
