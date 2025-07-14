@@ -42,6 +42,7 @@ async function getUserProfile(token) {
   let loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
   try {
     if (!loggedInUser) {
+      console.log("Fetching user profile from Auth0...");
       const response = await fetch(`https://${domain}/userinfo`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -106,6 +107,7 @@ async function getUserProfile(token) {
 
     return loggedInUser;
   } catch (err) {
+    console.error("Erro no getUserProfile:", err);
     console.error("Error while trying to obtain profile:", err);
     logout();
   } finally {
