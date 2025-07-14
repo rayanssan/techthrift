@@ -63,7 +63,10 @@ async function getUserProfile(token) {
       }
       return loggedInUser;
     }
-
+    // const registeredUserUrl = '/homepage';  // URL para users registados
+    // if (window.location.pathname !== registeredUserUrl) {
+    //   window.location.href = registeredUserUrl;
+    // }
     const clientData = await clientRes.json();
     let employeeData, storeData, charityData;
 
