@@ -109,7 +109,7 @@ async function getUserProfile(token) {
   } catch (err) {
     console.error("Erro no getUserProfile:", err);
     console.error("Error while trying to obtain profile:", err);
-    logout();
+    //logout();
   } finally {
     if (!localStorage.getItem('loggedInUser')) {
       // Save logged in user to localStorage
