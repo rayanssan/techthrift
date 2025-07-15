@@ -5,6 +5,19 @@ const clientId = "tjm04Mw5yKgG5NDkcvXKnlptNTTAe5xM";
 const redirectUri = window.location.origin;
 
 /**
+ * Redireciona o utilizador para o login da Auth0 com os parâmetros corretos.
+ */
+function login() {
+  const loginUrl = `https://${domain}/authorize` +
+    `?response_type=token` +
+    `&client_id=${clientId}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&scope=openid%20profile%20email`;
+
+  window.location.href = loginUrl;
+}
+
+/**
  * Logs out the user by clearing local storage and redirecting to Auth0 logout URL.
  * 
  * @function logout
