@@ -122,15 +122,23 @@ async function getUserProfile(token) {
   } catch (err) {
     console.error("Erro no getUserProfile:", err);
     console.error("Error while trying to obtain profile:", err);
-    //logout();
+    logout();
   } finally {
     if (!localStorage.getItem('loggedInUser')) {
       // Save logged in user to localStorage
       localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-    } else if (!JSON.parse(localStorage.getItem('loggedInUser')).id) {
-      // Save logged in user to localStorage
-      localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+    }else {
+          const stored = localStorage.getItem('loggedInUser');
+          if (!stored) {
+                 localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+          } else {
+                const parsed = JSON.parse(stored);
+                if (!parsed || !parsed.id) {
+                localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                }
+          }
     }
+
     // Dispatch user authentication event
     const event = new CustomEvent('userAuthenticated', { detail: loggedInUser });
     window.dispatchEvent(event);
@@ -138,7 +146,7 @@ async function getUserProfile(token) {
   }
 }
 
-/**
+        /**
  * Updates the UI based on whether a user is logged in.
  * 
  * @function adjustUI
